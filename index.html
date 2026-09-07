@@ -299,6 +299,11 @@ footer a:hover{color:var(--gold)}
 .result-copy{font-size:12px;color:rgba(244,237,224,.38);margin-bottom:24px;line-height:1.65}
 .result-line{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(244,237,224,.07);font-size:12.5px}
 .result-line:last-of-type{border-bottom:none}
+.result-line.hl-row b{color:var(--gold-l)}
+.field-check{display:flex;align-items:flex-start;gap:9px;margin:2px 0 22px;cursor:pointer}
+.field-check input{margin-top:3px;accent-color:var(--slate);flex-shrink:0}
+.field-check-text{font-size:13px;color:var(--muted);line-height:1.5}
+.field-check-hint{display:block;font-size:11.5px;color:var(--muted2);margin-top:2px;font-weight:300}
 .result-line span{color:rgba(244,237,224,.45);font-weight:300}
 .result-line b{color:rgba(244,237,224,.82);font-weight:500}
 .meter{height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin:16px 0 10px;overflow:hidden}
@@ -688,6 +693,13 @@ footer a:hover{color:var(--gold)}
         <div class="range-line"><span data-i18n="calc.f.facility">Facility og vicevært</span><input id="facility" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
         <div class="range-line"><span data-i18n="calc.f.energy">Energi og forsyning</span><input id="energy" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
         <div class="range-line"><span data-i18n="calc.f.admin">Administration</span><input id="admin" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
+        <label class="field-check" style="margin-top:18px">
+          <input type="checkbox" id="showPropertyValue">
+          <span class="field-check-text">
+            <span data-i18n="calc.propCheck">Vis effekt på ejendomsværdi</span>
+            <small class="field-check-hint" data-i18n="calc.propCheckHint">Ved 4,5% afkastgrad svarer 1 kr. i årlig besparelse til ca. 22 kr. i ejendomsværdi.</small>
+          </span>
+        </label>
         <div class="calc-actions">
           <button class="btn-dark" type="submit" id="calcSubmit">
             <span id="calcBtnText" data-i18n="calc.btnCalc">Beregn potentiale</span>
@@ -704,6 +716,7 @@ footer a:hover{color:var(--gold)}
         <div>
           <div class="result-line"><span data-i18n="calc.r.total">Samlede relevante omkostninger</span><b id="totalCost">0 kr.</b></div>
           <div class="result-line"><span data-i18n="calc.r.range">Forventet interval</span><b id="savingPct">0%</b></div>
+          <div class="result-line hl-row" id="propValueLine" style="display:none"><span data-i18n="calc.r.propValue">Stigning i ejendomsværdi</span><b id="propValue">0 kr.</b></div>
           <div class="result-line"><span data-i18n="calc.r.fee">Core Partners honorar</span><b id="fee">0 kr.</b></div>
           <div class="result-line"><span data-i18n="calc.r.net">Netto første år</span><b id="net">0 kr.</b></div>
           <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
@@ -939,6 +952,7 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
     calcState.org=$c("orgType").value;
     calcState.rate=parseFloat($c("lastReview").value);
     calcState.buying=parseFloat($c("hasBuying").value);
+    calcState.showPropValue=$c("showPropertyValue").checked;
   }
 
   function calculate(){
@@ -953,7 +967,11 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
     var mid=Math.round((low+high)/2);
     var fee=Math.round(mid*.2);
     var net=mid-fee;
-    calcState.results={total:total,low:low,high:high,fee:fee,net:net,rf:rf,org:org};
+    var showPropValue=calcState.showPropValue;
+    var YIELD_RATE=.045;
+    var propValueLow=Math.round(low/YIELD_RATE);
+    var propValueHigh=Math.round(high/YIELD_RATE);
+    calcState.results={total:total,low:low,high:high,fee:fee,net:net,rf:rf,org:org,showPropValue:showPropValue,propValueLow:propValueLow,propValueHigh:propValueHigh};
     var toWord=window.CP_T('to');
     $c("savingAmount").textContent=fmt(low)+" "+toWord+" "+fmt(high);
     $c("savingCopy").textContent=window.CP_T('basedOn')+" "+org.toLowerCase()+(buying>0?window.CP_T('noBuying'):window.CP_T('hasBuying'))+window.CP_T('andReview');
@@ -961,6 +979,8 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
     $c("savingPct").textContent=Math.round(low/total*100)+" "+toWord+" "+Math.round(high/total*100)+"%";
     $c("fee").textContent=fmt(fee);
     $c("net").textContent=fmt(net);
+    $c("propValueLine").style.display=showPropValue?"flex":"none";
+    if(showPropValue)$c("propValue").textContent=fmt(propValueLow)+" "+toWord+" "+fmt(propValueHigh);
     $c("meterFill").style.width=Math.min(100,Math.round(high/total*100)*2.5)+"%";
     $c("resultDownload").style.display="flex";
   }
@@ -1018,6 +1038,7 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
       '<div class="row"><span>'+window.CP_T('reportOrg')+'</span><span>'+r.org+'</span></div>'+
       '<div class="row"><span>'+window.CP_T('reportTotal')+'</span><span>'+fmt(r.total)+'</span></div>'+
       '<div class="row"><span>'+window.CP_T('reportSavings')+'</span><span class="hl">'+fmt(r.low)+' '+window.CP_T('to')+' '+fmt(r.high)+'</span></div>'+
+      (r.showPropValue?'<div class="row"><span>'+window.CP_T('reportPropValue')+'</span><span class="hl">'+fmt(r.propValueLow)+' '+window.CP_T('to')+' '+fmt(r.propValueHigh)+'</span></div>':'')+
       '<div class="row"><span>'+window.CP_T('reportFee')+'</span><span>'+fmt(r.fee)+'</span></div>'+
       '<div class="row"><span>'+window.CP_T('reportNet')+'</span><span>'+fmt(r.net)+'</span></div>'+
       '<p class="note">'+window.CP_T('reportNote')+'</p>'+
@@ -1097,9 +1118,10 @@ if(burger&&navLinks){
     'calc.reviewLabel':'Last renegotiated','calc.review.r1':'Less than 1 year ago','calc.review.r2':'1 to 2 years ago','calc.review.r3':'2 to 4 years ago','calc.review.r4':'Over 4 years ago',
     'calc.buyingLabel':'Internal buying function','calc.buying.no':'No, no buying function','calc.buying.yes':'Yes, we have a buying function',
     'calc.f.insurance':'Insurance','calc.f.service':'Service agreements','calc.f.facility':'Facility & caretaking','calc.f.energy':'Energy & utilities','calc.f.admin':'Administration',
+    'calc.propCheck':'Show impact on property value','calc.propCheckHint':'At a 4.5% yield, DKK 1 in annual savings equals roughly DKK 22 in property value.',
     'calc.btnCalc':'Calculate potential','calc.btnExample':'Insert example',
     'calc.resultLabel':'Estimated annual savings','calc.resultDefault':'Fill in the fields on the left to see your potential.',
-    'calc.r.total':'Total relevant costs','calc.r.range':'Expected range','calc.r.fee':'Core Partners fee','calc.r.net':'Net first year',
+    'calc.r.total':'Total relevant costs','calc.r.range':'Expected range','calc.r.propValue':'Increase in property value','calc.r.fee':'Core Partners fee','calc.r.net':'Net first year',
     'calc.note':"Fee is calculated as 20% of the first year's documented savings.",'calc.btnDownload':'Download report',
     'contact.eyebrow':'Contact','contact.title':'Book a free screening','contact.sub':"Tell us briefly about your situation. We'll get back to you within one business day with an assessment.",
     'contact.calBtn':'Book a meeting directly in the calendar','contact.name':'Name','contact.phone':'Phone','contact.email':'Email','contact.orgType':'Organization type','contact.chooseType':'Select type...','contact.landlordInvestor':'Property owner / Investor','contact.other':'Other','contact.msgLabel':'Briefly about your situation','contact.submit':'Send inquiry',
@@ -1126,8 +1148,8 @@ if(burger&&navLinks){
     'contact.msgPh':'E.g. number of units, which agreements you want assessed, or when they were last renegotiated.'
   };
   var JS_STR = {
-    da:{sending:'Sender...',sent:'Besked sendt',tryAgain:'Prøv igen',to:'til',basedOn:'Baseret på',noBuying:', ingen indkøbsfunktion',hasBuying:', intern indkøbsfunktion',andReview:' og seneste genforhandling.',analyzing:'Analyserer...',benchmarking:'Benchmarker...',calculating:'Beregner...',updateBtn:'Opdater beregning',reportTitle:'Core Partners Besparelsesrapport',reportH1:'Besparelsesestimeret',reportOrg:'Organisation',reportTotal:'Samlede relevante omkostninger',reportSavings:'Estimeret besparelse',reportFee:'Core Partners honorar (20%)',reportNet:'Netto første år',reportNote:'Dette estimat er vejledende og erstatter ikke en konkret screening.',reportFilename:'corepartners-besparelse.html'},
-    en:{sending:'Sending...',sent:'Message sent',tryAgain:'Try again',to:'to',basedOn:'Based on',noBuying:', no internal buying function',hasBuying:', internal buying function',andReview:' and latest renegotiation.',analyzing:'Analyzing...',benchmarking:'Benchmarking...',calculating:'Calculating...',updateBtn:'Update calculation',reportTitle:'Core Partners Savings Report',reportH1:'Savings estimate',reportOrg:'Organization',reportTotal:'Total relevant costs',reportSavings:'Estimated savings',reportFee:'Core Partners fee (20%)',reportNet:'Net first year',reportNote:'This estimate is indicative and does not replace a concrete screening.',reportFilename:'corepartners-savings.html'}
+    da:{sending:'Sender...',sent:'Besked sendt',tryAgain:'Prøv igen',to:'til',basedOn:'Baseret på',noBuying:', ingen indkøbsfunktion',hasBuying:', intern indkøbsfunktion',andReview:' og seneste genforhandling.',analyzing:'Analyserer...',benchmarking:'Benchmarker...',calculating:'Beregner...',updateBtn:'Opdater beregning',reportTitle:'Core Partners Besparelsesrapport',reportH1:'Besparelsesestimeret',reportOrg:'Organisation',reportTotal:'Samlede relevante omkostninger',reportSavings:'Estimeret besparelse',reportPropValue:'Stigning i ejendomsværdi (4,5% afkastgrad)',reportFee:'Core Partners honorar (20%)',reportNet:'Netto første år',reportNote:'Dette estimat er vejledende og erstatter ikke en konkret screening.',reportFilename:'corepartners-besparelse.html'},
+    en:{sending:'Sending...',sent:'Message sent',tryAgain:'Try again',to:'to',basedOn:'Based on',noBuying:', no internal buying function',hasBuying:', internal buying function',andReview:' and latest renegotiation.',analyzing:'Analyzing...',benchmarking:'Benchmarking...',calculating:'Calculating...',updateBtn:'Update calculation',reportTitle:'Core Partners Savings Report',reportH1:'Savings estimate',reportOrg:'Organization',reportTotal:'Total relevant costs',reportSavings:'Estimated savings',reportPropValue:'Increase in property value (4.5% yield)',reportFee:'Core Partners fee (20%)',reportNet:'Net first year',reportNote:'This estimate is indicative and does not replace a concrete screening.',reportFilename:'corepartners-savings.html'}
   };
 
   window.CP_LANG = localStorage.getItem('cp_lang') || 'da';
