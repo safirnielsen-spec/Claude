@@ -53,7 +53,7 @@ html{scroll-behavior:smooth}
   --bone-2:#e9e0cf;
   --ink:#1c1914;
   --ink-soft:rgba(28,25,20,.62);
-  --ink-faint:rgba(28,25,20,.4);
+  --ink-faint:rgba(28,25,20,.58);
   --cream:#f8f4ec;
   --clay:#a3572f;
   --clay-d:#7e4324;
@@ -82,7 +82,7 @@ img,svg{display:block;max-width:100%}
   font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;letter-spacing:.2em;
   text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:20px;
 }
-.on-dark .eyebrow{color:rgba(243,238,228,.5)}
+.on-dark .eyebrow{color:rgba(243,238,228,.62)}
 
 .btn{
   display:inline-flex;align-items:center;gap:11px;padding:16px 28px;
@@ -106,18 +106,18 @@ img,svg{display:block;max-width:100%}
 .reveal-delay2{transition-delay:.24s}
 .reveal-delay3{transition-delay:.36s}
 
-/* ---- photographic placeholder ---- */
+/* ---- photo placeholder — swap in a real photo by adding style="--img:url('/images/xxx.jpg')" to the element, no CSS edits needed ---- */
 .photo{position:relative;overflow:hidden;background:#20180f}
 .photo::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(155deg,#3a3128 0%,#241d16 55%,#150f0a 100%);
+  content:'';position:absolute;inset:0;background-size:cover;background-position:center;
+  background:var(--img, linear-gradient(155deg,#3a3128 0%,#241d16 55%,#150f0a 100%));
 }
 .photo::after{
-  content:'';position:absolute;inset:0;opacity:.5;mix-blend-mode:overlay;
+  content:'';position:absolute;inset:0;opacity:.22;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
 }
-.photo.warm::before{background:linear-gradient(155deg,#5c4530 0%,#3c2a1c 55%,#1c130c 100%)}
-.photo.sage::before{background:linear-gradient(155deg,#454a3c 0%,#2a2c22 55%,#151610 100%)}
+.photo.warm::before{background:var(--img, linear-gradient(155deg,#5c4530 0%,#3c2a1c 55%,#1c130c 100%));background-size:cover;background-position:center}
+.photo.sage::before{background:var(--img, linear-gradient(155deg,#454a3c 0%,#2a2c22 55%,#151610 100%));background-size:cover;background-position:center}
 .photo .tag{position:absolute;left:0;bottom:0;right:0;padding:22px 26px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(243,238,228,.55);background:linear-gradient(to top, rgba(10,8,5,.55), transparent)}
 
 /* ---------- Header ---------- */
@@ -266,7 +266,7 @@ section{padding:130px 0}
 .contact-info{display:flex;flex-direction:column}
 .contact-info a,.contact-info div{display:flex;align-items:baseline;gap:16px;font-size:14.5px;color:rgba(243,238,228,.85);text-decoration:none;padding:16px 0;border-top:1px solid rgba(243,238,228,.14)}
 .contact-info a:last-child,.contact-info div:last-child{border-bottom:1px solid rgba(243,238,228,.14)}
-.contact-info span.k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(243,238,228,.4);min-width:80px}
+.contact-info span.k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(243,238,228,.58);min-width:80px}
 .contact-social{margin-top:36px}
 
 form#leadForm .form-row{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:0}
@@ -338,6 +338,7 @@ footer{background:var(--ink);color:rgba(243,238,228,.55);padding:0 0 34px;font-s
       <p class="hero-fact"><strong>Siden 2016</strong> — grundlagt af ejendomsmægleruddannede Louise Holm, og kendt fra TV2's <em>Løvens Hule</em>. Vi dækker hele Danmark fra Vallensbæk og Viborg.</p>
     </div>
     <div class="hero-image">
+      <!-- Erstat med jeres bedste "efter"-billede, liggende format, min. 1600px bred. Eksempel: style="--img:url('/images/hero-stue.jpg');position:absolute;inset:0" -->
       <div class="photo warm" style="position:absolute;inset:0">
         <span class="tag">Stue stylet til fremvisning</span>
       </div>
@@ -414,6 +415,8 @@ footer{background:var(--ink);color:rgba(243,238,228,.55);padding:0 0 34px;font-s
       </div>
     </div>
 
+    <!-- Hvert par: portræt-format (ca. 5:6), samme vinkel/kamera på før+efter giver det bedste sammenligningsindtryk.
+         Sæt billede: tilføj style="--img:url('/images/case1-foer.jpg')" på .ba-panel -->
     <div class="ba-set reveal">
       <div class="ba-row">
         <div class="ba-panel photo"><span class="corner">Før</span></div>
@@ -457,6 +460,7 @@ footer{background:var(--ink);color:rgba(243,238,228,.55);padding:0 0 34px;font-s
   <!-- ABOUT -->
   <section id="about" style="padding:0">
     <div class="about-grid">
+      <!-- Portræt af Louise Holm/teamet, stående format. Sæt billede: style="--img:url('/images/louise-holm.jpg')" -->
       <div class="about-photo photo reveal">
         <span class="tag">Louise Holm &amp; teamet</span>
       </div>
@@ -516,6 +520,7 @@ footer{background:var(--ink);color:rgba(243,238,228,.55);padding:0 0 34px;font-s
         <a href="https://www.instagram.com/salesstyling/" target="_blank" rel="noopener" class="text-link">7.400+ følgere på Instagram <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
     </div>
+    <!-- Ideelt: 5 seneste/bedste Instagram-billeder (kvadratisk beskæring). Sæt billede: style="--img:url('...')" på hver .insta-tile -->
     <div class="insta-strip reveal">
       <a href="https://www.instagram.com/salesstyling/" target="_blank" rel="noopener" class="insta-tile photo warm"></a>
       <a href="https://www.instagram.com/salesstyling/" target="_blank" rel="noopener" class="insta-tile photo"></a>
