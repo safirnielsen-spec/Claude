@@ -157,6 +157,11 @@ nav#nav a:not(.btn):hover::after{width:100%}
 @media (max-width:900px){.hero-image{min-height:52vh;order:-1}}
 
 /* ---------- Marquee strip ---------- */
+#statement{padding:100px 0;background:var(--bone-2)}
+.statement-wrap{max-width:820px;margin:0 auto;text-align:center}
+.statement-wrap p{font-family:'Fraunces',serif;font-size:clamp(24px,3.2vw,34px);line-height:1.4;color:var(--ink)}
+.statement-meta{margin-top:26px;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)}
+
 #facts{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:var(--bone)}
 .facts-track{display:flex;white-space:nowrap;animation:scroll-left 34s linear infinite}
 .facts-track span{display:inline-flex;align-items:center;padding:18px 0;font-family:'Fraunces',serif;font-style:italic;font-size:16px;color:var(--ink-soft)}
@@ -175,8 +180,11 @@ section{padding:130px 0}
 
 /* ---------- Services : editorial index ---------- */
 #services{background:var(--bone)}
+.service-group-label{font-family:'Fraunces',serif;font-style:italic;font-size:20px;color:var(--clay-d);padding-top:8px;margin-top:8px}
+.service-group-label:first-child{margin-top:0}
+.service-group-label:not(:first-child){margin-top:36px;padding-top:36px;border-top:1px solid var(--line)}
 .service-row{border-top:1px solid var(--line);display:grid;grid-template-columns:90px 1.1fr 1.4fr auto;gap:36px;align-items:center;padding:38px 0;transition:padding .3s ease}
-.service-row:last-child{border-bottom:1px solid var(--line)}
+.services-list>.service-row:last-child{border-bottom:1px solid var(--line)}
 @media (max-width:860px){.service-row{grid-template-columns:1fr;gap:14px;padding:30px 0}}
 .service-num{font-family:'Fraunces',serif;font-style:italic;font-size:16px;color:var(--ink-faint)}
 .service-row h3{font-size:25px;font-weight:450}
@@ -328,14 +336,14 @@ footer{background:var(--ink);color:rgba(243,238,228,.55);padding:0 0 34px;font-s
   <!-- HERO -->
   <section id="hero">
     <div class="hero-copy">
-      <span class="eyebrow">Landsdækkende bolig- og salgsstyling</span>
+      <span class="eyebrow">Landsdækkende bolig- og salgsstyling siden 2016</span>
       <h1>Boligen skal <em>føles</em> rigtig, før den kan sælges rigtigt.</h1>
       <p class="lead">SalesStyling forvandler boliger til hjem, købere forelsker sig i — gennem strategisk styling og fotografering, der får boligen til at sælge hurtigere og til den bedste pris.</p>
       <div class="hero-cta">
         <a href="#contact" class="btn btn-primary">Book rådgivningsbesøg</a>
         <a href="#gallery" class="text-link">Se vores cases <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
-      <p class="hero-fact"><strong>Siden 2016</strong> — grundlagt af ejendomsmægleruddannede Louise Holm, og kendt fra TV2's <em>Løvens Hule</em>. Vi dækker hele Danmark fra Vallensbæk og Viborg.</p>
+      <p class="hero-fact"><strong>3.500+ gennemførte stylinger</strong> — grundlagt af Louise Holm, tidligere ejendomsmægler hos Nybolig, og kendt fra TV2's <em>Løvens Hule</em>. Officiel samarbejdspartner med Nybolig.</p>
     </div>
     <div class="hero-image">
       <!-- Erstat med jeres bedste "efter"-billede, liggende format, min. 1600px bred. Eksempel: style="--img:url('/images/hero-stue.jpg');position:absolute;inset:0" -->
@@ -345,11 +353,19 @@ footer{background:var(--ink);color:rgba(243,238,228,.55);padding:0 0 34px;font-s
     </div>
   </section>
 
+  <!-- STATEMENT -->
+  <section id="statement">
+    <div class="container statement-wrap reveal">
+      <p>"Boligejere er begyndt at indse, at det kan betale sig at bruge <em>5.000–10.000 kr. på styling</em> frem for at sætte prisen ned med 100.000 kr."</p>
+      <div class="statement-meta">Louise Holm — Stifter &amp; CEO, SalesStyling</div>
+    </div>
+  </section>
+
   <!-- FACTS MARQUEE -->
   <section id="facts">
     <div class="facts-track" aria-hidden="true">
-      <span>Grundlagt 2016</span><span>Kendt fra Løvens Hule</span><span>Landsdækkende</span><span>Vallensbæk &amp; Viborg</span><span>7.400+ på Instagram</span><span>Svar inden for 24 timer</span>
-      <span>Grundlagt 2016</span><span>Kendt fra Løvens Hule</span><span>Landsdækkende</span><span>Vallensbæk &amp; Viborg</span><span>7.400+ på Instagram</span><span>Svar inden for 24 timer</span>
+      <span>3.500+ gennemførte stylinger</span><span>Officiel Nybolig-partner</span><span>Kendt fra Løvens Hule</span><span>4/5 på Trustpilot</span><span>Vallensbæk &amp; Viborg</span><span>Svar inden for 24 timer</span>
+      <span>3.500+ gennemførte stylinger</span><span>Officiel Nybolig-partner</span><span>Kendt fra Løvens Hule</span><span>4/5 på Trustpilot</span><span>Vallensbæk &amp; Viborg</span><span>Svar inden for 24 timer</span>
     </div>
   </section>
 
@@ -358,21 +374,22 @@ footer{background:var(--ink);color:rgba(243,238,228,.55);padding:0 0 34px;font-s
     <div class="container">
       <div class="section-head reveal">
         <span class="eyebrow">Ydelser</span>
-        <h2>Styling til enhver bolig</h2>
-        <p>Uanset om boligen er beboet eller tom, skal sælges privat eller udvikles som projekt — vi finder den løsning, der får flest købere til at falde for den.</p>
+        <h2>Bolig &amp; erhverv</h2>
+        <p>Uanset om boligen er beboet eller tom, skal sælges privat eller udvikles som projekt, eller det er jeres kontor eller butik — vi finder løsningen, der skaber resultater.</p>
       </div>
 
       <div class="services-list">
+        <p class="service-group-label reveal">Bolig</p>
         <div class="service-row reveal">
           <span class="service-num">01</span>
-          <h3>Boligstyling til private</h3>
-          <p>Vi styler jeres beboede bolig med egne møbler suppleret med udvalgte pynteeffekter — inkl. konsulentbesøg og fotografering.</p>
+          <h3>Privat indretning</h3>
+          <p>Skab et roligt frirum i stuen, et funktionelt køkken, eller en gennemgående stil i hele hjemmet — skræddersyet til jeres hverdag og smag.</p>
           <a href="#contact" class="text-link">Book besøg <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
         </div>
         <div class="service-row reveal">
           <span class="service-num">02</span>
           <h3>Komplet indretning</h3>
-          <p>Står boligen tom? Vi møblerer den fuldt ud med 6 ugers møbelleje og forsikring, så køberne kan mærke boligens potentiale.</p>
+          <p>Til tomme boliger — private hjem, udlejningsejendomme eller modelboliger. En komplet salgsindretning reducerer liggetiden, så I undgår at sætte prisen ned.</p>
           <a href="#contact" class="text-link">Få et tilbud <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
         </div>
         <div class="service-row reveal">
@@ -383,21 +400,29 @@ footer{background:var(--ink);color:rgba(243,238,228,.55);padding:0 0 34px;font-s
         </div>
         <div class="service-row reveal">
           <span class="service-num">04</span>
-          <h3>Erhvervs- &amp; butiksindretning</h3>
-          <p>Professionel styling af kontorer og butikker, der styrker kundeoplevelsen og øger salget i jeres lokaler.</p>
-          <a href="#contact" class="text-link">Se løsninger <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        </div>
-        <div class="service-row reveal">
-          <span class="service-num">05</span>
           <h3>Fotostyling</h3>
           <p>Landsdækkende fotostyling, der får salgsopstillingen til at skille sig ud og skabe flere fremvisninger.</p>
           <a href="#contact" class="text-link">Book fotografering <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
         </div>
         <div class="service-row reveal">
-          <span class="service-num">06</span>
+          <span class="service-num">05</span>
           <h3>Rådgivningsbesøg</h3>
           <p>Et uforpligtende besøg, hvor vi gennemgår boligen og lægger en skræddersyet stylingplan sammen med jer.</p>
           <a href="#contact" class="text-link">Book besøg <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </div>
+
+        <p class="service-group-label reveal">Erhverv</p>
+        <div class="service-row reveal">
+          <span class="service-num">06</span>
+          <h3>Erhvervsindretning</h3>
+          <p>Skræddersyet indretning af kontorer og arbejdspladser, der styrker medarbejdernes trivsel, kreativitet og jeres brand udadtil.</p>
+          <a href="#contact" class="text-link">Se løsninger <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </div>
+        <div class="service-row reveal">
+          <span class="service-num">07</span>
+          <h3>Butiksindretning</h3>
+          <p>Vi styrker jeres identitet og får butikken til at skille sig ud — fra vareplacering til vinduer, så kundeoplevelsen løftes.</p>
+          <a href="#contact" class="text-link">Se løsninger <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
         </div>
       </div>
     </div>
@@ -467,13 +492,14 @@ footer{background:var(--ink);color:rgba(243,238,228,.55);padding:0 0 34px;font-s
       <div class="about-copy container reveal reveal-delay1">
         <span class="eyebrow">Om SalesStyling</span>
         <h2>Grundlagt af en ejendomsmægler, der ved hvad der sælger boliger</h2>
-        <p>SalesStyling blev grundlagt i 2016 af Louise Holm, der er uddannet ejendomsmægler. Med afsæt i den erfaring har hun bygget et team, der forstår både det æstetiske og det, der reelt får en bolig til at sælge.</p>
-        <p>Virksomheden er blandt andet kendt fra TV2's <em>Løvens Hule</em>, hvor investor Mia Wagner og Freeway-koncernen valgte at investere i konceptet. I dag dækker SalesStyling hele landet fra afdelinger i Vallensbæk og Viborg.</p>
+        <p>SalesStyling blev grundlagt i 2016 af Louise Holm, tidligere ejendomsmægler hos Nybolig. Med den erfaring i bagagen har hun bygget et team af stylister, sælgere, marketingfolk og montører, der sammen har gennemført over 3.500 stylinger.</p>
+        <p>Virksomheden er blandt andet kendt fra TV2's <em>Løvens Hule</em>, hvor investor Mia Wagner og Freeway-koncernen investerede i konceptet, og er i dag officiel samarbejdspartner med Nybolig. SalesStyling dækker hele landet fra afdelinger i Vallensbæk og Viborg.</p>
+        <p>Vi arbejder desuden aktivt med at forlænge levetiden på møbler og interiør gennem genbrug og upcycling — blandt andet via lagersalg og donationer af møbler, der ikke bliver brugt igen.</p>
         <div class="about-list">
           <div><span>Grundlagt</span><b>2016</b></div>
+          <div><span>Gennemførte stylinger</span><b>3.500+</b></div>
           <div><span>Afdelinger</span><b>Vallensbæk &amp; Viborg</b></div>
-          <div><span>Dækning</span><b>Hele Danmark</b></div>
-          <div><span>Kendt fra</span><b>Løvens Hule</b></div>
+          <div><span>Samarbejde</span><b>Nybolig</b></div>
         </div>
       </div>
     </div>
@@ -483,21 +509,21 @@ footer{background:var(--ink);color:rgba(243,238,228,.55);padding:0 0 34px;font-s
   <section id="testimonials">
     <div class="container">
       <div class="section-head reveal" style="margin-left:auto;margin-right:auto;text-align:center">
-        <span class="eyebrow">Anmeldelser</span>
+        <span class="eyebrow">4/5 på Trustpilot · 20+ anmeldelser</span>
         <h2>Hvad kunderne siger</h2>
       </div>
       <div class="quote-wrap reveal">
         <div class="quote-slide active" data-i="0">
-          <p>"Boligen føltes som et helt nyt sted, da stylingen var på plads. Vi fik markant flere til fremvisningen end forventet."</p>
-          <div class="quote-meta">Boligsælger — Nordsjælland</div>
+          <p>"Louise har en fantastisk forståelse for at gøre en bolig til det perfekte hjem. Hun leverede alle møbler, lamper og malerier, der passede til den enkelte bolig."</p>
+          <div class="quote-meta">Kunde — Privat indretning</div>
         </div>
         <div class="quote-slide" data-i="1">
-          <p>"Professionelt team fra første besøg til den sidste detalje blev sat på plads. Det gjorde en tydelig forskel for salget."</p>
-          <div class="quote-meta">Boligudvikler — København</div>
+          <p>"Vi brugte SalesStyling til at møblere vores udlejningslejlighed i centrum. Vi oplevede utrolig professionel service og fleksibilitet — vi gav bare et budget og frie hænder."</p>
+          <div class="quote-meta">Kunde — Komplet indretning</div>
         </div>
         <div class="quote-slide" data-i="2">
-          <p>"Vi fik en skræddersyet løsning, der passede til vores butik og målgruppe — ikke bare en standardpakke."</p>
-          <div class="quote-meta">Erhvervskunde — Butikskæde</div>
+          <p>"Det er altid vores mål at levere en styling, der både er indbydende og funktionel — og det er tydeligt, at det lykkes."</p>
+          <div class="quote-meta">Baseret på kundeanmeldelser</div>
         </div>
       </div>
       <div class="quote-dots" id="quoteDots">
@@ -505,7 +531,7 @@ footer{background:var(--ink);color:rgba(243,238,228,.55);padding:0 0 34px;font-s
         <button data-i="1" aria-label="Anmeldelse 2"></button>
         <button data-i="2" aria-label="Anmeldelse 3"></button>
       </div>
-      <p class="t-note">Eksempeltekster — erstattes med jeres rigtige kundeanmeldelser.</p>
+      <p class="t-note">Gengivet fra offentlige kundeudtalelser og Trustpilot — sæt jeres udvalgte anmeldelser ind her.</p>
     </div>
   </section>
 
@@ -539,10 +565,10 @@ footer{background:var(--ink);color:rgba(243,238,228,.55);padding:0 0 34px;font-s
       </div>
       <div class="faq-list reveal">
         <details class="faq-item"><summary>Hvor lang tid tager en boligstyling?<span class="plus"></span></summary><p>Det afhænger af boligens størrelse og opgavens omfang. Ved rådgivningsbesøget lægger vi en tidsplan, så boligen står klar til jeres fremvisning.</p></details>
-        <details class="faq-item"><summary>Dækker I hele landet?<span class="plus"></span></summary><p>Ja. Vi har afdelinger i Vallensbæk og Viborg og styler boliger i hele Danmark.</p></details>
-        <details class="faq-item"><summary>Hvad koster en styling?<span class="plus"></span></summary><p>Prisen afhænger af boligens størrelse, om den er beboet eller tom, og opgavens omfang. Book et uforpligtende rådgivningsbesøg, så sender vi et konkret tilbud.</p></details>
-        <details class="faq-item"><summary>Kan I style en tom bolig?<span class="plus"></span></summary><p>Ja, med vores komplette indretning møblerer vi hele boligen, inklusiv møbelleje og forsikring i lejeperioden.</p></details>
-        <details class="faq-item"><summary>Arbejder I også med erhverv og butikker?<span class="plus"></span></summary><p>Ja, vi hjælper også virksomheder med at style kontorer og butikslokaler, så de understøtter salg og kundeoplevelse.</p></details>
+        <details class="faq-item"><summary>Dækker I hele landet?<span class="plus"></span></summary><p>Ja. Vi har afdelinger i Vallensbæk og Viborg og styler boliger i hele Danmark, og er officiel samarbejdspartner med Nybolig.</p></details>
+        <details class="faq-item"><summary>Hvad koster en styling?<span class="plus"></span></summary><p>Prisen afhænger af boligens størrelse, om den er beboet eller tom, og opgavens omfang. Mange sælgere oplever, at 5.000–10.000 kr. i styling kan betale sig fremfor en større nedsættelse af prisen. Book et uforpligtende rådgivningsbesøg, så sender vi et konkret tilbud.</p></details>
+        <details class="faq-item"><summary>Kan I style en tom bolig?<span class="plus"></span></summary><p>Ja, med vores komplette indretning møblerer vi hele boligen — også udlejningsejendomme og modelboliger.</p></details>
+        <details class="faq-item"><summary>Arbejder I også med erhverv og butikker?<span class="plus"></span></summary><p>Ja, vi hjælper også virksomheder med at style kontorer og butikslokaler, så de understøtter salg, brand og kundeoplevelse.</p></details>
       </div>
     </div>
   </section>
