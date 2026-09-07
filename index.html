@@ -26,6 +26,7 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%234d4640'/%3E%3Cpath d='M7 21C10 12 14 10 16 15C18 20 22 18 25 11' stroke='%23f4ede0' stroke-width='2.2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -1028,28 +1029,78 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
     dlBtn.addEventListener("click",function(){
       var r=calcState.results;
       if(!r)return;
+      var jsPDFCtor=window.jspdf&&window.jspdf.jsPDF;
+      if(!jsPDFCtor){return;}
       var lang=window.CP_LANG==='en'?'en':'da',dateLocale=lang==='en'?'en-GB':'da-DK';
-      var html='<!DOCTYPE html><html lang="'+lang+'"><head><meta charset="UTF-8"><title>'+window.CP_T('reportTitle')+'</title>'+
-      '<style>body{font-family:Georgia,serif;max-width:680px;margin:60px auto;color:#221c14;padding:0 24px}h1{font-size:28px;font-weight:400;margin-bottom:6px}'+
-      '.sub{color:#888;font-size:14px;margin-bottom:40px}.row{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #eee;font-size:15px}'+
-      '.hl{font-size:20px;font-weight:500;color:#4d4640}.note{margin-top:32px;font-size:12px;color:#bbb;line-height:1.75}'+
-      'footer{margin-top:48px;padding-top:20px;border-top:1px solid #eee;font-size:12px;color:#aaa}</style></head><body>'+
-      '<h1>'+window.CP_T('reportH1')+'</h1><p class="sub">Core Partners &middot; '+new Date().toLocaleDateString(dateLocale,{year:"numeric",month:"long",day:"numeric"})+'</p>'+
-      '<div class="row"><span>'+window.CP_T('reportOrg')+'</span><span>'+r.org+'</span></div>'+
-      '<div class="row"><span>'+window.CP_T('reportTotal')+'</span><span>'+fmt(r.total)+'</span></div>'+
-      '<div class="row"><span>'+window.CP_T('reportSavings')+'</span><span class="hl">'+fmt(r.low)+' '+window.CP_T('to')+' '+fmt(r.high)+'</span></div>'+
-      (r.showPropValue?'<div class="row"><span>'+window.CP_T('reportPropValue')+'</span><span class="hl">'+fmt(r.propValueLow)+' '+window.CP_T('to')+' '+fmt(r.propValueHigh)+'</span></div>':'')+
-      '<div class="row"><span>'+window.CP_T('reportFee')+'</span><span>'+fmt(r.fee)+'</span></div>'+
-      '<div class="row"><span>'+window.CP_T('reportNet')+'</span><span>'+fmt(r.net)+'</span></div>'+
-      '<p class="note">'+window.CP_T('reportNote')+'</p>'+
-      '<footer>kontakt@corepartners.dk &middot; +45 30 72 93 93 &middot; Gersonsvej 37, 2900 Hellerup &middot; CVR 43260243</footer>'+
-      '</body></html>';
-      var blob=new Blob([html],{type:"text/html"});
-      var a=document.createElement("a");
-      a.href=URL.createObjectURL(blob);
-      a.download=window.CP_T('reportFilename');
-      a.click();
-      URL.revokeObjectURL(a.href);
+      var doc=new jsPDFCtor({unit:'pt',format:'a4'});
+      var pw=doc.internal.pageSize.getWidth();
+      var margin=56;
+      var y=90;
+
+      doc.setTextColor(34,28,20);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(24);
+      doc.text(window.CP_T('reportH1'),margin,y);
+      y+=22;
+      doc.setTextColor(150,140,128);
+      doc.setFontSize(11);
+      doc.text('Core Partners · '+new Date().toLocaleDateString(dateLocale,{year:'numeric',month:'long',day:'numeric'}),margin,y);
+      y+=44;
+
+      function row(label,value,big){
+        if(big){
+          doc.setFont('helvetica','normal');
+          doc.setFontSize(10.5);
+          doc.setTextColor(120,110,98);
+          doc.text(label,margin,y);
+          y+=19;
+          doc.setFont('helvetica','bold');
+          doc.setFontSize(16);
+          doc.setTextColor(191,147,88);
+          doc.text(value,margin,y);
+          var lineY=y+13;
+          doc.setDrawColor(232,226,214);
+          doc.setLineWidth(0.6);
+          doc.line(margin,lineY,pw-margin,lineY);
+          y=lineY+24;
+        }else{
+          doc.setFont('helvetica','normal');
+          doc.setFontSize(12);
+          doc.setTextColor(60,52,42);
+          doc.text(label,margin,y);
+          doc.text(value,pw-margin,y,{align:'right'});
+          var lineY2=y+8;
+          doc.setDrawColor(232,226,214);
+          doc.setLineWidth(0.6);
+          doc.line(margin,lineY2,pw-margin,lineY2);
+          y=lineY2+18;
+        }
+      }
+
+      row(window.CP_T('reportOrg'),r.org);
+      row(window.CP_T('reportTotal'),fmt(r.total));
+      row(window.CP_T('reportSavings'),fmt(r.low)+' '+window.CP_T('to')+' '+fmt(r.high),true);
+      if(r.showPropValue)row(window.CP_T('reportPropValue'),fmt(r.propValueLow)+' '+window.CP_T('to')+' '+fmt(r.propValueHigh),true);
+      row(window.CP_T('reportFee'),fmt(r.fee));
+      row(window.CP_T('reportNet'),fmt(r.net));
+
+      y+=14;
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(170,160,150);
+      var noteLines=doc.splitTextToSize(window.CP_T('reportNote'),pw-margin*2);
+      doc.text(noteLines,margin,y);
+      y+=noteLines.length*13+34;
+
+      doc.setDrawColor(232,226,214);
+      doc.setLineWidth(0.6);
+      doc.line(margin,y,pw-margin,y);
+      y+=20;
+      doc.setFontSize(9.5);
+      doc.setTextColor(170,160,150);
+      doc.text('kontakt@corepartners.dk · +45 30 72 93 93 · Gersonsvej 37, 2900 Hellerup · CVR 43260243',margin,y);
+
+      doc.save(window.CP_T('reportFilename'));
     });
   }
 })();
@@ -1148,8 +1199,8 @@ if(burger&&navLinks){
     'contact.msgPh':'E.g. number of units, which agreements you want assessed, or when they were last renegotiated.'
   };
   var JS_STR = {
-    da:{sending:'Sender...',sent:'Besked sendt',tryAgain:'Prøv igen',to:'til',basedOn:'Baseret på',noBuying:', ingen indkøbsfunktion',hasBuying:', intern indkøbsfunktion',andReview:' og seneste genforhandling.',analyzing:'Analyserer...',benchmarking:'Benchmarker...',calculating:'Beregner...',updateBtn:'Opdater beregning',reportTitle:'Core Partners Besparelsesrapport',reportH1:'Besparelsesestimeret',reportOrg:'Organisation',reportTotal:'Samlede relevante omkostninger',reportSavings:'Estimeret besparelse',reportPropValue:'Stigning i ejendomsværdi (4,5% afkastgrad)',reportFee:'Core Partners honorar (20%)',reportNet:'Netto første år',reportNote:'Dette estimat er vejledende og erstatter ikke en konkret screening.',reportFilename:'corepartners-besparelse.html'},
-    en:{sending:'Sending...',sent:'Message sent',tryAgain:'Try again',to:'to',basedOn:'Based on',noBuying:', no internal buying function',hasBuying:', internal buying function',andReview:' and latest renegotiation.',analyzing:'Analyzing...',benchmarking:'Benchmarking...',calculating:'Calculating...',updateBtn:'Update calculation',reportTitle:'Core Partners Savings Report',reportH1:'Savings estimate',reportOrg:'Organization',reportTotal:'Total relevant costs',reportSavings:'Estimated savings',reportPropValue:'Increase in property value (4.5% yield)',reportFee:'Core Partners fee (20%)',reportNet:'Net first year',reportNote:'This estimate is indicative and does not replace a concrete screening.',reportFilename:'corepartners-savings.html'}
+    da:{sending:'Sender...',sent:'Besked sendt',tryAgain:'Prøv igen',to:'til',basedOn:'Baseret på',noBuying:', ingen indkøbsfunktion',hasBuying:', intern indkøbsfunktion',andReview:' og seneste genforhandling.',analyzing:'Analyserer...',benchmarking:'Benchmarker...',calculating:'Beregner...',updateBtn:'Opdater beregning',reportTitle:'Core Partners Besparelsesrapport',reportH1:'Besparelsesestimeret',reportOrg:'Organisation',reportTotal:'Samlede relevante omkostninger',reportSavings:'Estimeret besparelse',reportPropValue:'Stigning i ejendomsværdi (4,5% afkastgrad)',reportFee:'Core Partners honorar (20%)',reportNet:'Netto første år',reportNote:'Dette estimat er vejledende og erstatter ikke en konkret screening.',reportFilename:'corepartners-besparelse.pdf'},
+    en:{sending:'Sending...',sent:'Message sent',tryAgain:'Try again',to:'to',basedOn:'Based on',noBuying:', no internal buying function',hasBuying:', internal buying function',andReview:' and latest renegotiation.',analyzing:'Analyzing...',benchmarking:'Benchmarking...',calculating:'Calculating...',updateBtn:'Update calculation',reportTitle:'Core Partners Savings Report',reportH1:'Savings estimate',reportOrg:'Organization',reportTotal:'Total relevant costs',reportSavings:'Estimated savings',reportPropValue:'Increase in property value (4.5% yield)',reportFee:'Core Partners fee (20%)',reportNet:'Net first year',reportNote:'This estimate is indicative and does not replace a concrete screening.',reportFilename:'corepartners-savings.pdf'}
   };
 
   window.CP_LANG = localStorage.getItem('cp_lang') || 'da';
