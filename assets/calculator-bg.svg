@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Subtil baggrundstekstur til beregner-panelet: tynde diagonale linjer + et turkis punkt-grid. Meget lav opacity, rent dekorativt. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" fill="none">
+  <rect width="800" height="800" fill="#090909"/>
+  <g stroke="#10D0C7" stroke-width="1" opacity="0.08">
+    <path d="M-100 100 L900 1100"/>
+    <path d="M0 0 L800 800"/>
+    <path d="M100 -100 L1100 900"/>
+    <path d="M300 -100 L1300 900"/>
+    <path d="M-300 200 L700 1200"/>
+  </g>
+  <g fill="#B6501B" opacity="0.5">
+    <circle cx="60" cy="60" r="2"/><circle cx="120" cy="60" r="2"/><circle cx="180" cy="60" r="2"/>
+    <circle cx="60" cy="120" r="2"/><circle cx="120" cy="120" r="2"/><circle cx="180" cy="120" r="2"/>
+    <circle cx="60" cy="180" r="2"/><circle cx="120" cy="180" r="2"/><circle cx="180" cy="180" r="2"/>
+  </g>
+</svg>
