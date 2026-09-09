@@ -38,8 +38,10 @@
   /* Brandfarver */
   --turquoise:      #10D0C7;
   --turquoise-dim:  #0BA69F;
+  --turquoise-deep: #073F3B; /* mørk turkis-tone til overlays/scrim — bruges i stedet for sort */
   --rust:           #B6501B;
   --rust-dim:       #8F3F15;
+  --rust-deep:      #4A2009; /* mørk rust-tone til overlays/scrim — bruges i stedet for sort */
   --black:          #090909;
   --sand:           #F6F2EB;
   --white:          #FFFFFF;
@@ -154,6 +156,7 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   color: var(--rust);
 }
 .section--dark .eyebrow{ color: var(--turquoise); }
+.hero .eyebrow, .ncnp .eyebrow{ color: var(--black); }
 .eyebrow::before{
   content: '';
   width: 28px;
@@ -306,7 +309,7 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
 .loader{
   position: fixed; inset: 0;
   z-index: 10000;
-  background: var(--black);
+  background: var(--rust);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -320,7 +323,7 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   font-size: clamp(1.4rem, 4vw, 2.2rem);
   font-weight: 900;
   letter-spacing: var(--tracking-wide);
-  color: var(--sand);
+  color: var(--black);
   text-transform: uppercase;
   overflow: hidden;
 }
@@ -329,7 +332,7 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   transform: translateY(110%);
   animation: loaderUp .7s var(--ease) forwards;
 }
-.loader-mark span:nth-child(2){ animation-delay: .06s; color: var(--turquoise); }
+.loader-mark span:nth-child(2){ animation-delay: .06s; color: var(--turquoise-deep); }
 @keyframes loaderUp{ to{ transform: translateY(0); } }
 
 .loader-bar{
@@ -337,7 +340,7 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   bottom: clamp(28px, 6vw, 64px);
   left: var(--gutter); right: var(--gutter);
   height: 1px;
-  background: rgba(246,242,235,.16);
+  background: rgba(9,9,9,.2);
 }
 .loader-bar::after{
   content:'';
@@ -449,10 +452,12 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
 .nav .btn{ padding: 13px 24px; font-size: .7rem; }
 
 .nav.is-scrolled{
-  background: rgba(9,9,9,.86);
+  /* Mørk turkis-tone i stedet for sort — bevarer læsbarhed for navigationen
+     uanset hvilken farverig sektion der ruller forbi bagved. */
+  background: rgba(7,63,59,.88);
   backdrop-filter: blur(10px);
   height: 72px;
-  box-shadow: 0 1px 0 rgba(246,242,235,.08);
+  box-shadow: 0 1px 0 rgba(246,242,235,.1);
 }
 
 .nav-burger{
@@ -470,7 +475,7 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
 .mobile-menu{
   position: fixed; inset: 0;
   z-index: 480;
-  background: var(--black);
+  background: var(--rust);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -484,16 +489,16 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   font-size: clamp(2rem, 9vw, 3.2rem);
   font-weight: 800;
   text-transform: uppercase;
-  color: var(--sand);
+  color: var(--black);
   letter-spacing: -.01em;
 }
-.mobile-menu a:hover{ color: var(--turquoise); }
+.mobile-menu a:hover{ color: var(--turquoise-deep); }
 .mobile-menu-foot{
   margin-top: 48px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  color: rgba(246,242,235,.55);
+  color: rgba(9,9,9,.65);
   font-size: var(--fs-small);
 }
 
@@ -506,15 +511,15 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
-  background: var(--black);
-  color: var(--sand);
+  background: var(--rust);
+  color: var(--black);
   padding-top: var(--nav-h);
 }
 
 .hero-bg{
   position: absolute; inset: 0;
   z-index: 0;
-  background: var(--black);
+  background: var(--rust);
 }
 .hero-bg .diagonal-a,
 .hero-bg .diagonal-b{
@@ -523,13 +528,14 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   transform-origin: center;
 }
 .hero-bg .diagonal-a{
+  /* De to kiler deler samme skrå kant (52% top / 30% bund), så de tilsammen
+     dækker hele hero'en uden sort mellemrum — kun rust og turkis. */
   background: var(--rust);
-  clip-path: polygon(0 0, 46% 0, 24% 100%, 0% 100%);
+  clip-path: polygon(0 0, 52% 0, 30% 100%, 0% 100%);
 }
 .hero-bg .diagonal-b{
   background: var(--turquoise);
-  clip-path: polygon(58% 0, 100% 0, 100% 100%, 36% 100%);
-  opacity: .92;
+  clip-path: polygon(52% 0, 100% 0, 100% 100%, 30% 100%);
 }
 
 .hero-grid{
@@ -549,7 +555,7 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   font-weight: 300;
   font-style: italic;
   letter-spacing: .01em;
-  color: rgba(246,242,235,.66);
+  color: rgba(9,9,9,.66);
 }
 .hero-title{
   margin-top: 18px;
@@ -567,12 +573,19 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   transition-delay: calc(var(--i,0) * .09s);
 }
 .hero.is-ready .hero-title .line span{ transform: translateY(0); }
-.hero-title .accent{ color: var(--turquoise); font-style: normal; }
+.hero-title .accent{
+  color: var(--black);
+  font-style: normal;
+  text-decoration: underline;
+  text-decoration-color: var(--turquoise);
+  text-decoration-thickness: .08em;
+  text-underline-offset: .08em;
+}
 
 .hero-sub{
   margin-top: 28px;
   font-size: clamp(1.05rem, 1.5vw, 1.3rem);
-  color: rgba(246,242,235,.75);
+  color: rgba(9,9,9,.72);
   max-width: 46ch;
   opacity: 0;
   transform: translateY(24px);
@@ -600,7 +613,7 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   font-weight: 700;
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--sand);
+  color: var(--black);
 }
 .hero-nocure .dot{ width: 7px; height: 7px; border-radius: 50%; background: var(--turquoise); }
 
@@ -641,7 +654,7 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   font-size: var(--fs-micro);
   letter-spacing: var(--tracking-mega);
   text-transform: uppercase;
-  color: rgba(246,242,235,.6);
+  color: rgba(9,9,9,.6);
 }
 .hero-scroll .icon{
   width: 16px; height: 16px;
@@ -652,8 +665,8 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
 /* == 11. STATEMENT (parallax-tekst) ======================================= */
 
 .statement{
-  background: var(--black);
-  color: var(--sand);
+  background: var(--turquoise);
+  color: var(--black);
   padding-block: clamp(120px, 18vw, 260px);
   overflow: hidden;
 }
@@ -672,11 +685,17 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   will-change: transform;
   transition: transform .1s linear, color var(--dur) var(--ease);
 }
-.statement-text .word.hl{ color: var(--turquoise); }
+.statement-text .word.hl{
+  color: var(--black);
+  text-decoration: underline;
+  text-decoration-color: var(--rust);
+  text-decoration-thickness: .06em;
+  text-underline-offset: .06em;
+}
 .statement-foot{
   margin-top: 40px;
   text-align: center;
-  color: rgba(246,242,235,.5);
+  color: rgba(9,9,9,.55);
   font-size: var(--fs-small);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
@@ -686,7 +705,7 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
 
 .hscroll{
   position: relative;
-  background: var(--black);
+  background: var(--sand);
 }
 .hscroll-sticky{
   position: sticky;
@@ -713,37 +732,42 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   overflow: hidden;
 }
 .hscroll-panel .panel-bg{
+  /* Panelerne er nu fuldt farvelagt (turkis/rust om hinanden) i stedet for
+     en svag tone ovenpå en sort baggrund. */
   position: absolute; inset: 0;
-  opacity: .16;
-  transition: opacity .6s var(--ease);
+  opacity: 1;
+  transform: scale(1.02);
+  transition: transform .6s var(--ease);
 }
-.hscroll-panel.is-active .panel-bg{ opacity: .32; }
+.hscroll-panel.is-active .panel-bg{ transform: scale(1); }
 .hscroll-panel .panel-index{
   font-size: var(--fs-small);
   letter-spacing: var(--tracking-mega);
-  color: rgba(246,242,235,.5);
+  color: rgba(9,9,9,.55);
   z-index: 2;
 }
 .hscroll-panel .panel-word{
   position: relative;
   z-index: 2;
   /* Skalerer efter ordlængde (--chars, sat inline pr. ord) så lange ord som
-     "Serviceaftaler" ikke løber ud over panelets kant på smallere skærme. */
-  font-size: clamp(2.6rem, calc(150vw / var(--chars, 10)), 12rem);
+     "Serviceaftaler" ikke løber ud over panelets kant på smallere skærme.
+     Bevidst lav minimumsstørrelse (1.6rem) og konservativ konstant (120),
+     så selv det længste ord holder sig inden for boksen på en smal mobil. */
+  font-size: clamp(1.6rem, calc(120vw / var(--chars, 10)), 10rem);
   font-weight: 900;
   letter-spacing: -.01em;
   text-transform: uppercase;
-  color: var(--sand);
+  color: var(--black);
   line-height: 1;
   white-space: nowrap;
-  max-width: 92vw;
+  max-width: 88vw;
   padding-inline: var(--gutter);
   text-align: center;
 }
 .hscroll-panel .panel-copy{
   position: relative;
   z-index: 2;
-  color: rgba(246,242,235,.6);
+  color: rgba(9,9,9,.65);
   max-width: 42ch;
   text-align: center;
   padding-inline: var(--gutter);
@@ -758,10 +782,10 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
 }
 .hscroll-progress i{
   width: 30px; height: 2px;
-  background: rgba(246,242,235,.25);
+  background: rgba(9,9,9,.25);
   transition: background var(--dur-fast) var(--ease);
 }
-.hscroll-progress i.is-active{ background: var(--turquoise); }
+.hscroll-progress i.is-active{ background: var(--black); }
 
 /* == 13. BESPARELSES-KORT ================================================= */
 
@@ -1011,9 +1035,11 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   will-change: transform;
 }
 .case::after{
+  /* Mørk rust-toning i stedet for neutral sort, så scrimmen der sikrer
+     læsbar tekst stadig føles farvet snarere end sort. */
   content:'';
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(9,9,9,.2), rgba(9,9,9,.72));
+  background: linear-gradient(180deg, rgba(74,32,9,.25), rgba(74,32,9,.78));
   z-index: 0;
 }
 .case-content{ position: relative; z-index: 2; width: 100%; }
@@ -1297,8 +1323,8 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
 /* == 20. FOOTER ============================================================ */
 
 .footer{
-  background: var(--black);
-  color: rgba(246,242,235,.6);
+  background: var(--sand);
+  color: #3a3833;
   padding-top: clamp(60px, 8vw, 100px);
 }
 .footer-top{
@@ -1306,28 +1332,28 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   grid-template-columns: 1.4fr repeat(3, 1fr);
   gap: 32px;
   padding-bottom: 48px;
-  border-bottom: 1px solid var(--line-invert);
+  border-bottom: 1px solid var(--line);
 }
-.footer-brand{ font-size: 1.3rem; font-weight: 800; color: var(--sand); text-transform: uppercase; }
+.footer-brand{ font-size: 1.3rem; font-weight: 800; color: var(--black); text-transform: uppercase; }
 .footer-brand-sub{ margin-top: 14px; font-size: var(--fs-small); max-width: 32ch; }
 .footer-col h4{
   font-size: var(--fs-micro);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: rgba(246,242,235,.4);
+  color: var(--muted);
   margin-bottom: 16px;
 }
 .footer-col a, .footer-col p{ display: block; font-size: var(--fs-small); margin-bottom: 10px; }
-.footer-col a:hover{ color: var(--turquoise); }
+.footer-col a:hover{ color: var(--rust); }
 .footer-social{ display: flex; gap: 12px; margin-top: 6px; }
 .footer-social a{
   width: 38px; height: 38px;
-  border: 1px solid var(--line-invert);
+  border: 1px solid var(--line);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
 }
 .footer-social .icon{ width: 16px; height: 16px; }
-.footer-social a:hover{ border-color: var(--turquoise); color: var(--turquoise); }
+.footer-social a:hover{ border-color: var(--rust); color: var(--rust); }
 
 .footer-wordmark{
   font-size: clamp(3rem, 14vw, 11rem);
@@ -1335,7 +1361,7 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   letter-spacing: -.02em;
   text-transform: uppercase;
   text-align: center;
-  color: var(--sand);
+  color: var(--black);
   padding-block: clamp(30px, 6vw, 60px);
   line-height: 1;
   opacity: .96;
@@ -1348,7 +1374,7 @@ input, select, textarea{ font-family: inherit; font-size: inherit; color: inheri
   gap: 16px;
   flex-wrap: wrap;
   padding-block: 24px;
-  border-top: 1px solid var(--line-invert);
+  border-top: 1px solid var(--line);
   font-size: var(--fs-micro);
 }
 .footer-bottom-links{ display: flex; gap: 20px; }
