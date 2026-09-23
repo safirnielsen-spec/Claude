@@ -69,6 +69,12 @@
     try { return await fn(); } catch (e) { console.error(e); toast(e.message || String(e), true); }
   }
 
+  function loginError(m) {
+    if (/rate limit|too many|security purposes/i.test(m)) return 'Der er sendt for mange login-mails. Vent lidt, og prøv igen.';
+    if (/database error/i.test(m)) return 'Brugeren kunne ikke oprettes (databasefejl). Kontakt Core Partners.';
+    return m;
+  }
+
   let modalSubmit = null;
   function openModal(title, html, onSubmit) {
     $('#modalTitle').textContent = title;
@@ -1172,9 +1178,10 @@
     }
     const o = formObj(form);
     if (form.id === 'loginForm') return guard(async () => {
+      const msg = $('#loginMsg'); msg.textContent = 'Sender …';
       const { error } = await S.store.sb.auth.signInWithOtp({ email: o.email, options: { emailRedirectTo: location.origin + location.pathname } });
-      if (error) throw new Error(error.message);
-      $('#loginMsg').textContent = `Vi har sendt et login-link til ${o.email}. Åbn det i denne browser.`;
+      if (error) { msg.textContent = ''; throw new Error(loginError(error.message)); }
+      msg.textContent = `Vi har sendt et login-link til ${o.email}. Åbn det i denne browser.`;
     });
     if (form.id === 'orgForm') return guard(async () => { const id = await S.store.createOrg(o.name, o.cvr); lsSet('cp_org', id); await start(); });
     if (form.dataset.form === 'org') return guard(async () => {

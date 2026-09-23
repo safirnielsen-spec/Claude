@@ -187,7 +187,8 @@
       const { data: { session } } = await this.sb.auth.getSession();
       if (!session) return null;
       this.user = session.user;
-      await this.sb.rpc('accept_invitations');
+      const acc = await this.sb.rpc('accept_invitations');
+      if (acc.error) console.warn('accept_invitations:', acc.error.message);
       let profile = this._chk(await this.sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle());
       if (!profile) profile = { id: session.user.id, email: session.user.email, is_cp_admin: false };
       return { user: session.user, profile };
