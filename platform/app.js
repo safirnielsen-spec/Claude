@@ -154,12 +154,14 @@
       ? `<select id="orgSelect" aria-label="Vælg organisation">${S.orgs.map(o => opt(o.id, o.name, S.org.id)).join('')}</select>`
       : `<div class="org-name">${esc(S.org.name)}</div>`;
     $('#adminLink').hidden = !(S.profile && S.profile.is_cp_admin);
-    $('#userBox').innerHTML = `<div class="who">${esc(S.user.email)}</div>` +
-      (S.store.mode === 'cloud' ? '<button data-action="logout">Log ud</button>' : '');
+    const who = `<span class="who">${esc(S.user.email)}</span>`;
+    const out = S.store.mode === 'cloud' ? '<button data-action="logout">Log ud</button>' : '';
+    $('#userBox').innerHTML = who + out;
+    $('#userBoxMobile').innerHTML = who + out;
     const b = $('#demoBanner');
     if (S.store.mode === 'demo') {
       b.hidden = false;
-      b.innerHTML = '<span><strong>Demo-tilstand</strong>: data gemmes kun i denne browser. Forbind Supabase i <code>config.js</code> for at gå i drift.</span><button data-action="resetDemo">Nulstil demodata</button>';
+      b.innerHTML = '<span><strong>Demo</strong>Eksempeldata, der kun gemmes i denne browser.</span><button data-action="resetDemo">Nulstil demodata</button>';
     } else b.hidden = true;
   }
 
@@ -192,10 +194,21 @@
     }
     if (scroll) window.scrollTo(0, 0);
   }
-  window.addEventListener('hashchange', () => route(true));
+  window.addEventListener('hashchange', () => { closeMenu(); route(true); });
+  function closeMenu() {
+    const m = $('#menu'), bt = $('#navBurger');
+    if (m) m.classList.remove('open');
+    if (bt) { bt.classList.remove('open'); bt.setAttribute('aria-expanded', 'false'); }
+  }
+  window.addEventListener('scroll', () => {
+    const bar = $('#scrollBar'); if (!bar) return;
+    const h = document.documentElement.scrollHeight - innerHeight;
+    bar.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+  }, { passive: true });
 
   function pageHead(title, sub, actions, crumb) {
-    return `<div class="page-head"><div>${crumb ? `<div class="crumb">${crumb}</div>` : ''}<h1>${title}</h1>${sub ? `<p>${sub}</p>` : ''}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
+    const eyebrow = crumb ? '← ' + crumb.replace(/\s*\/\s*$/, '') : esc(S.org.name);
+    return `<div class="page-head"><div><span class="eyebrow">${eyebrow}</span><h1>${title}</h1>${sub ? `<p>${sub}</p>` : ''}</div>${actions ? `<div class="actions">${actions}</div>` : ''}</div>`;
   }
   const notFound = what => `<div class="card"><h2>${what} findes ikke</h2><p class="muted">Den er måske slettet.</p></div>`;
 
@@ -220,14 +233,14 @@
     const cons = C.consolidation(D);
 
     if (!D.agreements.length) {
-      return pageHead('Overblik', `${esc(S.org.name)}`) + `<div class="card"><h2>Kom i gang</h2>
+      return pageHead('Jeres <em>aftaleoverblik</em>') + `<div class="card"><h2>Kom i gang</h2>
         <p class="muted" style="margin-bottom:14px">Registrér jeres ejendomme og driftsaftaler. Platformen beregner selv opsigelsesfrister, anbefalet udbudsstart og hvilke aftaler der bedst kan betale sig at se på først.</p>
         <div class="actions"><button class="btn btn-primary" data-action="newProperty"><i class="fa-solid fa-building"></i> Tilføj ejendom</button>
         <button class="btn" data-action="newAgreement"><i class="fa-solid fa-file-contract"></i> Tilføj aftale</button>
         <a class="btn" href="#/data"><i class="fa-solid fa-file-import"></i> Importér fra Excel/CSV</a></div></div>`;
     }
 
-    return pageHead('Overblik', esc(S.org.name), canEdit() ? '<button class="btn btn-primary" data-action="newAgreement"><i class="fa-solid fa-plus"></i> Ny aftale</button>' : '') + `
+    return pageHead('Jeres <em>aftaleoverblik</em>', 'Driftsaftaler, frister og besparelsespotentiale samlet ét sted.', canEdit() ? '<button class="btn btn-primary" data-action="newAgreement"><i class="fa-solid fa-plus"></i> Ny aftale</button>' : '') + `
     <div class="grid g4" style="margin-bottom:16px">
       <div class="kpi"><div class="lbl">Årlige driftsudgifter</div><div class="val">${krShort(spend)}</div><div class="sub">${open.length} aktive aftaler · ${D.properties.length} ejendomme</div></div>
       <div class="kpi accent"><div class="lbl">Besparelsespotentiale</div><div class="val">${krShort(potential)}</div><div class="sub">estimeret pr. år ved genudbud</div></div>
@@ -237,7 +250,7 @@
     <div class="grid g2">
       <div class="card"><div class="card-head"><h2>Se på disse først</h2><a class="btn btn-sm" href="#/prioritering">Hele listen</a></div>
         ${prios.length ? `<table><tbody>${prios.slice(0, 5).map((p, i) => `<tr class="link" data-href="#/aftaler/${p.a.id}">
-          <td style="width:28px;color:var(--terracotta);font-family:'Cormorant Garamond',serif;font-size:20px">${i + 1}</td>
+          <td style="width:30px;color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;line-height:1">${i + 1}</td>
           <td><div class="title">${esc(p.a.title)}</div><div class="sub">${esc(p.urgency.label)} · ${esc(p.age.label)}</div></td>
           <td class="num"><div>${kr(p.est)}</div><div class="sub">potentiale/år</div></td></tr>`).join('')}</tbody></table>` : '<p class="muted">Ingen aktive aftaler med pris.</p>'}
       </div>
@@ -257,8 +270,8 @@
         ${cons.length ? cons.slice(0, 3).map(consolidationHtml).join('') : '<p class="muted">Ingen oplagte muligheder for at samle aftaler i rammeaftaler lige nu.</p>'}
       </div>
     </div>
-    <div class="card" style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;background:var(--bg-warm)">
-      <div><h2 style="margin-bottom:4px">Lad Core Partners gennemgå aftalerne</h2><p class="muted">No Cure No Pay: I betaler kun 20 % af første års dokumenterede besparelse.</p></div>
+    <div class="card cta-band" style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:32px">
+      <div><span class="eyebrow" style="color:rgba(244,237,224,.5)">No Cure · No Pay</span><h2 style="margin-bottom:4px">Lad Core Partners <em>gennemgå aftalerne</em></h2><p>I betaler kun 20 % af første års dokumenterede besparelse.</p></div>
       <button class="btn btn-accent" data-action="requestReview"><i class="fa-solid fa-handshake"></i> Bed om gennemgang</button>
     </div>`;
   }
@@ -281,7 +294,7 @@
     }
     const max = Math.max(1, ...list.map(p => p.score));
     const inTender = S.D.agreements.filter(a => a.status === 'in_tender');
-    return pageHead('Prioritering', 'Aftalerne rangeret efter hvad det bedst kan betale sig at se på først: årlig pris × typisk besparelse for kategorien × hvor tæt fristen er × hvor længe siden aftalen er udbudt.',
+    return pageHead('Se på disse <em>først</em>', 'Aftalerne rangeret efter hvad det bedst kan betale sig at se på først: årlig pris × typisk besparelse for kategorien × hvor tæt fristen er × hvor længe siden aftalen er udbudt.',
       `<select class="btn" data-change="prioPf" aria-label="Portefølje">${pfOptions(S.prioPf, 'Alle porteføljer')}</select>`) +
       (list.length ? `<div class="prio-list">${list.map((p, i) => `<div class="prio" data-href="#/aftaler/${p.a.id}" tabindex="0">
         <div class="rank">${i + 1}</div>
@@ -508,7 +521,7 @@
     const months = new Map();
     ev.forEach(e => { const k = e.date.getFullYear() + '-' + e.date.getMonth(); if (!months.has(k)) months.set(k, { d: e.date, items: [] }); months.get(k).items.push(e); });
     const lbl = { notice: 'Frist', tender: 'Start udbud', end: 'Periodeslut', index: 'Indeksregulering' };
-    return pageHead('Tidslinje', 'Opsigelsesfrister, anbefalet udbudsstart, periodeslut og indeksreguleringer.',
+    return pageHead('Frister og <em>tidslinje</em>', 'Opsigelsesfrister, anbefalet udbudsstart, periodeslut og indeksreguleringer.',
       `<select class="btn" data-change="tlMonths" aria-label="Periode">${[6, 12, 24, 36].map(m => opt(m, `Næste ${m} mdr.`, S.tlMonths)).join('')}</select>
        <button class="btn" data-action="exportIcs"><i class="fa-regular fa-calendar-plus"></i> Tilføj til kalender (.ics)</button>`) +
       `<div class="legend"><span style="--c:var(--danger)">Opsigelsesfrist/udløb</span><span style="--c:var(--gold)">Anbefalet udbudsstart</span><span style="--c:var(--slate)">Periodeslut</span><span style="--c:var(--beige-d)">Indeksregulering</span></div>` +
@@ -636,7 +649,7 @@
     const cards = S.D.portfolios.map(p => ({ p, s: portfolioStats(p.id) }));
     const loose = portfolioStats(null);
     const frameworks = S.D.agreements.filter(a => a.scope === 'framework' && !C.isClosed(a));
-    return pageHead('Porteføljer', 'Samlet overblik pr. portefølje og forslag til regionale rammeaftaler.',
+    return pageHead('<em>Porteføljer</em>', 'Samlet overblik pr. portefølje og forslag til regionale rammeaftaler.',
       canEdit() ? '<button class="btn btn-primary" data-action="newPortfolio"><i class="fa-solid fa-plus"></i> Ny portefølje</button>' : '') +
       `<div class="grid g3" style="margin-bottom:20px">${cards.map(({ p, s }) => `<div class="card" style="cursor:pointer" data-href="#/portefoljer/${p.id}">
         <h2>${esc(p.name)}</h2><p class="small muted" style="margin:-6px 0 10px">${esc(p.description || '')}</p>
@@ -697,7 +710,7 @@
   const checklistDone = x => C.CHECKLIST.reduce((n, p) => n + p.items.filter(([k]) => x.checklist && x.checklist[k]).length, 0);
   function viewTenders() {
     const list = S.D.tenders.slice().sort((a, b) => (a.status === 'awarded' || a.status === 'cancelled') - (b.status === 'awarded' || b.status === 'cancelled') || String(b.created_at).localeCompare(String(a.created_at)));
-    return pageHead('Udbud', 'Styr udbud med tjekliste, tilbudsevaluering og beregning af besparelsen.',
+    return pageHead('<em>Udbud</em>', 'Styr udbud med tjekliste, tilbudsevaluering og beregning af besparelsen.',
       canEdit() ? '<button class="btn btn-primary" data-action="newTender"><i class="fa-solid fa-plus"></i> Nyt udbud</button>' : '') +
       `<div class="table-wrap"><table><thead><tr><th>Udbud</th><th>Status</th><th>Tjekliste</th><th>Tilbudsfrist</th><th class="num">Nuværende pris</th><th class="num">Bedste tilbud</th></tr></thead><tbody>
       ${list.length ? list.map(x => { const done = checklistDone(x); const ranked = C.tenderScore(x); const best = x.new_annual_cost || (ranked[0] && ranked[0].price); return `<tr class="link" data-href="#/udbud/${x.id}">
@@ -970,7 +983,7 @@
     }).sort((a, b) => b.pot - a.pot);
     const pipeline = customers.flatMap(c => c.soon.map(p => ({ c, p }))).sort((x, y) => x.p.dates.noticeDeadline - y.p.dates.noticeDeadline);
     const reqs = customers.flatMap(c => c.D.requests.map(r => ({ c, r }))).sort((x, y) => String(y.r.created_at).localeCompare(String(x.r.created_at)));
-    return pageHead('Core Partners', 'Kundeoverblik, pipeline af kommende frister og henvendelser på tværs af alle kunder.') + `
+    return pageHead('Kunder og <em>pipeline</em>', 'Kundeoverblik, pipeline af kommende frister og henvendelser på tværs af alle kunder.') + `
     <div class="grid g4" style="margin-bottom:16px">
       <div class="kpi"><div class="lbl">Kunder</div><div class="val">${customers.length}</div></div>
       <div class="kpi"><div class="lbl">Driftsudgifter i alt</div><div class="val">${krShort(sum(customers, c => c.spend))}</div></div>
@@ -1083,6 +1096,12 @@
   };
 
   document.addEventListener('click', e => {
+    if (e.target.closest('#navBurger')) {
+      const open = $('#menu').classList.toggle('open');
+      $('#navBurger').classList.toggle('open', open);
+      $('#navBurger').setAttribute('aria-expanded', String(open));
+      return;
+    }
     const el = e.target.closest('[data-action]');
     if (el) {
       if (el.tagName === 'A') e.preventDefault();
