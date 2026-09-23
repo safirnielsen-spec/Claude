@@ -26,6 +26,7 @@ Platformen ligger på `/platform/` og linkes fra hovedsidens menu ("Kundeportal"
 ## Demo-tilstand
 
 Uden opsætning kører platformen i demo-tilstand med eksempeldata, der kun gemmes i browseren.
+Når Supabase er sat op, kan demoen stadig åbnes via `platform/?demo`, f.eks. til salgsmøder.
 Åbn `platform/index.html` via en webserver, f.eks. `python3 -m http.server`, og gå til `http://localhost:8000/platform/`.
 
 ## Idriftsættelse med Supabase

@@ -107,7 +107,9 @@
 
   async function boot() {
     try {
-      if (CFG.supabaseUrl && CFG.supabaseAnonKey) {
+      // ?demo tvinger demo-tilstand, f.eks. til salgsmøder, også når Supabase er sat op.
+      const forceDemo = new URLSearchParams(location.search).has('demo');
+      if (CFG.supabaseUrl && CFG.supabaseAnonKey && !forceDemo) {
         await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
         const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, {
           auth: { flowType: 'pkce', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true }
