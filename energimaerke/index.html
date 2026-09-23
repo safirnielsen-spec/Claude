@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Energimærke Feltbog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EDF0EB; --surface:#FFFFFF; --surface-2:#F5F7F3; --ink:#16201A; --ink-2:#4E5B52; --ink-3:#77837A;
+  --line:#D2DAD3; --line-2:#E3E8E3;
+  --accent:#0B6A4E; --accent-ink:#FFFFFF; --accent-soft:#DDEFE6;
+  --warn:#9A5B00; --warn-soft:#FBEBCF; --bad:#B42318; --bad-soft:#FBE4E1; --ok:#1C7A3B; --ok-soft:#E0F2E5;
+  --shadow:0 1px 2px rgba(22,32,26,.06),0 6px 18px rgba(22,32,26,.05);
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --nav-h:62px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0D1310; --surface:#151C18; --surface-2:#1B2420; --ink:#E3EAE5; --ink-2:#A2B0A6; --ink-3:#77857B;
+    --line:#2C3832; --line-2:#222C27;
+    --accent:#45C291; --accent-ink:#04120B; --accent-soft:#163A2C;
+    --warn:#F2B650; --warn-soft:#3A2A0F; --bad:#FF8C7C; --bad-soft:#3E1915; --ok:#6BD58E; --ok-soft:#133321;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0D1310; --surface:#151C18; --surface-2:#1B2420; --ink:#E3EAE5; --ink-2:#A2B0A6; --ink-3:#77857B;
+  --line:#2C3832; --line-2:#222C27;
+  --accent:#45C291; --accent-ink:#04120B; --accent-soft:#163A2C;
+  --warn:#F2B650; --warn-soft:#3A2A0F; --bad:#FF8C7C; --bad-soft:#3E1915; --ok:#6BD58E; --ok-soft:#133321;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font:15px/1.5 var(--f-body);-webkit-font-smoothing:antialiased;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 24px)}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.2;margin:0;text-wrap:balance;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.mark{display:flex;align-items:center;gap:10px;min-width:0}
+.scale{display:grid;grid-template-rows:repeat(7,4px);gap:2px;flex:none}
+.scale i{display:block;height:4px;border-radius:0 2px 2px 0}
+.scale i:nth-child(1){width:10px;background:#0A8F4A}.scale i:nth-child(2){width:13px;background:#51B848}
+.scale i:nth-child(3){width:16px;background:#BDD62E}.scale i:nth-child(4){width:19px;background:#F6E000}
+.scale i:nth-child(5){width:22px;background:#FDB913}.scale i:nth-child(6){width:25px;background:#F37021}
+.scale i:nth-child(7){width:28px;background:#ED1C24}
+.mark h1{font-size:17px;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.mark small{display:block;font:500 12px/1.3 var(--f-body);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52vw}
+.top .spacer{flex:1}
+.ht-chip{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15}
+.ht-chip b{font:500 15px var(--f-mono)}
+.ht-chip span{font-size:11px;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase}
+
+/* Nav */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav-in{max-width:720px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);height:var(--nav-h)}
+.nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 11.5px var(--f-display);color:var(--ink-3);cursor:pointer;letter-spacing:.01em}
+.nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav button[aria-current="page"]{color:var(--accent)}
+.nav .badge{position:absolute;margin:-18px 0 0 22px;min-width:16px;height:16px;border-radius:8px;background:var(--warn);color:var(--surface);font:600 10px/16px var(--f-mono);padding:0 4px}
+.nav button{position:relative}
+
+main{max-width:1080px;margin:0 auto;padding:20px 16px 0;display:flex;flex-direction:column;gap:22px}
+.page-h{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px}
+.page-h h2{font-size:26px;font-weight:800}
+.page-h p{margin:4px 0 0;color:var(--ink-2);max-width:62ch}
+.eyebrow{font:700 11px var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+
+section.block{display:flex;flex-direction:column;gap:12px}
+.block-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.block-h h3{font-size:18px;font-weight:700}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px 14px}
+.grid.wide{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f > span{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.f > span em{font-style:normal;font-weight:400;color:var(--ink-3)}
+.f.full{grid-column:1/-1}
+input[type=text],input[type=date],select,textarea{width:100%;min-height:42px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:var(--surface-2);font-size:16px}
+textarea{min-height:76px;resize:vertical}
+input.num-in{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;background:var(--surface)}
+.hint{font-size:12.5px;color:var(--ink-3);margin:0}
+.unit{position:relative}
+.unit input{padding-right:52px}
+.unit i{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:normal 12px var(--f-mono);color:var(--ink-3);pointer-events:none}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 14px;border-radius:7px;border:1px solid var(--line);background:var(--surface);font:600 14px var(--f-display);cursor:pointer;color:var(--ink);text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:none;border-color:transparent;color:var(--accent);padding-inline:8px}
+.btn.danger{color:var(--bad)}
+.btn.danger.armed{background:var(--bad);border-color:var(--bad);color:var(--surface)}
+.btn.sm{min-height:32px;padding:4px 10px;font-size:13px}
+.btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* List items */
+.items{display:flex;flex-direction:column;gap:8px}
+details.item{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+details.item[open]{box-shadow:var(--shadow)}
+details.item > summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;padding:12px 14px}
+details.item > summary::-webkit-details-marker{display:none}
+.sum-t{font:600 15px var(--f-display);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sum-s{grid-column:1;font-size:12.5px;color:var(--ink-2);display:flex;gap:10px;flex-wrap:wrap}
+.sum-v{grid-row:1/3;grid-column:2;text-align:right;font:500 14px var(--f-mono);line-height:1.3}
+.sum-v small{display:block;font-size:11px;color:var(--ink-3)}
+.item-body{border-top:1px solid var(--line-2);padding:14px;display:flex;flex-direction:column;gap:14px}
+.item-foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}
+.calcline{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-2);background:var(--surface-2);border-radius:7px;padding:8px 10px}
+.calcline b{font:500 13px var(--f-mono);color:var(--ink)}
+.empty{padding:18px;border:1px dashed var(--line);border-radius:10px;color:var(--ink-2);text-align:center;font-size:14px}
+
+.pill{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:999px;font:600 11.5px var(--f-display);letter-spacing:.02em;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line-2)}
+.pill.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.pill.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.pill.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.pill.acc{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+
+.banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 14px;border-radius:10px;background:var(--warn-soft);color:var(--warn);font-size:14px}
+.banner b{font-family:var(--f-display)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.stat b{display:block;font:500 22px/1.2 var(--f-mono);letter-spacing:-.02em}
+.stat span{font-size:12px;color:var(--ink-2)}
+
+/* Layer calc */
+.layers{display:flex;flex-direction:column;gap:6px}
+.layer{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(70px,.6fr) minmax(70px,.6fr) auto;gap:6px;align-items:center}
+.layer input,.layer select{min-height:38px;font-size:15px}
+.layer-h{font-size:11.5px;color:var(--ink-3);font-weight:600}
+.sub{border:1px solid var(--line-2);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--surface-2)}
+.sub h4{font-size:14px;font-weight:700}
+
+/* Photos */
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.cat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.cat-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.cat-h h4{font-size:15px;font-weight:700}
+.cat-h p{margin:2px 0 0;font-size:12.5px;color:var(--ink-3)}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
+.thumb{position:relative;aspect-ratio:1;max-width:100%;border-radius:7px;overflow:hidden;background:var(--surface-2);border:1px solid var(--line-2);padding:0;cursor:pointer}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .ai-dot{position:absolute;right:4px;top:4px;background:var(--accent);color:var(--accent-ink);font:700 9px/1 var(--f-display);padding:3px 5px;border-radius:4px;letter-spacing:.04em}
+.filebtn{position:relative;overflow:hidden}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+.mini-photos{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.mini-photos .thumb{width:54px;height:54px;aspect-ratio:auto}
+
+/* Photo sheet */
+.sheet{position:fixed;inset:0;z-index:50;background:rgba(8,12,10,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet-in{background:var(--surface);width:100%;max-width:760px;max-height:92vh;overflow:auto;border-radius:14px 14px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+@media (min-width:760px){.sheet{align-items:center}.sheet-in{border-radius:14px;max-height:88vh}}
+.sheet-img{width:100%;max-height:48vh;object-fit:contain;background:var(--surface-2);border-radius:8px}
+.ai-box{border:1px solid var(--accent-soft);background:var(--surface-2);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ai-box p{margin:0}
+.prop{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;padding:8px 0;border-top:1px solid var(--line-2)}
+.prop:first-of-type{border-top:0}
+.prop .k{font-size:12.5px;color:var(--ink-2)}
+.prop .v{font:500 14px var(--f-mono)}
+.prop .why{grid-column:1/-1;font-size:12.5px;color:var(--ink-3)}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line-2);white-space:nowrap;vertical-align:top}
+th{font:700 11px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);background:var(--surface-2)}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+tfoot td{font-weight:600;background:var(--surface-2)}
+.kv{display:grid;grid-template-columns:minmax(150px,auto) 1fr;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.kv div{padding:7px 12px;border-bottom:1px solid var(--line-2);font-size:14px;min-width:0;overflow-wrap:anywhere}
+.kv div:nth-child(odd){color:var(--ink-2);background:var(--surface-2);font-size:13px}
+.kv div:nth-last-child(-n+2){border-bottom:0}
+.kv .v{font-family:var(--f-mono);font-size:13.5px}
+.checks{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.checks li{display:flex;gap:10px;align-items:flex-start;font-size:14px;padding:8px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--line)}
+.checks li .pill{flex:none;margin-top:1px}
+.sugg{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.sugg .panel{display:flex;flex-direction:column;gap:6px}
+.sugg h4{font-size:15px}
+.sugg p{margin:0;font-size:13.5px;color:var(--ink-2)}
+.cases{display:flex;flex-direction:column;gap:6px}
+.case{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.case.cur{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.case b{font-family:var(--f-display)}
+.case small{display:block;color:var(--ink-3)}
+
+.toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:60;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+@media (prefers-reduced-motion:no-preference){
+  details.item[open] .item-body{animation:fade .16s ease-out}
+  @keyframes fade{from{opacity:.4;transform:translateY(-3px)}to{opacity:1;transform:none}}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="mark">
+    <div class="scale" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div><h1>Energimærke Feltbog</h1><small id="hdrCase">–</small></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="ht-chip" title="Samlet varmetabskoefficient for klimaskærmen"><b id="hdrHT">–</b><span>H<sub>T</sub> W/K</span></div>
+</div></header>
+
+<main id="main"></main>
+
+<nav class="nav" aria-label="Sektioner"><div class="nav-in" id="nav"></div></nav>
+<div id="sheet"></div>
+
+<script>
+"use strict";
+/* ============ Hjælpere ============ */
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>[...el.querySelectorAll(s)];
+const uid=()=>Math.random().toString(36).slice(2,9);
+const num=v=>{if(v===''||v==null)return NaN;return parseFloat(String(v).replace(/\s/g,'').replace(',','.'));};
+const fmt=(n,d=2)=>Number.isFinite(n)?n.toLocaleString('da-DK',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const today=()=>new Date().toISOString().slice(0,10);
+const GRADDAGE=2906; // graddage, dansk normalår (vejledende)
+
+/* ============ Opslagsdata (vejledende) ============ */
+const FLADE_TYPER={
+  ydervaeg:{navn:'Ydervæg',b:1,rsi:.13,rse:.04},
+  loft:{navn:'Loft mod uopvarmet tagrum',b:1,rsi:.10,rse:.10},
+  skraavaeg:{navn:'Skråvæg / tag i tagetage',b:1,rsi:.10,rse:.04},
+  skunk:{navn:'Skunkvæg',b:1,rsi:.13,rse:.13},
+  fladt:{navn:'Fladt tag',b:1,rsi:.10,rse:.04},
+  terraen:{navn:'Terrændæk',b:.7,rsi:.17,rse:0},
+  kaelderv:{navn:'Kælderydervæg mod jord',b:.7,rsi:.13,rse:0},
+  kaelderg:{navn:'Kældergulv',b:.7,rsi:.17,rse:0},
+  etage_kaelder:{navn:'Etageadskillelse mod uopvarmet kælder',b:.7,rsi:.17,rse:.17},
+  vaeg_uopv:{navn:'Væg mod uopvarmet rum',b:.7,rsi:.13,rse:.13},
+  gulv_ude:{navn:'Gulv mod det fri',b:1,rsi:.17,rse:.04},
+};
+const LIB={
+  ydervaeg:[['mas23','Massiv mur ½–1 sten (11–23 cm), uisoleret',2.0],['mas36','Massiv mur 1½ sten (36 cm), uisoleret',1.5],['hul_uiso','Hulmur ca. 30 cm, uisoleret (ca. 1920–60)',1.4],['hul_efter','Hulmur, efterisoleret med granulat',.55],['hul75','Hulmur m. 75 mm isolering (ca. 1961–72)',.5],['hul100','Hulmur m. 100 mm isolering (ca. 1972–79)',.4],['hul125','Hulmur m. 125 mm isolering (ca. 1979–98)',.3],['hul150','Hulmur m. 150 mm isolering (ca. 1998–2008)',.25],['hul190','Hulmur m. 190 mm+ isolering (ca. 2008–)',.18],['letbeton30','Letbeton 30 cm, uisoleret',.6],['letbeton_iso','Letbeton m. 100 mm isolering',.25],['bindings','Bindingsværk 12 cm',1.9],['trae100','Træskeletvæg, 100 mm isolering',.4],['trae150','Træskeletvæg, 150 mm isolering',.28],['trae200','Træskeletvæg, 200 mm isolering',.2],['sandwich','Betonsandwich, 100 mm isolering',.4]],
+  loft:[['uiso','Bjælkelag uden isolering (evt. lerindskud)',.9],['i50','Bjælkelag, 50 mm isolering',.6],['i100','Bjælkelag, 100 mm isolering',.36],['i150','Bjælkelag, 150 mm isolering',.26],['i200','Bjælkelag, 200 mm isolering',.2],['i250','Bjælkelag, 250 mm isolering',.16],['i300','Bjælkelag, 300 mm isolering',.13],['i400','Bjælkelag, 400 mm isolering',.1]],
+  skraavaeg:[['uiso','Uden isolering',1.0],['i50','50 mm isolering',.65],['i100','100 mm isolering',.4],['i150','150 mm isolering',.28],['i200','200 mm isolering',.21],['i300','300 mm isolering',.14]],
+  skunk:[['uiso','Uden isolering',1.0],['i50','50 mm isolering',.65],['i100','100 mm isolering',.4],['i150','150 mm isolering',.28],['i200','200 mm isolering',.21]],
+  fladt:[['uiso','Uisoleret',1.5],['i50','50 mm isolering',.65],['i100','100 mm isolering',.35],['i200','200 mm isolering',.18],['i300','300 mm isolering',.12]],
+  terraen:[['uiso','Beton uden isolering',.7],['kap','Beton på kapillarbrydende lag, uden isolering',.5],['i50','50 mm isolering',.4],['i100','100 mm isolering',.28],['i150','150 mm isolering',.2],['i250','250 mm+ isolering',.12]],
+  kaelderv:[['uiso','Beton/tegl mod jord, uisoleret',.9],['i50','50 mm isolering',.45],['i100','100 mm isolering',.3]],
+  kaelderg:[['uiso','Beton uden isolering',.5],['i50','50 mm isolering',.35],['i100','100 mm isolering',.25]],
+  etage_kaelder:[['bj_uiso','Træbjælkelag, uisoleret',.8],['bet_uiso','Betondæk, uisoleret',1.3],['i50','Isoleret 50 mm',.5],['i100','Isoleret 100 mm',.3]],
+  vaeg_uopv:[['mur_uiso','Murværk 23 cm, uisoleret',1.8],['let_uiso','Let skillevæg, uisoleret',1.5],['i100','Isoleret 100 mm',.35]],
+  gulv_ude:[['uiso','Bjælkelag, uisoleret',.9],['i100','Isoleret 100 mm',.35],['i200','Isoleret 200 mm',.18]],
+};
+const MATERIALER=[['tegl','Tegl / murværk',.7],['beton','Beton',2.0],['letbeton','Letbeton',.18],['letklinker','Letklinker (løse)',.1],['mu37','Mineraluld klasse 37',.037],['mu34','Mineraluld klasse 34',.034],['granulat','Hulmursgranulat',.042],['papiruld','Papiruld',.04],['eps','EPS / flamingo',.037],['pir','PIR / PUR',.022],['trae','Træ (fyr/gran)',.12],['gips','Gipsplade',.25],['puds','Kalkpuds',.8],['ler','Lerindskud',.5],['luft','Uventileret luftlag (R=0,18)',null],['egen','Egen λ-værdi',null]];
+const RUDER={
+  '1lag':{navn:'1-lags glas',Uw:4.3,g:.85,Ff:.7},
+  '1lag_forsats':{navn:'1-lag + forsatsramme',Uw:2.5,g:.75,Ff:.65},
+  '2lag_termo':{navn:'2-lags termorude (før ca. 1995)',Uw:2.8,g:.76,Ff:.7},
+  '2lag_energi':{navn:'2-lags energirude (ca. 1995–2010)',Uw:1.8,g:.63,Ff:.7},
+  '2lag_energi_ny':{navn:'2-lags energirude, varm kant (2010–)',Uw:1.4,g:.6,Ff:.7},
+  '3lag':{navn:'3-lags energirude',Uw:.9,g:.5,Ff:.7},
+  'ovenlys':{navn:'Ovenlys / tagvindue, 2-lag energi',Uw:1.5,g:.55,Ff:.7},
+  'doer_gl':{navn:'Dør, ældre uden glas',Uw:2.5,g:0,Ff:0},
+  'doer_glas':{navn:'Dør med glasparti',Uw:2.0,g:.5,Ff:.3},
+  'doer_ny':{navn:'Dør, nyere isoleret',Uw:1.2,g:0,Ff:0},
+  'egen':{navn:'Egne værdier',Uw:'',g:'',Ff:''},
+};
+const ORIENT=[['N',0],['NØ',45],['Ø',90],['SØ',135],['S',180],['SV',225],['V',270],['NV',315],['Vandret',null]];
+const LINJETAB=[['fund_uiso','Fundament, uisoleret (massiv beton/tegl)',.4],['fund_let','Fundament, letklinker / let isoleret',.25],['fund_iso','Fundament, isoleret (ca. 1980–2006)',.15],['fund_ny','Fundament, nyere lavenergi',.1],['fals_uiso','Vindues-/dørfals, uisoleret',.06],['fals_iso','Vindues-/dørfals, isoleret',.03],['fals_ny','Vindue i isoleringsplan, moderne',.01],['egen','Andet / egen værdi','']];
+const KILDER={fjernvarme:'Fjernvarme',gas_kond:'Naturgaskedel, kondenserende',gas:'Naturgaskedel, ikke-kondenserende',olie:'Oliekedel',pille:'Træpillefyr / biokedel',vp_lv:'Varmepumpe luft/vand',vp_jord:'Varmepumpe jord/vand',el:'Elradiatorer / direkte el',andet:'Andet'};
+const VENT={naturlig:'Naturlig ventilation',udsug:'Mekanisk udsugning',balanceret:'Balanceret m. varmegenvinding'};
+const ANVENDELSE={'120':'120 Fritliggende enfamiliehus','121':'121 Sammenbygget enfamiliehus','122':'122 Enfamiliehus i tæt-lav bebyggelse','131':'131 Række-, kæde- og klyngehus','132':'132 Dobbelthus','140':'140 Etagebolig','510':'510 Sommerhus','andet':'Andet'};
+const FOTO_KAT={
+  facade:{navn:'Facader',tip:'Alle sider af huset, så orientering og vinduer kan ses.',min:4,elem:'flader'},
+  vindue:{navn:'Vinduer og døre',tip:'Tæt på ruden: afstandsliste, stempel/årstal, ramme.',min:2,elem:'vinduer'},
+  loft:{navn:'Loft og tag',tip:'Isoleringstykkelse med tommestok i billedet.',min:1,elem:'flader'},
+  gulv:{navn:'Gulv, kælder, krybekælder',tip:'Konstruktion og evt. isolering.',min:1,elem:'flader'},
+  varme:{navn:'Varmekilde + typeskilt',tip:'Hele anlægget og et skarpt billede af typeskiltet.',min:2},
+  vvb:{navn:'Varmtvandsbeholder',tip:'Typeskilt med volumen og årstal.',min:1},
+  fordeling:{navn:'Rør, pumpe, radiatorer',tip:'Cirkulationspumpe, termostater, uisolerede rør.',min:1},
+  vent:{navn:'Ventilation',tip:'Anlæg + typeskilt, emhætte, udsugning i bad.',min:1},
+  sol:{navn:'Solceller / solvarme',tip:'Paneler og inverterens typeskilt.',min:0},
+  andet:{navn:'Andet',tip:'Tegninger, BBR, fejl og mangler.',min:0},
+};
+
+/* ============ Tilstand ============ */
+const LS='em10.feltbog.v1', LS_KEY='em10.feltbog.apikey', LS_MODEL='em10.feltbog.model';
+let state=null, openSet=new Set(), armed=null, sheetPhoto=null;
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v);return true}catch(e){return false}};
+
+function blankCase(){
+  return {id:uid(),created:today(),updated:Date.now(),example:false,
+    bygning:{adresse:'',postnr:'',by:'',ejendomsnr:'',matrikel:'',anvendelse:'120',opfoert:'',ombygget:'',areal:'',arealKaelder:'',etager:'1',rumhoejde:'2,5',varmekapacitet:'120',besigtigelse:today(),ejer:'',noter:''},
+    flader:[],vinduer:[],linjetab:[],
+    varme:{kilde:'',fabrikat:'',model:'',aar:'',effekt:'',eta100:'',eta30:'',tomgang:'',scop:'',placering:'opvarmet',veksler:'',styring:'',suppl:'',supplNote:''},
+    fordeling:{system:'2-strengs radiatorer',fremloeb:'70',retur:'40',termostater:'ja',pumpe:'',pumpeW:'',pumpeStyring:'automatisk',roerL:'',roerIso:''},
+    vand:{kilde:'samme',fabrikat:'',aar:'',volumen:'',isolering:'',varmetab:'',temp:'55',forbrug:'250',cirk:'nej',cirkL:'',cirkW:''},
+    vent:{type:'naturlig',qn:'0,3',qm:'',vgv:'',sel:'',qinf:'0,13',fabrikat:'',aar:''},
+    sol:{pv_kwp:'',pv_areal:'',pv_orient:'S',pv_haeld:'30',pv_aar:'',st_areal:'',st_orient:'S',st_haeld:'45'},
+    fotos:[]};
+}
+function exampleCase(){
+  const c=blankCase(); c.example=true;
+  Object.assign(c.bygning,{adresse:'Egevej 12 (eksempel)',postnr:'4600',by:'Køge',ejendomsnr:'259-012345',matrikel:'14ab',anvendelse:'120',opfoert:'1968',areal:'142',etager:'1',rumhoejde:'2,5',ejer:'Eksempel',noter:'Eksempelsag – viser hvordan en udfyldt registrering ser ud.'});
+  const f=(navn,type,preset,o)=>{const L=LIB[type].find(x=>x[0]===preset);return Object.assign({id:uid(),navn,type,preset,konstr:L[1],U:String(L[2]).replace('.',','),b:String(FLADE_TYPER[type].b).replace('.',','),mode:'lxh',l:'',h:'',areal:'',orient:'',lag:[],noter:''},o);};
+  const n=f('Ydervæg nord','ydervaeg','hul75',{l:'14,2',h:'2,6',orient:'N'}),
+        s=f('Ydervæg syd','ydervaeg','hul75',{l:'14,2',h:'2,6',orient:'S'}),
+        o=f('Ydervæg øst','ydervaeg','hul75',{l:'10,0',h:'2,6',orient:'Ø'}),
+        v=f('Ydervæg vest','ydervaeg','hul75',{l:'10,0',h:'2,6',orient:'V'});
+  c.flader=[n,s,o,v,f('Loft mod tagrum','loft','i100',{mode:'areal',areal:'142'}),f('Terrændæk','terraen','kap',{mode:'areal',areal:'142'})];
+  const w=(navn,flade,orient,antal,b,h,rude)=>{const R=RUDER[rude];return {id:uid(),navn,flade,orient,haeld:'90',antal,b,h,rude,Uw:String(R.Uw).replace('.',','),g:String(R.g).replace('.',','),Ff:String(R.Ff).replace('.',','),horisont:'10',udhaeng:'0',venstre:'0',hoejre:'0',ramme:'Træ',aar:'',noter:''};};
+  c.vinduer=[w('Stue','{s}','S','2','1,2','1,2','2lag_termo'),w('Terrassedør','{s}','S','1','0,9','2,1','2lag_termo'),w('Køkken','{n}','N','1','1,0','1,1','2lag_energi'),w('Værelser','{o}','Ø','2','1,0','1,2','2lag_termo'),w('Bad','{v}','V','1','0,6','0,6','2lag_termo'),w('Hoveddør','{n}','N','1','1,0','2,1','doer_gl')];
+  const map={'{s}':s.id,'{n}':n.id,'{o}':o.id,'{v}':v.id}; c.vinduer.forEach(x=>x.flade=map[x.flade]);
+  c.linjetab=[{id:uid(),navn:'Fundament',type:'fund_uiso',l:'48,4',psi:'0,4',b:'1',noter:''},{id:uid(),navn:'Vinduesfalse',type:'fals_uiso',l:'',psi:'0,06',b:'1',auto:true,noter:''}];
+  Object.assign(c.varme,{kilde:'gas_kond',fabrikat:'Vaillant',model:'ecoTEC plus VC 26',aar:'2011',effekt:'20',eta100:'96',eta30:'104',tomgang:'0,5',placering:'opvarmet',styring:'Vejrkompensering'});
+  Object.assign(c.fordeling,{pumpe:'Automatisk trinløs',pumpeW:'25',roerL:'0',roerIso:''});
+  Object.assign(c.vand,{kilde:'samme',fabrikat:'Metro Therm',aar:'2011',volumen:'110',isolering:'50',varmetab:'1,6'});
+  return c;
+}
+function load(){
+  try{const raw=lsGet(LS);if(raw){const s=JSON.parse(raw);if(s&&Array.isArray(s.cases)&&s.cases.length)return s;}}catch(e){}
+  const ex=exampleCase();return {cases:[ex],cur:ex.id,tab:'sag'};
+}
+let saveT=null;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{if(!lsSet(LS,JSON.stringify(state)))toast('Kunne ikke gemme i browseren – eksportér en backup under Mere.');},250);}
+const cur=()=>state.cases.find(c=>c.id===state.cur)||state.cases[0];
+
+/* ============ Fotolager (IndexedDB) ============ */
+const PhotoDB={mem:new Map(),db:null,
+  async open(){try{this.db=await new Promise((res,rej)=>{const r=indexedDB.open('em10-feltbog',1);r.onupgradeneeded=()=>r.result.createObjectStore('f');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}catch(e){this.db=null;}},
+  _tx(mode,fn){return new Promise((res,rej)=>{try{const t=this.db.transaction('f',mode);const st=t.objectStore('f');const r=fn(st);t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error);}catch(e){rej(e);}});},
+  async put(id,d){this.mem.set(id,d);if(this.db){try{await this._tx('readwrite',s=>s.put(d,id));}catch(e){}}},
+  async get(id){if(this.mem.has(id))return this.mem.get(id);if(!this.db)return null;try{const d=await this._tx('readonly',s=>s.get(id));if(d)this.mem.set(id,d);return d||null;}catch(e){return null;}},
+  async del(id){this.mem.delete(id);if(this.db){try{await this._tx('readwrite',s=>s.delete(id));}catch(e){}}},
+};
+function readImage(file,max=1600){return new Promise((res,rej)=>{const url=URL.createObjectURL(file);const img=new Image();img.onload=()=>{const s=Math.min(1,max/Math.max(img.width,img.height));const cv=document.createElement('canvas');cv.width=Math.round(img.width*s);cv.height=Math.round(img.height*s);cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(url);res(cv.toDataURL('image/jpeg',.82));};img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('Billedet kunne ikke læses'));};img.src=url;});}
+async function hydrateThumbs(root=document){for(const im of $$('img[data-photo]',root)){if(im.src)continue;const d=await PhotoDB.get(im.dataset.photo);if(d)im.src=d;}}
+
+/* ============ Beregninger ============ */
+const vArea=v=>num(v.b)*num(v.h)*(num(v.antal)||1);
+const vPerim=v=>2*(num(v.b)+num(v.h))*(num(v.antal)||1);
+const fBrutto=f=>f.mode==='lxh'?num(f.l)*num(f.h):num(f.areal);
+const fFradrag=(c,f)=>c.vinduer.filter(v=>v.flade===f.id).reduce((s,v)=>s+(vArea(v)||0),0);
+const fNetto=(c,f)=>fBrutto(f)-fFradrag(c,f);
+const falsLength=c=>c.vinduer.reduce((s,v)=>s+(vPerim(v)||0),0);
+function linjeL(c,l){return l.auto?falsLength(c):num(l.l);}
+function lagU(f){
+  const T=FLADE_TYPER[f.type]||FLADE_TYPER.ydervaeg;let R=T.rsi+T.rse,ok=false;
+  for(const L of f.lag||[]){if(L.mat==='luft'){R+=.18;ok=true;continue;}const lam=L.mat==='egen'?num(L.lambda):(MATERIALER.find(m=>m[0]===L.mat)||[])[2];const d=num(L.d)/1000;if(lam>0&&d>0){R+=d/lam;ok=true;}}
+  return ok?1/R:NaN;
+}
+function fladeB(c,id){const f=c.flader.find(x=>x.id===id);return f?num(f.b):1;}
+function calc(c){
+  const r={flader:0,vinduer:0,linjer:0,aFlade:0,aVindue:0};
+  for(const f of c.flader){const a=fNetto(c,f),u=num(f.U),b=num(f.b);if(a>0)r.aFlade+=a;if(a>0&&u>=0&&b>=0)r.flader+=a*u*b;}
+  for(const v of c.vinduer){const a=vArea(v),u=num(v.Uw),b=v.flade?fladeB(c,v.flade):1;if(a>0)r.aVindue+=a;if(a>0&&u>=0)r.vinduer+=a*u*(Number.isFinite(b)?b:1);}
+  for(const l of c.linjetab){const L=linjeL(c,l),p=num(l.psi),b=num(l.b);if(L>0&&p>=0)r.linjer+=L*p*(Number.isFinite(b)?b:1);}
+  r.HT=r.flader+r.vinduer+r.linjer;
+  const A=num(c.bygning.areal);r.areal=A;
+  r.HTm2=A>0?r.HT/A:NaN;
+  r.dim=r.HT*32/1000; // kW ved 20/−12 °C
+  r.vinduesAndel=A>0?r.aVindue/A:NaN;
+  return r;
+}
+
+/* ============ Validering / mangler ============ */
+function mangler(c){
+  const m=[],B=c.bygning,has=t=>c.flader.some(f=>t.includes(f.type));
+  if(!B.adresse)m.push(['Adresse mangler','sag']);
+  if(!num(B.opfoert))m.push(['Opførelsesår mangler','sag']);
+  if(!(num(B.areal)>0))m.push(['Opvarmet etageareal mangler','sag']);
+  if(!has(['ydervaeg']))m.push(['Ingen ydervægge registreret','skaerm']);
+  if(!has(['loft','skraavaeg','fladt']))m.push(['Loft/tag ikke registreret','skaerm']);
+  if(!has(['terraen','kaelderg','etage_kaelder','gulv_ude']))m.push(['Gulv/terrændæk ikke registreret','skaerm']);
+  if(!c.vinduer.length)m.push(['Ingen vinduer/døre registreret','skaerm']);
+  c.flader.forEach(f=>{if(!(fBrutto(f)>0))m.push([`${f.navn||'Flade'}: areal mangler`,'skaerm']);if(!(num(f.U)>0))m.push([`${f.navn||'Flade'}: U-værdi mangler`,'skaerm']);if(fNetto(c,f)<0)m.push([`${f.navn||'Flade'}: vinduer er større end fladen`,'skaerm']);});
+  c.vinduer.forEach(v=>{if(!(vArea(v)>0))m.push([`${v.navn||'Vindue'}: mål mangler`,'skaerm']);if(!(num(v.Uw)>0))m.push([`${v.navn||'Vindue'}: Uw mangler`,'skaerm']);if(!v.orient)m.push([`${v.navn||'Vindue'}: orientering mangler`,'skaerm']);});
+  if(!c.linjetab.some(l=>l.type.startsWith('fund')))m.push(['Linjetab for fundament mangler','skaerm']);
+  if(!c.varme.kilde)m.push(['Varmekilde ikke valgt','anlaeg']);
+  if(['gas_kond','gas','olie','pille'].includes(c.varme.kilde)&&!num(c.varme.eta100))m.push(['Kedlens virkningsgrad mangler (typeskilt)','anlaeg']);
+  if(['vp_lv','vp_jord'].includes(c.varme.kilde)&&!num(c.varme.scop))m.push(['Varmepumpens SCOP/COP mangler','anlaeg']);
+  if(c.vent.type!=='naturlig'&&!num(c.vent.qm))m.push(['Mekanisk luftskifte (qm) mangler','anlaeg']);
+  const cnt=k=>c.fotos.filter(p=>p.kategori===k).length;
+  for(const[k,K]of Object.entries(FOTO_KAT))if(K.min&&cnt(k)<K.min)m.push([`Fotos: ${K.navn} (${cnt(k)}/${K.min})`,'fotos']);
+  return m;
+}
+
+/* ============ Forbedringsforslag ============ */
+function forslag(c){
+  const out=[],kwh=dH=>dH*GRADDAGE*24/1000;
+  const byType=t=>c.flader.filter(f=>t.includes(f.type));
+  byType(['loft','skraavaeg','fladt']).forEach(f=>{const u=num(f.U),a=fNetto(c,f);if(u>.2&&a>0){const nu=.12,dH=a*(u-nu)*num(f.b);out.push({t:`Efterisolér ${f.navn.toLowerCase()}`,d:`Fra U ${fmt(u)} til ca. ${fmt(nu)} W/m²K (ca. 300–350 mm isolering).`,dH});}});
+  byType(['ydervaeg']).forEach(f=>{const u=num(f.U),a=fNetto(c,f);if(u>=1&&/hul/i.test(f.preset||'')){const nu=.55,dH=a*(u-nu)*num(f.b);out.push({t:`Hulmursisolering: ${f.navn}`,d:`Indblæsning af granulat, U fra ${fmt(u)} til ca. ${fmt(nu)}.`,dH});}});
+  byType(['etage_kaelder']).forEach(f=>{const u=num(f.U),a=fNetto(c,f);if(u>.5){const nu=.3,dH=a*(u-nu)*num(f.b);out.push({t:'Isolér loft i uopvarmet kælder',d:`Isolering under dæk, U fra ${fmt(u)} til ca. ${fmt(nu)}.`,dH});}});
+  const gl=c.vinduer.filter(v=>num(v.Uw)>=2.2&&num(v.g)>0);
+  if(gl.length){const dH=gl.reduce((s,v)=>s+vArea(v)*(num(v.Uw)-.9),0);out.push({t:'Udskift ældre vinduer',d:`${gl.length} vinduespost(er) med Uw ≥ 2,2. Ny 3-lags rude med varm kant: Uw ca. 0,9.`,dH});}
+  const dr=c.vinduer.filter(v=>num(v.Uw)>=2.2&&!(num(v.g)>0));
+  if(dr.length){const dH=dr.reduce((s,v)=>s+vArea(v)*(num(v.Uw)-1.0),0);out.push({t:'Udskift ældre yderdøre',d:'Nye isolerede døre, U ca. 1,0.',dH});}
+  const V=c.varme,alder=num(V.aar)?new Date().getFullYear()-num(V.aar):0;
+  if(V.kilde==='olie'||(['gas','gas_kond'].includes(V.kilde)&&alder>=15)||V.kilde==='el')out.push({t:'Skift til varmepumpe',d:`${KILDER[V.kilde]}${alder?`, ${alder} år gammel`:''}. Luft/vand-varmepumpe vurderes, evt. fjernvarme hvis muligt.`});
+  if(V.kilde==='gas')out.push({t:'Kondenserende kedel',d:'Ikke-kondenserende gaskedel kan udskiftes, hvis varmepumpe ikke er realistisk.'});
+  if(num(c.fordeling.roerL)>0&&!(num(c.fordeling.roerIso)>=30))out.push({t:'Isolér varmerør i uopvarmede rum',d:`${fmt(num(c.fordeling.roerL),0)} m rør med under 30 mm isolering.`});
+  if(num(c.vand.isolering)>0&&num(c.vand.isolering)<40)out.push({t:'Ny varmtvandsbeholder',d:`Beholderen har kun ${c.vand.isolering} mm isolering.`});
+  if(!(num(c.sol.pv_kwp)>0))out.push({t:'Solceller',d:'Ingen solceller registreret. Vurdér tagflade mod S/SØ/SV.'});
+  return out.map(o=>({...o,kwh:o.dH?kwh(o.dH):null}));
+}
+
+/* ============ Formular-byggesten ============ */
+function field(label,path,val,o={}){
+  const id='i_'+path.replace(/\./g,'_');const cls=o.full?'f full':'f';
+  let ctl;
+  if(o.options){const opts=Array.isArray(o.options)?o.options:Object.entries(o.options);ctl=`<select id="${id}" data-b="${path}">${o.blank!==false?`<option value="">${esc(o.blank||'Vælg…')}</option>`:''}${opts.map(([k,v])=>`<option value="${esc(k)}"${String(val)===String(k)?' selected':''}>${esc(v)}</option>`).join('')}</select>`;}
+  else if(o.area){ctl=`<textarea id="${id}" data-b="${path}" placeholder="${esc(o.ph||'')}">${esc(val)}</textarea>`;}
+  else{const isNum=!!o.unit||o.num;const inp=`<input id="${id}" type="${o.type||'text'}" data-b="${path}" value="${esc(val)}"${isNum?' inputmode="decimal" class="num-in"':''} placeholder="${esc(o.ph||'')}" autocomplete="off">`;ctl=o.unit?`<div class="unit">${inp}<i>${esc(o.unit)}</i></div>`:inp;}
+  return `<label class="${cls}" for="${id}"><span>${esc(label)}${o.em?` <em>${esc(o.em)}</em>`:''}</span>${ctl}${o.hint?`<p class="hint">${o.hint}</p>`:''}</label>`;
+}
+const I={
+  plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  cam:'<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  copy:'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>',
+  dl:'<svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
+  spark:'<svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>',
+};
+const NAV=[
+  ['sag','Bygning','<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>'],
+  ['skaerm','Klimaskærm','<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 12h16M12 4v16"/>'],
+  ['anlaeg','Anlæg','<path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-3.5 2-6 5-10z"/>'],
+  ['fotos','Fotos','<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'],
+  ['e10','Energy10','<path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/>'],
+  ['mere','Mere','<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>'],
+];
+
+/* ============ Render ============ */
+function render(keepScroll){
+  const c=cur(),y=window.scrollY;
+  $('#nav').innerHTML=NAV.map(([k,t,p])=>{const b=k==='e10'?mangler(c).length:0;return `<button type="button" data-tab="${k}"${state.tab===k?' aria-current="page"':''}><svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>${t}${b?`<span class="badge">${b}</span>`:''}</button>`;}).join('');
+  const B=c.bygning;$('#hdrCase').textContent=[B.adresse||'Ny sag',B.by].filter(Boolean).join(', ');
+  const V={sag:vSag,skaerm:vSkaerm,anlaeg:vAnlaeg,fotos:vFotos,e10:vE10,mere:vMere}[state.tab]||vSag;
+  $('#main').innerHTML=(c.example&&state.tab!=='mere'?`<div class="banner"><span><b>Eksempelsag.</b> Tallene er opdigtede og viser blot, hvordan en udfyldt registrering ser ud.</span><button class="btn sm" data-act="new-case">Start ny sag</button></div>`:'')+V(c);
+  updateCalcs();hydrateThumbs($('#main'));
+  if(keepScroll)window.scrollTo(0,y);else window.scrollTo(0,0);
+}
+function updateCalcs(){
+  const c=cur(),r=calc(c);
+  $('#hdrHT').textContent=fmt(r.HT,1);
+  $('#hdrCase').textContent=[c.bygning.adresse||'Ny sag',c.bygning.by].filter(Boolean).join(', ');
+  for(const el of $$('[data-calc]')){
+    const[k,id]=el.dataset.calc.split(':');let t='–';
+    const f=id&&c.flader.find(x=>x.id===id),v=id&&c.vinduer.find(x=>x.id===id),l=id&&c.linjetab.find(x=>x.id===id);
+    switch(k){
+      case 'fb':t=fmt(fBrutto(f));break; case 'ff':t=fmt(fFradrag(c,f));break; case 'fn':t=fmt(fNetto(c,f));break;
+      case 'fh':t=fmt(fNetto(c,f)*num(f.U)*num(f.b));break;
+      case 'fsum':t=`${fmt(fNetto(c,f),1)} m²`;break; case 'fsumU':t=`U ${fmt(num(f.U))}`;break;
+      case 'lu':t=fmt(lagU(f),3);break;
+      case 'va':t=fmt(vArea(v));break; case 'vh':t=fmt(vArea(v)*num(v.Uw)*(v.flade?fladeB(c,v.flade):1));break;
+      case 'vsum':t=`${fmt(vArea(v),2)} m²`;break; case 'vsumU':t=`Uw ${fmt(num(v.Uw))}`;break;
+      case 'll':t=fmt(linjeL(c,l),1);break; case 'lh':t=fmt(linjeL(c,l)*num(l.psi)*(num(l.b)||1));break;
+      case 'lsum':t=`${fmt(linjeL(c,l),1)} m`;break;
+      case 'ht':t=fmt(r.HT,1);break; case 'htm2':t=fmt(r.HTm2,2);break; case 'dim':t=fmt(r.dim,1);break;
+      case 'hf':t=fmt(r.flader,1);break; case 'hv':t=fmt(r.vinduer,1);break; case 'hl':t=fmt(r.linjer,1);break;
+      case 'va_tot':t=fmt(r.aVindue,1);break; case 'vandel':t=fmt(r.vinduesAndel*100,0)+' %';break;
+      case 'fals':t=fmt(falsLength(c),1);break;
+      case 'fname':t=f.navn||FLADE_TYPER[f.type].navn;break; case 'lname':t=l.navn||'Linjetab';break;
+    }
+    el.textContent=t;
+  }
+}
+
+/* ---- Bygning ---- */
+function vSag(c){
+  const B=c.bygning,p='bygning.';
+  return `<div class="page-h"><div><div class="eyebrow">Sag</div><h2>Bygning og ejendom</h2><p>Stamdata fra BBR og besigtigelsen. Etagearealet er det opvarmede areal, der indgår i Energy10.</p></div></div>
+  <section class="block"><div class="panel grid wide">
+    ${field('Adresse',p+'adresse',B.adresse,{ph:'Vej og nr.'})}
+    ${field('Postnr.',p+'postnr',B.postnr,{num:true})}
+    ${field('By',p+'by',B.by)}
+    ${field('Ejendomsnummer',p+'ejendomsnr',B.ejendomsnr,{em:'kommune-ejendomsnr.'})}
+    ${field('Matrikel',p+'matrikel',B.matrikel)}
+    ${field('Ejer / kontakt',p+'ejer',B.ejer)}
+    ${field('Besigtigelsesdato',p+'besigtigelse',B.besigtigelse,{type:'date'})}
+  </div></section>
+  <section class="block"><div class="block-h"><h3>Bygningsdata</h3></div><div class="panel grid">
+    ${field('BBR-anvendelse',p+'anvendelse',B.anvendelse,{options:ANVENDELSE,blank:false})}
+    ${field('Opførelsesår',p+'opfoert',B.opfoert,{num:true,ph:'fx 1968'})}
+    ${field('Væsentlig ombygning',p+'ombygget',B.ombygget,{num:true,ph:'år'})}
+    ${field('Opvarmet etageareal',p+'areal',B.areal,{unit:'m²'})}
+    ${field('Heraf opvarmet kælder',p+'arealKaelder',B.arealKaelder,{unit:'m²'})}
+    ${field('Antal etager',p+'etager',B.etager,{num:true})}
+    ${field('Gns. rumhøjde',p+'rumhoejde',B.rumhoejde,{unit:'m'})}
+    ${field('Varmekapacitet',p+'varmekapacitet',B.varmekapacitet,{options:{'80':'Let (80 Wh/K m²)','120':'Middel (120 Wh/K m²)','160':'Tung (160 Wh/K m²)'},blank:false})}
+    ${field('Noter',p+'noter',B.noter,{area:true,full:true,ph:'Særlige forhold, tilbygninger, adgang …'})}
+  </div></section>
+  <section class="block"><div class="stats">
+    <div class="stat"><b data-calc="ht">–</b><span>H<sub>T</sub> klimaskærm, W/K</span></div>
+    <div class="stat"><b data-calc="htm2">–</b><span>W/K pr. m² etageareal</span></div>
+    <div class="stat"><b data-calc="dim">–</b><span>kW transmissionstab ved −12 °C</span></div>
+    <div class="stat"><b data-calc="vandel">–</b><span>vinduesareal / etageareal</span></div>
+  </div></section>`;
+}
+
+/* ---- Klimaskærm ---- */
+function miniPhotos(c,elId,kat){
+  const ps=c.fotos.filter(p=>p.element===elId);
+  return `<div class="mini-photos">${ps.map(p=>`<button class="thumb" type="button" data-act="open-photo" data-id="${p.id}" aria-label="Åbn foto"><img data-photo="${p.id}" alt=""></button>`).join('')}
+    <label class="btn sm filebtn">${I.cam} Foto<input type="file" accept="image/*" capture="environment" data-foto-kat="${kat}" data-foto-el="${elId}"></label></div>`;
+}
+function vFlade(c,f){
+  const T=FLADE_TYPER[f.type]||FLADE_TYPER.ydervaeg,p=`flader.${f.id}.`,lib=LIB[f.type]||[];
+  const L=lib.find(x=>x[0]===f.preset);const edited=L&&num(f.U)!==L[2];
+  return `<details class="item" data-open="${f.id}"${openSet.has(f.id)?' open':''}><summary>
+    <span class="sum-t" data-calc="fname:${f.id}">${esc(f.navn||T.navn)}</span>
+    <span class="sum-s"><span>${esc(T.navn)}</span>${f.orient?`<span>${esc(f.orient)}</span>`:''}${edited?'<span class="pill">U rettet</span>':''}</span>
+    <span class="sum-v"><span data-calc="fsum:${f.id}"></span><small data-calc="fsumU:${f.id}"></small></span></summary>
+  <div class="item-body">
+    <div class="grid">
+      ${field('Betegnelse',p+'navn',f.navn)}
+      ${field('Type',p+'type',f.type,{options:Object.entries(FLADE_TYPER).map(([k,v])=>[k,v.navn]),blank:false})}
+      ${f.type==='ydervaeg'||f.type==='kaelderv'?field('Orientering',p+'orient',f.orient,{options:ORIENT.slice(0,8).map(o=>[o[0],o[0]])}):''}
+      ${field('Arealangivelse',p+'mode',f.mode,{options:{lxh:'Længde × højde',areal:'Areal direkte'},blank:false})}
+      ${f.mode==='lxh'?field('Længde',p+'l',f.l,{unit:'m'})+field('Højde',p+'h',f.h,{unit:'m'}):field('Areal (brutto)',p+'areal',f.areal,{unit:'m²'})}
+    </div>
+    <div class="calcline"><span>Brutto <b data-calc="fb:${f.id}"></b> m²</span><span>− vinduer/døre <b data-calc="ff:${f.id}"></b> m²</span><span>= netto <b data-calc="fn:${f.id}"></b> m²</span></div>
+    <div class="grid">
+      ${field('Konstruktion (vejledende)',p+'preset',f.preset,{options:[...lib.map(x=>[x[0],`${x[1]} · U ${fmt(x[2])}`]),['egen','Egen konstruktion']],blank:'Vælg konstruktion…',full:true})}
+      ${field('U-værdi',p+'U',f.U,{unit:'W/m²K'})}
+      ${field('b-faktor',p+'b',f.b,{num:true,hint:'1,0 mod det fri · 0,7 mod jord/uopvarmet (vejledende)'})}
+    </div>
+    <details class="sub" data-open="lag-${f.id}"${openSet.has('lag-'+f.id)?' open':''}><summary><h4 style="display:inline">U-værdi fra lagopbygning</h4></summary>
+      <p class="hint">Rsi/Rse efter type (${fmt(T.rsi)} / ${fmt(T.rse)}). Træskelet og gulv mod jord kræver korrektion – brug resultatet som kontrol.</p>
+      <div class="layers">
+        <div class="layer layer-h"><span>Materiale</span><span>Tykkelse mm</span><span>λ W/mK</span><span></span></div>
+        ${(f.lag||[]).map((L,i)=>`<div class="layer">
+          <select data-lag="${f.id}:${i}:mat" aria-label="Materiale">${MATERIALER.map(m=>`<option value="${m[0]}"${L.mat===m[0]?' selected':''}>${esc(m[1])}</option>`).join('')}</select>
+          <input type="text" inputmode="decimal" class="num-in" data-lag="${f.id}:${i}:d" value="${esc(L.d)}" aria-label="Tykkelse i mm">
+          <input type="text" inputmode="decimal" class="num-in" data-lag="${f.id}:${i}:lambda" value="${esc(L.mat==='egen'?L.lambda:((MATERIALER.find(m=>m[0]===L.mat)||[])[2]??''))}" ${L.mat==='egen'?'':'readonly'} aria-label="Lambda">
+          <button class="btn sm ghost" data-act="del-lag" data-id="${f.id}" data-i="${i}" aria-label="Fjern lag">✕</button></div>`).join('')}
+      </div>
+      <div class="row"><button class="btn sm" data-act="add-lag" data-id="${f.id}">${I.plus} Tilføj lag</button><span class="calcline">U beregnet <b data-calc="lu:${f.id}"></b> W/m²K</span><button class="btn sm" data-act="use-lag" data-id="${f.id}">Brug som U-værdi</button></div>
+    </details>
+    ${field('Noter',p+'noter',f.noter,{area:true,ph:'Hvad er set/målt, fx “150 mm målt i hanebånd”'})}
+    <div><div class="eyebrow" style="margin-bottom:6px">Fotos</div>${miniPhotos(c,f.id,['loft','skraavaeg','fladt','skunk'].includes(f.type)?'loft':['terraen','kaelderg','etage_kaelder','kaelderv','gulv_ude'].includes(f.type)?'gulv':'facade')}</div>
+    <div class="item-foot"><span class="calcline">A·U·b = <b data-calc="fh:${f.id}"></b> W/K</span><div class="row"><button class="btn sm" data-act="dup" data-list="flader" data-id="${f.id}">Kopiér</button><button class="btn sm danger" data-act="del" data-list="flader" data-id="${f.id}">Slet</button></div></div>
+  </div></details>`;
+}
+function vVindue(c,v){
+  const p=`vinduer.${v.id}.`,R=RUDER[v.rude];
+  return `<details class="item" data-open="${v.id}"${openSet.has(v.id)?' open':''}><summary>
+    <span class="sum-t">${esc(v.navn||'Vindue')}${num(v.antal)>1?` <span class="pill">${esc(v.antal)} stk</span>`:''}</span>
+    <span class="sum-s"><span>${esc(v.orient||'–')}</span><span>${esc(R?R.navn:'')}</span></span>
+    <span class="sum-v"><span data-calc="vsum:${v.id}"></span><small data-calc="vsumU:${v.id}"></small></span></summary>
+  <div class="item-body">
+    <div class="grid">
+      ${field('Betegnelse',p+'navn',v.navn)}
+      ${field('Sidder i flade',p+'flade',v.flade,{options:c.flader.map(f=>[f.id,f.navn||FLADE_TYPER[f.type].navn]),blank:'(ingen – fratrækkes ikke)'})}
+      ${field('Orientering',p+'orient',v.orient,{options:ORIENT.map(o=>[o[0],o[1]==null?o[0]:`${o[0]} (${o[1]}°)`])})}
+      ${field('Hældning',p+'haeld',v.haeld,{unit:'°',hint:'90 = lodret'})}
+      ${field('Antal',p+'antal',v.antal,{num:true})}
+      ${field('Bredde (karmmål)',p+'b',v.b,{unit:'m'})}
+      ${field('Højde (karmmål)',p+'h',v.h,{unit:'m'})}
+    </div>
+    <div class="calcline"><span>Samlet areal <b data-calc="va:${v.id}"></b> m²</span></div>
+    <div class="grid">
+      ${field('Rude / type (vejledende)',p+'rude',v.rude,{options:Object.entries(RUDER).map(([k,x])=>[k,x.Uw!==''?`${x.navn} · Uw ${fmt(x.Uw,1)}`:x.navn]),full:true})}
+      ${field('Uw',p+'Uw',v.Uw,{unit:'W/m²K'})}
+      ${field('g-værdi',p+'g',v.g,{num:true})}
+      ${field('Ff (glasandel)',p+'Ff',v.Ff,{num:true,hint:'glasareal / vinduesareal'})}
+      ${field('Ramme',p+'ramme',v.ramme,{options:[['Træ','Træ'],['Træ/alu','Træ/alu'],['Plast','Plast'],['Alu','Alu'],['Stål','Stål']]})}
+      ${field('Årstal (afstandsliste)',p+'aar',v.aar,{num:true})}
+    </div>
+    <div class="sub"><h4>Skygger (grader)</h4><div class="grid">
+      ${field('Horisont',p+'horisont',v.horisont,{unit:'°'})}${field('Udhæng',p+'udhaeng',v.udhaeng,{unit:'°'})}${field('Venstre',p+'venstre',v.venstre,{unit:'°'})}${field('Højre',p+'hoejre',v.hoejre,{unit:'°'})}
+    </div></div>
+    ${field('Noter',p+'noter',v.noter,{area:true})}
+    <div><div class="eyebrow" style="margin-bottom:6px">Fotos</div>${miniPhotos(c,v.id,'vindue')}</div>
+    <div class="item-foot"><span class="calcline">A·Uw·b = <b data-calc="vh:${v.id}"></b> W/K</span><div class="row"><button class="btn sm" data-act="dup" data-list="vinduer" data-id="${v.id}">Kopiér</button><button class="btn sm danger" data-act="del" data-list="vinduer" data-id="${v.id}">Slet</button></div></div>
+  </div></details>`;
+}
+function vLinje(c,l){
+  const p=`linjetab.${l.id}.`;
+  return `<details class="item" data-open="${l.id}"${openSet.has(l.id)?' open':''}><summary>
+    <span class="sum-t" data-calc="lname:${l.id}">${esc(l.navn||'Linjetab')}</span><span class="sum-s"><span>ψ ${esc(l.psi||'–')}</span>${l.auto?'<span class="pill acc">længde fra vinduer</span>':''}</span>
+    <span class="sum-v"><span data-calc="lsum:${l.id}"></span></span></summary>
+  <div class="item-body"><div class="grid">
+    ${field('Betegnelse',p+'navn',l.navn)}
+    ${field('Type (vejledende)',p+'type',l.type,{options:LINJETAB.map(x=>[x[0],x[2]!==''?`${x[1]} · ψ ${fmt(x[2])}`:x[1]]),blank:false,full:true})}
+    ${l.auto?`<div class="f"><span>Længde</span><div class="calcline"><b data-calc="ll:${l.id}"></b> m (sum af vinduesomkreds)</div></div>`:field('Længde',p+'l',l.l,{unit:'m'})}
+    ${field('ψ',p+'psi',l.psi,{unit:'W/mK'})}
+    ${field('b-faktor',p+'b',l.b,{num:true})}
+  </div>
+  <div class="item-foot"><span class="calcline">L·ψ·b = <b data-calc="lh:${l.id}"></b> W/K</span><div class="row">${l.type.startsWith('fals')?`<button class="btn sm" data-act="toggle-auto" data-id="${l.id}">${l.auto?'Indtast længde selv':'Beregn fra vinduer'}</button>`:''}<button class="btn sm danger" data-act="del" data-list="linjetab" data-id="${l.id}">Slet</button></div></div>
+  </div></details>`;
+}
+function vSkaerm(c){
+  return `<div class="page-h"><div><div class="eyebrow">Klimaskærm</div><h2>Flader, vinduer og linjetab</h2><p>Mål op på stedet. Vinduer, der knyttes til en flade, trækkes automatisk fra fladens areal.</p></div></div>
+  <div class="stats">
+    <div class="stat"><b data-calc="hf">–</b><span>Flader, W/K</span></div>
+    <div class="stat"><b data-calc="hv">–</b><span>Vinduer/døre, W/K (<span data-calc="va_tot"></span> m²)</span></div>
+    <div class="stat"><b data-calc="hl">–</b><span>Linjetab, W/K</span></div>
+    <div class="stat"><b data-calc="ht">–</b><span>H<sub>T</sub> i alt, W/K</span></div>
+  </div>
+  <section class="block"><div class="block-h"><h3>Flader</h3><div class="row">
+    <select id="newFladeType" aria-label="Type af ny flade">${Object.entries(FLADE_TYPER).map(([k,v])=>`<option value="${k}">${esc(v.navn)}</option>`).join('')}</select>
+    <button class="btn pri" data-act="add-flade">${I.plus} Tilføj flade</button></div></div>
+    <div class="items">${c.flader.length?c.flader.map(f=>vFlade(c,f)).join(''):'<div class="empty">Ingen flader endnu. Start med ydervæggene – én pr. facade gør det let at knytte vinduer til.</div>'}</div></section>
+  <section class="block"><div class="block-h"><h3>Vinduer og døre</h3><div class="row"><button class="btn pri" data-act="add-vindue">${I.plus} Tilføj vindue/dør</button></div></div>
+    <div class="items">${c.vinduer.length?c.vinduer.map(v=>vVindue(c,v)).join(''):'<div class="empty">Ingen vinduer endnu. Ens vinduer i samme facade kan registreres samlet med “Antal”.</div>'}</div></section>
+  <section class="block"><div class="block-h"><h3>Linjetab</h3><div class="row"><button class="btn" data-act="add-linje" data-type="fund_uiso">${I.plus} Fundament</button><button class="btn" data-act="add-linje" data-type="fals_uiso">${I.plus} Vinduesfals</button></div></div>
+    <p class="hint">Samlet vinduesomkreds lige nu: <span class="mono" data-calc="fals"></span> m.</p>
+    <div class="items">${c.linjetab.length?c.linjetab.map(l=>vLinje(c,l)).join(''):'<div class="empty">Tilføj fundamentets længde (husets omkreds) og vinduesfalse.</div>'}</div></section>`;
+}
+
+/* ---- Anlæg ---- */
+function vAnlaeg(c){
+  const V=c.varme,F=c.fordeling,W=c.vand,Ve=c.vent,S=c.sol,k=V.kilde;
+  const kedel=['gas_kond','gas','olie','pille'].includes(k),vp=['vp_lv','vp_jord'].includes(k);
+  return `<div class="page-h"><div><div class="eyebrow">Installationer</div><h2>Varme, vand og ventilation</h2><p>Aflæs typeskilte – eller tag et foto og lad AI læse det under Fotos.</p></div></div>
+  <section class="block"><div class="block-h"><h3>Varmeforsyning</h3></div><div class="panel grid">
+    ${field('Varmekilde',`varme.kilde`,k,{options:KILDER})}
+    ${field('Fabrikat',`varme.fabrikat`,V.fabrikat)}
+    ${field('Model / type',`varme.model`,V.model)}
+    ${field('Fremstillingsår',`varme.aar`,V.aar,{num:true})}
+    ${k!=='el'&&k!=='fjernvarme'?field('Nominel effekt',`varme.effekt`,V.effekt,{unit:'kW'}):''}
+    ${kedel?field('Virkningsgrad 100 % last',`varme.eta100`,V.eta100,{unit:'%'})+field('Virkningsgrad 30 % last',`varme.eta30`,V.eta30,{unit:'%'})+field('Tomgangstab',`varme.tomgang`,V.tomgang,{unit:'%'}):''}
+    ${vp?field('SCOP / COP',`varme.scop`,V.scop,{num:true}):''}
+    ${k==='fjernvarme'?field('Unit / veksler',`varme.veksler`,V.veksler,{options:[['direkte','Direkte anlæg'],['indirekte','Indirekte (veksler)'],['unit','Fjernvarmeunit']]}):''}
+    ${field('Placering',`varme.placering`,V.placering,{options:[['opvarmet','I opvarmet rum'],['uopvarmet','I uopvarmet rum']],blank:false})}
+    ${field('Styring',`varme.styring`,V.styring,{ph:'fx vejrkompensering, rumtermostat'})}
+    ${field('Supplerende varme',`varme.suppl`,V.suppl,{options:[['','Ingen'],['braendeovn','Brændeovn / pejs'],['ll_vp','Luft/luft-varmepumpe'],['el','Elvarme'],['solvarme','Solvarme']],blank:false})}
+    ${V.suppl?field('Supplement, noter',`varme.supplNote`,V.supplNote,{ph:'fx brændeovn i stue, 2015'}):''}
+  </div></section>
+  <section class="block"><div class="block-h"><h3>Varmefordeling</h3></div><div class="panel grid">
+    ${field('Anlægstype',`fordeling.system`,F.system,{options:[['2-strengs radiatorer','2-strengs radiatorer'],['1-strengs radiatorer','1-strengs radiatorer'],['Gulvvarme','Gulvvarme'],['Radiatorer + gulvvarme','Radiatorer + gulvvarme'],['Luftvarme','Luftvarme']],blank:false})}
+    ${field('Fremløb (dim.)',`fordeling.fremloeb`,F.fremloeb,{unit:'°C'})}
+    ${field('Retur (dim.)',`fordeling.retur`,F.retur,{unit:'°C'})}
+    ${field('Termostatventiler',`fordeling.termostater`,F.termostater,{options:[['ja','Ja'],['delvis','Delvis'],['nej','Nej']],blank:false})}
+    ${field('Cirkulationspumpe',`fordeling.pumpe`,F.pumpe,{ph:'fabrikat / type'})}
+    ${field('Pumpe, effekt',`fordeling.pumpeW`,F.pumpeW,{unit:'W'})}
+    ${field('Pumpestyring',`fordeling.pumpeStyring`,F.pumpeStyring,{options:[['automatisk','Automatisk / trinløs'],['trin','Trinomskifter'],['konstant','Konstant']],blank:false})}
+    ${field('Rør i uopvarmede rum',`fordeling.roerL`,F.roerL,{unit:'m'})}
+    ${field('Isolering af disse rør',`fordeling.roerIso`,F.roerIso,{unit:'mm'})}
+  </div></section>
+  <section class="block"><div class="block-h"><h3>Varmt brugsvand</h3></div><div class="panel grid">
+    ${field('Opvarmes af',`vand.kilde`,W.kilde,{options:[['samme','Samme varmekilde'],['el','Elvandvarmer'],['gennemstroem','Gennemstrømningsvandvarmer'],['vp','Brugsvandsvarmepumpe']],blank:false})}
+    ${field('Beholder, fabrikat',`vand.fabrikat`,W.fabrikat)}
+    ${field('Årstal',`vand.aar`,W.aar,{num:true})}
+    ${field('Volumen',`vand.volumen`,W.volumen,{unit:'liter'})}
+    ${field('Isoleringstykkelse',`vand.isolering`,W.isolering,{unit:'mm'})}
+    ${field('Varmetab',`vand.varmetab`,W.varmetab,{unit:'W/K'})}
+    ${field('Temperatur',`vand.temp`,W.temp,{unit:'°C'})}
+    ${field('Forbrug',`vand.forbrug`,W.forbrug,{unit:'l/m² år',hint:'Standard for boliger: 250'})}
+    ${field('Cirkulation',`vand.cirk`,W.cirk,{options:[['nej','Nej'],['ja','Ja']],blank:false})}
+    ${W.cirk==='ja'?field('Cirkulationsledning',`vand.cirkL`,W.cirkL,{unit:'m'})+field('Cirk.pumpe',`vand.cirkW`,W.cirkW,{unit:'W'}):''}
+  </div></section>
+  <section class="block"><div class="block-h"><h3>Ventilation</h3></div><div class="panel grid">
+    ${field('Ventilationsform',`vent.type`,Ve.type,{options:VENT,blank:false})}
+    ${Ve.type==='naturlig'?field('Naturlig vent. vinter',`vent.qn`,Ve.qn,{unit:'l/s m²'}):field('Mek. luftskifte qm',`vent.qm`,Ve.qm,{unit:'l/s m²'})+field('SEL',`vent.sel`,Ve.sel,{unit:'kJ/m³'})}
+    ${Ve.type==='balanceret'?field('Varmegenvinding',`vent.vgv`,Ve.vgv,{unit:'%'}):''}
+    ${Ve.type!=='naturlig'?field('Fabrikat / model',`vent.fabrikat`,Ve.fabrikat)+field('Årstal',`vent.aar`,Ve.aar,{num:true}):''}
+    ${field('Infiltration',`vent.qinf`,Ve.qinf,{unit:'l/s m²',hint:'Standard for eksisterende boliger: 0,13'})}
+  </div></section>
+  <section class="block"><div class="block-h"><h3>Solceller og solvarme</h3></div><div class="panel grid">
+    ${field('Solceller, effekt',`sol.pv_kwp`,S.pv_kwp,{unit:'kWp'})}
+    ${field('Panelareal',`sol.pv_areal`,S.pv_areal,{unit:'m²'})}
+    ${field('Orientering',`sol.pv_orient`,S.pv_orient,{options:ORIENT.map(o=>[o[0],o[0]]),blank:false})}
+    ${field('Hældning',`sol.pv_haeld`,S.pv_haeld,{unit:'°'})}
+    ${field('Installeret år',`sol.pv_aar`,S.pv_aar,{num:true})}
+    ${field('Solvarme, areal',`sol.st_areal`,S.st_areal,{unit:'m²'})}
+  </div></section>`;
+}
+
+/* ---- Fotos ---- */
+function elemName(c,id){const f=c.flader.find(x=>x.id===id)||c.vinduer.find(x=>x.id===id);return f?f.navn:'';}
+function vFotos(c){
+  const done=Object.entries(FOTO_KAT).filter(([k,K])=>K.min&&c.fotos.filter(p=>p.kategori===k).length>=K.min).length,req=Object.values(FOTO_KAT).filter(K=>K.min).length;
+  return `<div class="page-h"><div><div class="eyebrow">Dokumentation</div><h2>Fotos</h2><p>Tag billederne her – de gemmes lokalt på enheden, knyttes til bygningsdele og kan aflæses med AI (typeskilte, ruder, isolering).</p></div><span class="pill ${done===req?'ok':'warn'}">${done}/${req} kategorier dækket</span></div>
+  <div class="cats">${Object.entries(FOTO_KAT).map(([k,K])=>{const ps=c.fotos.filter(p=>p.kategori===k);const st=K.min?(ps.length>=K.min?'ok':'warn'):'';return `<div class="cat">
+    <div class="cat-h"><div><h4>${esc(K.navn)}</h4><p>${esc(K.tip)}</p></div>${K.min?`<span class="pill ${st}">${ps.length}/${K.min}</span>`:`<span class="pill">${ps.length}</span>`}</div>
+    ${ps.length?`<div class="thumbs">${ps.map(p=>`<button class="thumb" type="button" data-act="open-photo" data-id="${p.id}" aria-label="Åbn foto ${esc(p.note||'')}"><img data-photo="${p.id}" alt="">${p.ai?'<span class="ai-dot">AI</span>':''}</button>`).join('')}</div>`:''}
+    <div class="row"><label class="btn sm pri filebtn">${I.cam} Tag foto<input type="file" accept="image/*" capture="environment" data-foto-kat="${k}"></label><label class="btn sm filebtn">Vælg fra album<input type="file" accept="image/*" multiple data-foto-kat="${k}"></label></div>
+  </div>`;}).join('')}</div>`;
+}
+const AI_FELTER={
+  varme:[['varme.kilde','Varmekilde',Object.keys(KILDER)],['varme.fabrikat','Fabrikat'],['varme.model','Model'],['varme.aar','Fremstillingsår'],['varme.effekt','Nominel effekt kW'],['varme.eta100','Virkningsgrad 100 % last, %'],['varme.eta30','Virkningsgrad 30 % last, %'],['varme.scop','SCOP/COP']],
+  vvb:[['vand.fabrikat','Fabrikat'],['vand.aar','Årstal'],['vand.volumen','Volumen liter'],['vand.isolering','Isolering mm'],['vand.varmetab','Varmetab W/K']],
+  vent:[['vent.type','Ventilationsform',Object.keys(VENT)],['vent.fabrikat','Fabrikat/model'],['vent.aar','Årstal'],['vent.vgv','Varmegenvinding %'],['vent.sel','SEL kJ/m³']],
+  fordeling:[['fordeling.pumpe','Cirkulationspumpe fabrikat/type'],['fordeling.pumpeW','Pumpeeffekt W'],['fordeling.termostater','Termostatventiler',['ja','delvis','nej']],['fordeling.roerIso','Rørisolering mm']],
+  sol:[['sol.pv_kwp','Solceller kWp'],['sol.pv_areal','Panelareal m²'],['sol.pv_orient','Orientering',ORIENT.map(o=>o[0])],['sol.pv_aar','Årstal']],
+  vindue:[['element.rude','Rudetype',Object.keys(RUDER).filter(k=>k!=='egen')],['element.ramme','Ramme',['Træ','Træ/alu','Plast','Alu','Stål']],['element.aar','Årstal fra afstandsliste'],['element.antal','Antal ens vinduer i billedet']],
+  facade:[['element.preset','Vægkonstruktion',LIB.ydervaeg.map(x=>x[0])],['bygning.opfoert','Opførelsesår (skøn)']],
+  loft:[['element.preset','Konstruktion (loft)',LIB.loft.map(x=>x[0])],['element.isolering_mm','Målt isoleringstykkelse mm']],
+  gulv:[['element.preset','Konstruktion (terrændæk)',LIB.terraen.map(x=>x[0])]],
+  andet:[],
+};
+function propLabel(felt,val){
+  if(felt==='varme.kilde')return KILDER[val]||val;if(felt==='vent.type')return VENT[val]||val;if(felt==='element.rude')return (RUDER[val]||{}).navn||val;
+  if(felt==='element.preset'){for(const arr of Object.values(LIB)){const x=arr.find(y=>y[0]===val);if(x)return `${x[1]} (U ${fmt(x[2])})`;}}
+  return String(val);
+}
+function vSheet(){
+  const c=cur(),p=c.fotos.find(x=>x.id===sheetPhoto);if(!p){$('#sheet').innerHTML='';return;}
+  const K=FOTO_KAT[p.kategori]||FOTO_KAT.andet,elList=K.elem==='vinduer'?c.vinduer:K.elem==='flader'?c.flader:null;
+  const fields=AI_FELTER[p.kategori]||[],ai=p.ai;
+  $('#sheet').innerHTML=`<div class="sheet" data-act="close-sheet"><div class="sheet-in" role="dialog" aria-modal="true" aria-label="Foto">
+    <div class="block-h"><h3>${esc(K.navn)}</h3><button class="btn sm" data-act="close-sheet">Luk</button></div>
+    <img class="sheet-img" data-photo="${p.id}" alt="Foto">
+    <div class="grid">
+      ${field('Kategori',`fotos.${p.id}.kategori`,p.kategori,{options:Object.entries(FOTO_KAT).map(([k,v])=>[k,v.navn]),blank:false})}
+      ${elList?field('Bygningsdel',`fotos.${p.id}.element`,p.element,{options:elList.map(e=>[e.id,e.navn]),blank:'(ikke knyttet)'}):''}
+      ${field('Note',`fotos.${p.id}.note`,p.note,{full:true,ph:'fx “typeskilt, fyrrum”'})}
+    </div>
+    <div class="ai-box">
+      <div class="block-h"><h4>AI-aflæsning</h4><button class="btn sm pri" data-act="ai" data-id="${p.id}" ${aiBusy?'disabled':''}>${I.spark} ${aiBusy?'Analyserer…':ai?'Analysér igen':'Analysér foto'}</button></div>
+      ${!fields.length?'<p class="hint">Til denne kategori giver AI kun en beskrivelse.</p>':''}
+      ${ai?`<p>${esc(ai.beskrivelse||'')}</p>
+        ${(ai.felter||[]).length?(ai.felter.map((x,i)=>{const needEl=x.felt.startsWith('element.')&&!p.element;return `<div class="prop"><div><div class="k">${esc((fields.find(f=>f[0]===x.felt)||[,x.felt])[1])} · <span class="pill ${x.sikkerhed==='høj'?'ok':x.sikkerhed==='lav'?'warn':''}">${esc(x.sikkerhed||'?')} sikkerhed</span></div><div class="v">${esc(propLabel(x.felt,x.vaerdi))}</div></div>
+          <button class="btn sm" data-act="ai-apply" data-id="${p.id}" data-i="${i}" ${needEl?'disabled title="Knyt fotoet til en bygningsdel først"':''}>${x.applied?'Brugt ✓':'Brug'}</button>${x.begrundelse?`<div class="why">${esc(x.begrundelse)}</div>`:''}${needEl?'<div class="why">Knyt fotoet til en bygningsdel for at bruge værdien.</div>':''}</div>`;}).join('')):'<p class="hint">Ingen værdier kunne aflæses sikkert.</p>'}
+        ${(ai.ekstra||[]).length?`<p class="hint">Tag også: ${esc(ai.ekstra.join(' · '))}</p>`:''}`:`<p class="hint">Sender billedet til Claude og foreslår værdier, som du selv godkender. Kræver API-nøgle under Mere.</p>`}
+      ${aiErr?`<p class="hint" style="color:var(--bad)">${esc(aiErr)}</p>`:''}
+    </div>
+    <div class="row" style="justify-content:space-between"><span class="hint">${esc(p.t||'')}</span><button class="btn sm danger" data-act="del-photo" data-id="${p.id}">Slet foto</button></div>
+  </div></div>`;
+  hydrateThumbs($('#sheet'));
+}
+
+/* ---- Energy10-output ---- */
+function tbl(id,head,rows,foot){
+  const numCols=head.map(h=>h.n);
+  return `<div class="tbl-wrap"><table data-tbl="${id}"><thead><tr>${head.map(h=>`<th${h.n?' class="n"':''}>${esc(h.t)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((v,i)=>`<td${numCols[i]?' class="n"':''}>${esc(v)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${head.length}">Ingen data</td></tr>`}</tbody>${foot?`<tfoot><tr>${foot.map((v,i)=>`<td${numCols[i]?' class="n"':''}>${esc(v)}</td>`).join('')}</tr></tfoot>`:''}</table></div>`;
+}
+function kv(pairs){return `<div class="kv">${pairs.filter(p=>p).map(([k,v])=>`<div>${esc(k)}</div><div class="v">${esc(v===''||v==null?'–':v)}</div>`).join('')}</div>`;}
+function e10Data(c){
+  const r=calc(c),B=c.bygning,V=c.varme,F=c.fordeling,W=c.vand,Ve=c.vent,S=c.sol,d=(x,n=2)=>fmt(num(x),n);
+  const bygning=[['Adresse',`${B.adresse}, ${B.postnr} ${B.by}`],['Ejendomsnr. / matrikel',`${B.ejendomsnr||'–'} / ${B.matrikel||'–'}`],['Anvendelse (BBR)',ANVENDELSE[B.anvendelse]||B.anvendelse],['Opførelsesår',B.opfoert],['Ombygningsår',B.ombygget],['Opvarmet etageareal',`${d(B.areal,1)} m²`],['Heraf kælder',B.arealKaelder?`${d(B.arealKaelder,1)} m²`:''],['Antal etager',B.etager],['Rumhøjde',`${d(B.rumhoejde)} m`],['Varmekapacitet',`${B.varmekapacitet} Wh/K m²`],['Besigtiget',B.besigtigelse]];
+  const flader=c.flader.map(f=>[f.navn,(FLADE_TYPER[f.type]||{}).navn,f.orient||'',fmt(fBrutto(f)),fmt(fFradrag(c,f)),fmt(fNetto(c,f)),d(f.U),d(f.b),fmt(fNetto(c,f)*num(f.U)*num(f.b))]);
+  const vinduer=c.vinduer.map(v=>{const o=ORIENT.find(x=>x[0]===v.orient);return [v.navn,elemName(c,v.flade),v.orient||'',o&&o[1]!=null?o[1]:'',v.haeld,v.antal,d(v.b),d(v.h),fmt(vArea(v)),d(v.Uw),d(v.g),d(v.Ff),v.horisont,v.udhaeng,v.venstre,v.hoejre,(RUDER[v.rude]||{}).navn||''];});
+  const linjer=c.linjetab.map(l=>[l.navn,(LINJETAB.find(x=>x[0]===l.type)||[,''])[1],fmt(linjeL(c,l),1),d(l.psi,3),d(l.b),fmt(linjeL(c,l)*num(l.psi)*(num(l.b)||1))]);
+  const kedel=['gas_kond','gas','olie','pille'].includes(V.kilde);
+  const varme=[['Varmekilde',KILDER[V.kilde]||''],['Fabrikat / model',[V.fabrikat,V.model].filter(Boolean).join(' ')],['Fremstillingsår',V.aar],V.effekt&&['Nominel effekt',`${d(V.effekt,1)} kW`],kedel&&['Virkningsgrad 100 % / 30 %',`${V.eta100||'–'} % / ${V.eta30||'–'} %`],kedel&&['Tomgangstab',V.tomgang?`${V.tomgang} %`:''],V.scop&&['SCOP / COP',V.scop],V.veksler&&['Fjernvarme',V.veksler],['Placering',V.placering==='uopvarmet'?'Uopvarmet rum':'Opvarmet rum'],['Styring',V.styring],['Supplerende varme',[V.suppl,V.supplNote].filter(Boolean).join(' – ')],['Fordelingsanlæg',F.system],['Fremløb / retur',`${F.fremloeb} / ${F.retur} °C`],['Termostatventiler',F.termostater],['Cirkulationspumpe',[F.pumpe,F.pumpeW&&`${F.pumpeW} W`,F.pumpeStyring].filter(Boolean).join(', ')],['Rør i uopvarmede rum',F.roerL?`${F.roerL} m, ${F.roerIso||0} mm isolering`:'']];
+  const vand=[['Opvarmning',({samme:'Samme som rumvarme',el:'Elvandvarmer',gennemstroem:'Gennemstrømning',vp:'Brugsvandsvarmepumpe'})[W.kilde]],['Beholder',[W.fabrikat,W.aar].filter(Boolean).join(', ')],['Volumen',W.volumen?`${W.volumen} l`:''],['Isolering',W.isolering?`${W.isolering} mm`:''],['Varmetab',W.varmetab?`${d(W.varmetab)} W/K`:''],['Temperatur',`${W.temp} °C`],['Forbrug',`${W.forbrug} l/m² år`],['Cirkulation',W.cirk==='ja'?`Ja, ${W.cirkL||'?'} m, ${W.cirkW||'?'} W`:'Nej']];
+  const vent=[['Ventilationsform',VENT[Ve.type]],Ve.type==='naturlig'?['Naturlig vent. vinter',`${d(Ve.qn)} l/s m²`]:['Mekanisk qm',`${d(Ve.qm)} l/s m²`],Ve.type==='balanceret'&&['Varmegenvinding',`${Ve.vgv||'–'} %`],Ve.type!=='naturlig'&&['SEL',`${Ve.sel||'–'} kJ/m³`],Ve.type!=='naturlig'&&['Anlæg',[Ve.fabrikat,Ve.aar].filter(Boolean).join(', ')],['Infiltration',`${d(Ve.qinf)} l/s m²`]];
+  const sol=[['Solceller',S.pv_kwp?`${d(S.pv_kwp)} kWp, ${S.pv_areal||'?'} m², ${S.pv_orient}, ${S.pv_haeld}°`:'Ingen'],['Solvarme',S.st_areal?`${S.st_areal} m²`:'Ingen']];
+  return {r,bygning,flader,vinduer,linjer,varme,vand,vent,sol};
+}
+const H_FLADER=[{t:'Betegnelse'},{t:'Type'},{t:'Orient.'},{t:'Brutto m²',n:1},{t:'Fradrag m²',n:1},{t:'Netto A m²',n:1},{t:'U W/m²K',n:1},{t:'b',n:1},{t:'A·U·b W/K',n:1}];
+const H_VINDUER=[{t:'Betegnelse'},{t:'Flade'},{t:'Orient.'},{t:'Kompas °',n:1},{t:'Hældn. °',n:1},{t:'Antal',n:1},{t:'B m',n:1},{t:'H m',n:1},{t:'A m²',n:1},{t:'Uw',n:1},{t:'g',n:1},{t:'Ff',n:1},{t:'Horis. °',n:1},{t:'Udh. °',n:1},{t:'Ve. °',n:1},{t:'Hø. °',n:1},{t:'Rude'}];
+const H_LINJER=[{t:'Betegnelse'},{t:'Type'},{t:'L m',n:1},{t:'ψ W/mK',n:1},{t:'b',n:1},{t:'L·ψ·b W/K',n:1}];
+function vE10(c){
+  const D=e10Data(c),m=mangler(c),fs=forslag(c),r=D.r;
+  return `<div class="page-h"><div><div class="eyebrow">Output</div><h2>Data til Energy10</h2><p>Samlet i samme rækkefølge som indtastningen: bygning, klimaskærm, ventilation, varme og brugsvand. Kopiér tabellerne direkte eller eksportér hele sagen.</p></div>
+    <div class="row"><button class="btn" data-act="copy-all">${I.copy} Kopiér alt</button><button class="btn" data-act="export-csv">${I.dl} CSV</button><button class="btn" data-act="export-json">${I.dl} JSON</button></div></div>
+  <section class="block"><div class="block-h"><h3>Mangler før indtastning</h3><span class="pill ${m.length?'warn':'ok'}">${m.length?m.length+' punkter':'Komplet'}</span></div>
+    ${m.length?`<ul class="checks">${m.map(([t,tab])=>`<li><span class="pill warn">mangler</span><span style="flex:1">${esc(t)}</span><button class="btn sm ghost" data-tab="${tab}">Ret</button></li>`).join('')}</ul>`:'<p class="hint">Alle påkrævede felter og fotos er registreret.</p>'}</section>
+  <section class="block"><div class="stats">
+    <div class="stat"><b>${fmt(r.HT,1)}</b><span>H<sub>T</sub> klimaskærm, W/K</span></div>
+    <div class="stat"><b>${fmt(r.aFlade,1)}</b><span>Flader netto, m²</span></div>
+    <div class="stat"><b>${fmt(r.aVindue,1)}</b><span>Vinduer og døre, m²</span></div>
+    <div class="stat"><b>${fmt(r.dim,1)}</b><span>kW transmissionstab ved −12 °C</span></div>
+  </div><p class="hint">H<sub>T</sub> og effekt er kontroltal til at fange tastefejl – selve energimærket beregnes i Energy10.</p></section>
+  <section class="block"><div class="block-h"><h3>Bygning</h3><button class="btn sm" data-act="copy-kv" data-k="bygning">${I.copy} Kopiér</button></div>${kv(D.bygning)}</section>
+  <section class="block"><div class="block-h"><h3>Klimaskærm – flader</h3><button class="btn sm" data-act="copy-tbl" data-k="flader">${I.copy} Kopiér</button></div>${tbl('flader',H_FLADER,D.flader,['I alt','','','','',fmt(r.aFlade),'','',fmt(r.flader)])}</section>
+  <section class="block"><div class="block-h"><h3>Vinduer og døre</h3><button class="btn sm" data-act="copy-tbl" data-k="vinduer">${I.copy} Kopiér</button></div>${tbl('vinduer',H_VINDUER,D.vinduer)}</section>
+  <section class="block"><div class="block-h"><h3>Linjetab</h3><button class="btn sm" data-act="copy-tbl" data-k="linjer">${I.copy} Kopiér</button></div>${tbl('linjer',H_LINJER,D.linjer,['I alt','','','','',fmt(r.linjer)])}</section>
+  <section class="block"><div class="block-h"><h3>Ventilation</h3><button class="btn sm" data-act="copy-kv" data-k="vent">${I.copy} Kopiér</button></div>${kv(D.vent)}</section>
+  <section class="block"><div class="block-h"><h3>Varmeforsyning og fordeling</h3><button class="btn sm" data-act="copy-kv" data-k="varme">${I.copy} Kopiér</button></div>${kv(D.varme)}</section>
+  <section class="block"><div class="block-h"><h3>Varmt brugsvand</h3><button class="btn sm" data-act="copy-kv" data-k="vand">${I.copy} Kopiér</button></div>${kv(D.vand)}</section>
+  <section class="block"><div class="block-h"><h3>Vedvarende energi</h3></div>${kv(D.sol)}</section>
+  <section class="block"><div class="block-h"><h3>Forslag til besparelser</h3><span class="hint">Groft skøn: ΔH × ${GRADDAGE.toLocaleString('da-DK')} graddage</span></div>
+    ${fs.length?`<div class="sugg">${fs.map(s=>`<div class="panel"><h4>${esc(s.t)}</h4><p>${esc(s.d)}</p>${s.kwh?`<span class="pill acc">≈ ${fmt(s.kwh,0)} kWh varme/år</span>`:''}</div>`).join('')}</div>`:'<p class="hint">Ingen oplagte forslag ud fra de registrerede data.</p>'}</section>`;
+}
+function tsvKV(pairs){return pairs.filter(Boolean).map(([k,v])=>`${k}\t${v??''}`).join('\n');}
+function tsvTbl(head,rows){return [head.map(h=>h.t).join('\t'),...rows.map(r=>r.join('\t'))].join('\n');}
+function allText(c){const D=e10Data(c);return [`BYGNING\n${tsvKV(D.bygning)}`,`FLADER\n${tsvTbl(H_FLADER,D.flader)}`,`VINDUER OG DØRE\n${tsvTbl(H_VINDUER,D.vinduer)}`,`LINJETAB\n${tsvTbl(H_LINJER,D.linjer)}`,`VENTILATION\n${tsvKV(D.vent)}`,`VARME\n${tsvKV(D.varme)}`,`BRUGSVAND\n${tsvKV(D.vand)}`,`VEDVARENDE ENERGI\n${tsvKV(D.sol)}`,`H_T i alt\t${fmt(D.r.HT,1)} W/K`].join('\n\n');}
+
+/* ---- Mere ---- */
+function vMere(c){
+  const key=lsGet(LS_KEY)||'',model=lsGet(LS_MODEL)||'claude-opus-5';
+  return `<div class="page-h"><div><div class="eyebrow">Sager og indstillinger</div><h2>Mere</h2></div></div>
+  <section class="block"><div class="block-h"><h3>Sager</h3><button class="btn pri" data-act="new-case">${I.plus} Ny sag</button></div>
+    <div class="cases">${state.cases.map(x=>`<div class="case${x.id===c.id?' cur':''}"><div><b>${esc(x.bygning.adresse||'Uden adresse')}</b><small>${esc([x.bygning.postnr,x.bygning.by].filter(Boolean).join(' '))} · oprettet ${esc(x.created)} · ${x.fotos.length} fotos</small></div>
+      <div class="row">${x.id!==c.id?`<button class="btn sm" data-act="switch" data-id="${x.id}">Åbn</button>`:'<span class="pill acc">Åben</span>'}<button class="btn sm danger" data-act="del-case" data-id="${x.id}">Slet</button></div></div>`).join('')}</div></section>
+  <section class="block"><div class="block-h"><h3>Backup og flytning</h3></div><div class="panel" style="display:flex;flex-direction:column;gap:10px">
+    <p class="hint" style="margin:0">Sagerne ligger kun i denne browser på denne enhed. Eksportér en sag som fil for at gemme den eller flytte den til din computer.</p>
+    <div class="row"><button class="btn" data-act="export-json">${I.dl} Eksportér sag (uden fotos)</button><button class="btn" data-act="export-json-full">${I.dl} Eksportér sag med fotos</button><label class="btn filebtn">Importér sag<input type="file" accept="application/json,.json" id="importFile"></label></div>
+  </div></section>
+  <section class="block"><div class="block-h"><h3>AI-aflæsning af fotos</h3></div><div class="panel grid wide">
+    <label class="f full" for="apiKey"><span>Anthropic API-nøgle</span><input type="text" id="apiKey" value="${esc(key)}" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"><p class="hint">Gemmes kun i denne browser. Billeder sendes direkte fra enheden til Anthropics API, når du trykker “Analysér foto”. Opret nøgle på console.anthropic.com.</p></label>
+    <label class="f" for="apiModel"><span>Model</span><select id="apiModel">${[['claude-opus-5','Claude Opus 5 (anbefalet)'],['claude-sonnet-5','Claude Sonnet 5 (billigere)']].map(([k,v])=>`<option value="${k}"${model===k?' selected':''}>${v}</option>`).join('')}</select></label>
+  </div></section>
+  <section class="block"><div class="block-h"><h3>Om værdierne</h3></div><div class="panel"><p class="hint" style="margin:0">U-værdier, ψ-værdier, rudeværdier og b-faktorer i listerne er vejledende standardværdier til hurtig registrering. Kontrollér altid mod Håndbog for Energikonsulenter og de faktiske forhold, før data tastes i Energy10 – du står inde for energimærket.</p></div></section>`;
+}
+
+/* ============ Hændelser ============ */
+function getItem(c,list,id){return (c[list]||[]).find(x=>x.id===id);}
+function setPath(c,path,val){const p=path.split('.');if(['flader','vinduer','linjetab','fotos'].includes(p[0])){const it=getItem(c,p[0],p[1]);if(it)it[p[2]]=val;}else c[p[0]][p[1]]=val;}
+const dk=n=>String(n).replace('.',',');
+function onChanged(c,path,val){
+  const p=path.split('.');
+  if(p[0]==='flader'){const f=getItem(c,'flader',p[1]);
+    if(p[2]==='preset'){const L=(LIB[f.type]||[]).find(x=>x[0]===val);if(L){f.U=dk(L[2]);f.konstr=L[1];}return true;}
+    if(p[2]==='type'){f.b=dk(FLADE_TYPER[val].b);f.preset='';if(!f.navn||Object.values(FLADE_TYPER).some(t=>t.navn===f.navn))f.navn=FLADE_TYPER[val].navn;return true;}
+    if(p[2]==='U'){return false;}
+    if(p[2]==='mode')return true;
+  }
+  if(p[0]==='vinduer'){const v=getItem(c,'vinduer',p[1]);
+    if(p[2]==='rude'){const R=RUDER[val];if(R&&val!=='egen'){v.Uw=dk(R.Uw);v.g=dk(R.g);v.Ff=dk(R.Ff);}return true;}
+    if(p[2]==='flade'){const f=getItem(c,'flader',val);if(f&&f.orient&&!v.orient)v.orient=f.orient;return true;}
+    if(p[2]==='orient')return true;
+  }
+  if(p[0]==='linjetab'&&p[2]==='type'){const l=getItem(c,'linjetab',p[1]),L=LINJETAB.find(x=>x[0]===val);if(L&&L[2]!=='')l.psi=dk(L[2]);if(!val.startsWith('fals'))l.auto=false;if(!l.navn||LINJETAB.some(x=>x[1]===l.navn)||['Fundament','Vinduesfalse'].includes(l.navn))l.navn=val.startsWith('fund')?'Fundament':val.startsWith('fals')?'Vinduesfalse':l.navn;return true;}
+  if(p[0]==='varme'&&(p[1]==='kilde'||p[1]==='suppl'))return true;
+  if(p[0]==='vand'&&p[1]==='cirk')return true;
+  if(p[0]==='vent'&&p[1]==='type'){if(val==='balanceret'){if(!c.vent.qm)c.vent.qm='0,3';if(!c.vent.vgv)c.vent.vgv='80';if(!c.vent.sel)c.vent.sel='1,0';}if(val==='udsug'&&!c.vent.qm)c.vent.qm='0,3';return true;}
+  if(p[0]==='fotos')return 'sheet';
+  return false;
+}
+document.addEventListener('input',e=>{
+  const t=e.target,c=cur();
+  if(t.dataset.b){setPath(c,t.dataset.b,t.value);c.updated=Date.now();if(t.tagName!=='SELECT'){save();updateCalcs();}}
+  else if(t.dataset.lag){const[id,i,k]=t.dataset.lag.split(':');const f=getItem(c,'flader',id);if(f&&f.lag[i]){f.lag[i][k]=t.value;save();updateCalcs();}}
+  else if(t.id==='apiKey'){lsSet(LS_KEY,t.value.trim());}
+});
+document.addEventListener('change',async e=>{
+  const t=e.target,c=cur();
+  if(t.tagName==='SELECT'&&t.dataset.b){setPath(c,t.dataset.b,t.value);const re=onChanged(c,t.dataset.b,t.value);save();if(re==='sheet'){vSheet();render(true);}else if(re)render(true);else updateCalcs();return;}
+  if(t.tagName==='SELECT'&&t.dataset.lag){const[id,i,k]=t.dataset.lag.split(':');const f=getItem(c,'flader',id);f.lag[i][k]=t.value;save();render(true);return;}
+  if(t.id==='apiModel'){lsSet(LS_MODEL,t.value);return;}
+  if(t.dataset.fotoKat&&t.files&&t.files.length){await addPhotos(c,[...t.files],t.dataset.fotoKat,t.dataset.fotoEl||'');t.value='';return;}
+  if(t.id==='importFile'&&t.files[0]){importCase(t.files[0]);t.value='';}
+});
+document.addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.open){d.open?openSet.add(d.dataset.open):openSet.delete(d.dataset.open);}},true);
+document.addEventListener('click',async e=>{
+  const tabBtn=e.target.closest('[data-tab]');
+  if(tabBtn){state.tab=tabBtn.dataset.tab;save();render();return;}
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const act=b.dataset.act,c=cur(),id=b.dataset.id;
+  if(act==='close-sheet'){if(e.target!==b&&b.classList.contains('sheet'))return;sheetPhoto=null;aiErr='';vSheet();return;}
+  if(b.classList.contains('danger')&&!b.classList.contains('armed')){$$('.armed').forEach(x=>{x.classList.remove('armed');x.textContent=x.dataset.label;});b.dataset.label=b.textContent;b.classList.add('armed');b.textContent='Bekræft sletning';clearTimeout(armed);armed=setTimeout(()=>{b.classList.remove('armed');b.textContent=b.dataset.label;},4000);return;}
+  switch(act){
+    case 'add-flade':{const type=$('#newFladeType').value;const f={id:uid(),navn:FLADE_TYPER[type].navn,type,preset:'',konstr:'',U:'',b:dk(FLADE_TYPER[type].b),mode:['ydervaeg','kaelderv','vaeg_uopv','skunk'].includes(type)?'lxh':'areal',l:'',h:'',areal:'',orient:'',lag:[],noter:''};c.flader.push(f);openSet.add(f.id);break;}
+    case 'add-vindue':{const v={id:uid(),navn:'Vindue',flade:'',orient:'',haeld:'90',antal:'1',b:'',h:'',rude:'2lag_energi',Uw:'1,8',g:'0,63',Ff:'0,7',horisont:'10',udhaeng:'0',venstre:'0',hoejre:'0',ramme:'Træ',aar:'',noter:''};c.vinduer.push(v);openSet.add(v.id);break;}
+    case 'add-linje':{const L=LINJETAB.find(x=>x[0]===b.dataset.type);const fals=L[0].startsWith('fals');const l={id:uid(),navn:fals?'Vinduesfalse':'Fundament',type:L[0],l:'',psi:dk(L[2]),b:'1',auto:fals,noter:''};c.linjetab.push(l);openSet.add(l.id);break;}
+    case 'toggle-auto':{const l=getItem(c,'linjetab',id);l.auto=!l.auto;if(!l.auto)l.l=dk(Math.round(falsLength(c)*10)/10);break;}
+    case 'dup':{const src=getItem(c,b.dataset.list,id);const cp=JSON.parse(JSON.stringify(src));cp.id=uid();cp.navn=(src.navn||'')+' (kopi)';c[b.dataset.list].splice(c[b.dataset.list].indexOf(src)+1,0,cp);openSet.add(cp.id);break;}
+    case 'del':{c[b.dataset.list]=c[b.dataset.list].filter(x=>x.id!==id);if(b.dataset.list==='flader')c.vinduer.forEach(v=>{if(v.flade===id)v.flade='';});c.fotos.forEach(p=>{if(p.element===id)p.element='';});toast('Slettet');break;}
+    case 'add-lag':{const f=getItem(c,'flader',id);(f.lag=f.lag||[]).push({mat:'mu37',d:'100',lambda:''});openSet.add('lag-'+id);break;}
+    case 'del-lag':{const f=getItem(c,'flader',id);f.lag.splice(+b.dataset.i,1);break;}
+    case 'use-lag':{const f=getItem(c,'flader',id);const u=lagU(f);if(Number.isFinite(u)){f.U=dk(Math.round(u*1000)/1000);f.preset='egen';toast(`U-værdi sat til ${fmt(u,3)}`);}else{toast('Tilføj lag med tykkelse først');return;}break;}
+    case 'open-photo':sheetPhoto=id;aiErr='';vSheet();return;
+    case 'del-photo':{c.fotos=c.fotos.filter(p=>p.id!==id);await PhotoDB.del(id);sheetPhoto=null;vSheet();toast('Foto slettet');break;}
+    case 'ai':runAI(id);return;
+    case 'ai-apply':applyAI(c,id,+b.dataset.i);save();vSheet();render(true);return;
+    case 'new-case':{const n=blankCase();state.cases.unshift(n);state.cur=n.id;state.tab='sag';openSet.clear();save();render();toast('Ny sag oprettet');return;}
+    case 'switch':state.cur=id;openSet.clear();state.tab='sag';save();render();return;
+    case 'del-case':{const x=state.cases.find(y=>y.id===id);for(const p of x.fotos)await PhotoDB.del(p.id);state.cases=state.cases.filter(y=>y.id!==id);if(!state.cases.length){const n=blankCase();state.cases.push(n);}if(!state.cases.find(y=>y.id===state.cur))state.cur=state.cases[0].id;toast('Sag slettet');break;}
+    case 'copy-tbl':{const D=e10Data(c),k=b.dataset.k;copy(tsvTbl({flader:H_FLADER,vinduer:H_VINDUER,linjer:H_LINJER}[k],D[k]));return;}
+    case 'copy-kv':{const D=e10Data(c);copy(tsvKV(D[b.dataset.k]));return;}
+    case 'copy-all':copy(allText(c));return;
+    case 'export-csv':download(`energy10-${slug(c)}.csv`,'﻿'+allText(c).replace(/\t/g,';'),'text/csv');return;
+    case 'export-json':download(`feltbog-${slug(c)}.json`,JSON.stringify({format:'em10-feltbog',version:1,case:c},null,1),'application/json');return;
+    case 'export-json-full':{const photos={};for(const p of c.fotos){const d=await PhotoDB.get(p.id);if(d)photos[p.id]=d;}download(`feltbog-${slug(c)}-fotos.json`,JSON.stringify({format:'em10-feltbog',version:1,case:c,photos}),'application/json');return;}
+  }
+  c.updated=Date.now();save();render(true);
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetPhoto){sheetPhoto=null;vSheet();}});
+
+async function addPhotos(c,files,kat,el){
+  let n=0;
+  for(const file of files){try{const data=await readImage(file);const id=uid();await PhotoDB.put(id,data);c.fotos.push({id,kategori:kat,element:el,note:'',t:new Date().toLocaleString('da-DK'),ai:null});n++;}catch(err){toast(err.message);}}
+  save();render(true);
+  if(n===1&&!el){sheetPhoto=c.fotos[c.fotos.length-1].id;vSheet();}
+  else if(n)toast(`${n} foto${n>1?'s':''} gemt`);
+}
+
+/* ============ AI (Claude) ============ */
+let aiBusy=false,aiErr='';
+function aiPrompt(c,p){
+  const fields=AI_FELTER[p.kategori]||[],K=FOTO_KAT[p.kategori];
+  const el=p.element?elemName(c,p.element):'';
+  const presetHelp=p.kategori in {facade:1,loft:1,gulv:1}?'\n\nKonstruktionsnøgler:\n'+(LIB[{facade:'ydervaeg',loft:'loft',gulv:'terraen'}[p.kategori]]).map(x=>`- ${x[0]}: ${x[1]} (U ${x[2]})`).join('\n'):'';
+  const rudeHelp=p.kategori==='vindue'?'\n\nRudenøgler:\n'+Object.entries(RUDER).filter(([k])=>k!=='egen').map(([k,v])=>`- ${k}: ${v.navn}`).join('\n'):'';
+  return `Du assisterer en dansk energikonsulent, der registrerer data til et energimærke (Be18-beregning i programmet Energy10). Billedet er taget ved besigtigelsen i kategorien "${K.navn}"${el?` og viser bygningsdelen "${el}"`:''}. Bygningen er fra ${c.bygning.opfoert||'ukendt år'}.
+
+Aflæs det, der faktisk kan ses (typeskilte, stempler i afstandslister, isoleringstykkelse mod tommestok osv.). Gæt ikke tal, der ikke er synlige; et kvalificeret skøn ud fra byggeskik er tilladt, men markér det med sikkerhed "lav" og forklar hvorfor. Brug punktum som decimaltegn i tal.
+
+Tilladte felter (brug kun disse; hvor der står nøgler, skal værdien være en af dem):
+${fields.map(f=>`- ${f[0]}: ${f[1]}${f[2]?` (en af: ${f[2].join(', ')})`:''}`).join('\n')||'- (ingen – giv kun en beskrivelse)'}${presetHelp}${rudeHelp}
+
+Svar udelukkende med ét JSON-objekt uden anden tekst:
+{"beskrivelse":"2-3 sætninger på dansk om hvad billedet viser og hvad der er relevant for energimærket","felter":[{"felt":"<felt>","vaerdi":<værdi>,"sikkerhed":"høj|middel|lav","begrundelse":"kort, dansk"}],"ekstra_fotos":["forslag til supplerende billeder, hvis nødvendigt"]}`;
+}
+async function runAI(id){
+  const c=cur(),p=c.fotos.find(x=>x.id===id),key=(lsGet(LS_KEY)||'').trim();
+  if(!key){aiErr='Tilføj din Anthropic API-nøgle under Mere først.';vSheet();return;}
+  const data=await PhotoDB.get(id);if(!data){aiErr='Billedet findes ikke længere på enheden.';vSheet();return;}
+  aiBusy=true;aiErr='';vSheet();
+  try{
+    const model=lsGet(LS_MODEL)||'claude-opus-5';
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-beta':'server-side-fallback-2026-07-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model,max_tokens:4000,fallbacks:'default',output_config:{effort:'medium'},messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:data.split(',')[1]}},{type:'text',text:aiPrompt(c,p)}]}]})});
+    const j=await res.json().catch(()=>({}));
+    if(!res.ok)throw new Error(res.status===401?'API-nøglen blev afvist. Kontrollér nøglen under Mere.':res.status===429?'For mange forespørgsler lige nu – prøv igen om lidt.':(j.error&&j.error.message)||`Fejl fra API (${res.status}).`);
+    if(j.stop_reason==='refusal')throw new Error('Modellen afviste at analysere billedet. Prøv et andet foto.');
+    const txt=(j.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const s=txt.indexOf('{'),e=txt.lastIndexOf('}');if(s<0||e<s)throw new Error('Svaret kunne ikke læses. Prøv igen.');
+    const out=JSON.parse(txt.slice(s,e+1));
+    const allowed=new Map((AI_FELTER[p.kategori]||[]).map(f=>[f[0],f[2]]));
+    out.felter=(out.felter||[]).filter(x=>x&&allowed.has(x.felt)&&x.vaerdi!==null&&x.vaerdi!==''&&(!allowed.get(x.felt)||allowed.get(x.felt).includes(String(x.vaerdi))));
+    p.ai={beskrivelse:out.beskrivelse||'',felter:out.felter,ekstra:Array.isArray(out.ekstra_fotos)?out.ekstra_fotos.slice(0,4):[],model:j.model};
+    save();
+  }catch(err){aiErr=err instanceof TypeError?'Kunne ikke kontakte Anthropics API herfra. Åbn værktøjet fra din egen webadresse (fx GitHub Pages) og tjek netforbindelsen.':err.message;}
+  aiBusy=false;vSheet();render(true);
+}
+function applyAI(c,photoId,i){
+  const p=c.fotos.find(x=>x.id===photoId),x=p.ai.felter[i];if(!x)return;
+  const[grp,k]=x.felt.split('.');let val=x.vaerdi;
+  if(typeof val==='number')val=dk(val);
+  if(grp==='element'){
+    const f=getItem(c,'flader',p.element),v=getItem(c,'vinduer',p.element);
+    if(f){if(k==='preset'){const L=(LIB[f.type]||[]).find(y=>y[0]===val);if(L){f.preset=val;f.U=dk(L[2]);f.konstr=L[1];}}else if(k==='isolering_mm'){f.noter=(f.noter?f.noter+'\n':'')+`Isolering målt ca. ${val} mm (foto).`;}}
+    if(v){if(k==='rude'&&RUDER[val]){v.rude=val;v.Uw=dk(RUDER[val].Uw);v.g=dk(RUDER[val].g);v.Ff=dk(RUDER[val].Ff);}else v[k]=String(val);}
+  }else c[grp][k]=String(val);
+  x.applied=true;toast('Værdi indsat');
+}
+
+/* ============ Diverse ============ */
+function slug(c){return (c.bygning.adresse||'sag').toLowerCase().replace(/[^a-z0-9æøå]+/g,'-').replace(/^-|-$/g,'').slice(0,40);}
+async function copy(text){try{await navigator.clipboard.writeText(text);toast('Kopieret – indsæt i Energy10 eller Excel');}catch(e){showText(text);}}
+function showText(text){sheetPhoto=null;$('#sheet').innerHTML=`<div class="sheet" data-act="close-sheet"><div class="sheet-in"><div class="block-h"><h3>Markér og kopiér</h3><button class="btn sm" data-act="close-sheet">Luk</button></div><textarea id="copyBox" style="min-height:50vh;font-family:var(--f-mono);font-size:13px">${esc(text)}</textarea></div></div>`;const t=$('#copyBox');t.focus();t.select();}
+function download(name,text,type){
+  if(window.self!==window.top){showText(text);toast('Download er blokeret i denne visning – kopiér teksten i stedet.');return;}
+  try{const blob=new Blob([text],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast(`Gemmer ${name}`);}
+  catch(e){showText(text);}
+}
+async function importCase(file){
+  try{const j=JSON.parse(await file.text());if(j.format!=='em10-feltbog'||!j.case)throw new Error();const c=Object.assign(blankCase(),j.case);c.id=uid();c.example=false;
+    if(j.photos){for(const p of c.fotos){if(j.photos[p.id])await PhotoDB.put(p.id,j.photos[p.id]);}}
+    state.cases.unshift(c);state.cur=c.id;state.tab='sag';save();render();toast('Sag importeret');}
+  catch(e){toast('Filen er ikke en eksport fra Feltbogen.');}
+}
+let toastT=null;
+function toast(msg){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';t.setAttribute('role','status');document.body.appendChild(t);}t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true;},2600);}
+
+/* ============ Start ============ */
+state=load();
+if(!state.cases.find(c=>c.id===state.cur))state.cur=state.cases[0].id;
+if(!NAV.some(n=>n[0]===state.tab))state.tab='sag';
+render();
+PhotoDB.open().then(()=>hydrateThumbs());
+try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{});}catch(e){}
+</script>
+</body>
+</html>
