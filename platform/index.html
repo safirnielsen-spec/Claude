@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aftaleoverblik · Core Partners</title>
+  <meta name="description" content="Overblik over driftsaftaler, opsigelsesfrister, udbud og besparelsespotentiale på tværs af ejendomme og porteføljer.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%234d4640'/%3E%3Cpath d='M7 21C10 12 14 10 16 15C18 20 22 18 25 11' stroke='%23f4ede0' stroke-width='2.2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="boot" class="boot"><div class="spinner"></div></div>
+
+  <!-- LOGIN -->
+  <div id="login" class="login" hidden>
+    <div class="login-card">
+      <div class="brand brand-dark">
+        <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="16" fill="#4d4640"/><path d="M7 21C10 12 14 10 16 15C18 20 22 18 25 11" stroke="#f4ede0" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
+        <span>Core <em>Partners</em></span>
+      </div>
+      <h1>Aftaleoverblik</h1>
+      <p class="muted">Hold styr på driftsaftaler, opsigelsesfrister og udbud på tværs af ejendomme og porteføljer.</p>
+      <form id="loginForm">
+        <label class="field"><span>E-mail</span><input type="email" name="email" required autocomplete="email" placeholder="navn@firma.dk"></label>
+        <button class="btn btn-primary btn-block" type="submit"><i class="fa-solid fa-paper-plane"></i> Send login-link</button>
+      </form>
+      <p id="loginMsg" class="login-msg" role="status"></p>
+    </div>
+  </div>
+
+  <!-- ONBOARDING -->
+  <div id="onboarding" class="login" hidden>
+    <div class="login-card">
+      <h1>Opret organisation</h1>
+      <p class="muted">Du er ikke tilknyttet en organisation endnu. Opret jeres egen, eller bed en kollega om at invitere dig.</p>
+      <form id="orgForm">
+        <label class="field"><span>Navn</span><input name="name" required placeholder="F.eks. Ejendomsselskabet A/S"></label>
+        <label class="field"><span>CVR (valgfrit)</span><input name="cvr" inputmode="numeric"></label>
+        <button class="btn btn-primary btn-block" type="submit">Opret</button>
+      </form>
+      <button class="btn btn-link" data-action="logout" type="button">Log ud</button>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="app" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="#/overblik">
+        <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="16" fill="none" stroke="rgba(244,237,224,.35)" stroke-width="1.5"/><path d="M7 20C10 12 14 10 16 15C18 20 22 18 25 11" stroke="#f4ede0" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+        <span>Core <em>Partners</em></span>
+      </a>
+      <div class="org-switch" id="orgSwitch"></div>
+      <nav class="menu" id="menu" aria-label="Hovedmenu">
+        <a href="#/overblik"><i class="fa-solid fa-chart-simple"></i><span>Overblik</span></a>
+        <a href="#/prioritering"><i class="fa-solid fa-ranking-star"></i><span>Prioritering</span></a>
+        <a href="#/aftaler"><i class="fa-solid fa-file-contract"></i><span>Aftaler</span></a>
+        <a href="#/tidslinje"><i class="fa-solid fa-calendar-days"></i><span>Tidslinje</span></a>
+        <a href="#/ejendomme"><i class="fa-solid fa-building"></i><span>Ejendomme</span></a>
+        <a href="#/portefoljer"><i class="fa-solid fa-layer-group"></i><span>Porteføljer</span></a>
+        <a href="#/udbud"><i class="fa-solid fa-list-check"></i><span>Udbud</span></a>
+        <a href="#/data"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>Import/eksport</span></a>
+        <a href="#/indstillinger"><i class="fa-solid fa-gear"></i><span>Indstillinger</span></a>
+        <a href="#/admin" id="adminLink" hidden><i class="fa-solid fa-user-shield"></i><span>Core Partners</span></a>
+      </nav>
+      <div class="sidebar-foot" id="userBox"></div>
+    </aside>
+    <main class="main">
+      <div id="demoBanner" class="demo-banner" hidden></div>
+      <div id="view" class="view"></div>
+    </main>
+  </div>
+
+  <div id="modal" class="modal" hidden>
+    <div class="modal-backdrop" data-action="closeModal"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <h2 id="modalTitle"></h2>
+        <button class="icon-btn" data-action="closeModal" aria-label="Luk"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="core.js"></script>
+  <script src="store.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
