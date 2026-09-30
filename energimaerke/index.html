@@ -204,6 +204,28 @@ tfoot td{font-weight:600;background:var(--surface-2)}
   details.item[open] .item-body{animation:fade .16s ease-out}
   @keyframes fade{from{opacity:.4;transform:translateY(-3px)}to{opacity:1;transform:none}}
 }
+/* Opmåling */
+.maal-btn{color:var(--accent)}
+.sheet-in > *{flex-shrink:0}
+.maal-chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+.maal-chips .chip{white-space:nowrap;min-height:36px;padding:6px 12px}
+.maal-t{font-size:19px}
+.fig{margin:0;display:flex;flex-direction:column;gap:6px;background:var(--surface-2);border-radius:10px;padding:12px}
+.fig svg{width:100%;max-width:520px;height:auto;align-self:center;color:var(--ink)}
+.fig figcaption{font-size:13px;color:var(--ink-2)}
+.d-l{stroke:currentColor;fill:none;stroke-width:1.5}
+.d-w{fill:var(--surface);stroke:currentColor;stroke-width:1.2}
+.d-ins{fill:var(--warn-soft);stroke:var(--warn);stroke-width:1}
+.d-a{stroke:var(--accent);stroke-width:2.5;fill:none}
+.d-af{fill:var(--accent)}
+.d-hl{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+.d-g{stroke:currentColor;stroke-dasharray:3 3;stroke-width:1;opacity:.6}
+.d-glass{fill:var(--accent-soft);stroke:currentColor;stroke-width:.8}
+text.d-t{fill:currentColor;font:11px var(--f-body);opacity:.8}
+text.d-ta{fill:var(--accent);font:600 11.5px var(--f-display)}
+text.d-h{fill:currentColor;font:700 12px var(--f-display)}
+.maal-trin{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:14.5px}
+.maal-fejl{margin:0;padding-left:20px;font-size:13.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:4px}
 /* Guide */
 .wrows{display:flex;flex-direction:column;gap:10px}
 .wrow{display:flex;flex-direction:column;gap:6px;padding:10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface-2)}
@@ -563,7 +585,7 @@ function updateCalcs(){
       case 'va_tot':t=fmt(r.aVindue,1);break; case 'vandel':t=fmt(r.vinduesAndel*100,0)+' %';break;
       case 'fals':t=fmt(falsLength(c),1);break;
       case 'era':{const y=num(c.bygning.opfoert);t=y>1700?`Typisk for huse bygget ${eraFor(y).navn}: ${eraFor(y).tekst} Det bruger vi, når du svarer “ved ikke”.`:'';break;}
-      case 'gdims':{const g=G(c),L=num(g.L),W=num(g.W);t=L>0&&W>0?`Omkreds ${fmt(2*(L+W),1)} m · Grundareal ${fmt(L*W,1)} m²`:'Skriv længde og bredde';break;}
+      case 'gdims':{const g=G(c),L=num(g.L),W=num(g.W),tk=(num(g.t)>0?num(g.t):30)/100;t=L>0&&W>0?`Omkreds udvendigt ${fmt(2*(L+W),1)} m (vægge, fundament) · Indvendigt ${fmt(L-2*tk,2)} × ${fmt(W-2*tk,2)} m = ${fmt((L-2*tk)*(W-2*tk),1)} m² (gulv, loft)`:'Skriv længde og bredde';break;}
       case 'gfac':{const F=facades(G(c));t=G(c).front?`Lange facader mod ${F[0][1].toLowerCase()} og ${F[1][1].toLowerCase()} · Gavle mod ${F[2][1].toLowerCase()} og ${F[3][1].toLowerCase()}`:'Vælg retning';break;}
       case 'gvtot':{const r=vRows(G(c),id);const a=r.reduce((s,x)=>s+(vRowArea(x)||0),0),m=r.filter(x=>!(num(x.b)>0&&num(x.h)>0)).length;t=r.length?`I alt ${fmt(a,2)} m²${m?` · ${m} mangler mål`:''}`:'Ingen vinduer eller døre registreret på denne facade';break;}
       case 'fname':t=f.navn||FLADE_TYPER[f.type].navn;break; case 'lname':t=l.navn||'Linjetab';break;
@@ -588,7 +610,7 @@ function chips(path,val,opts){return `<div class="chips" role="group">${opts.map
 function qc(title,body,hint){return `<div class="qcard"><h3>${title}</h3>${hint?`<p class="hint">${hint}</p>`:''}${body}</div>`;}
 function aiRow(kind,label){
   const note=guideAI.msg[kind];
-  const btn=aiImages()?`<label class="btn sm filebtn${guideAI.busy===kind?' busy':''}">${I.spark} ${guideAI.busy===kind?'AI kigger på billedet…':esc(label)}<input type="file" accept="image/*" capture="environment" data-ai-guide="${kind}"${guideAI.busy?' disabled':''}></label>`:'';
+  const btn=aiImages()?`<label class="btn sm filebtn${guideAI.busy===kind?' busy':''}">${I.spark} ${guideAI.busy===kind?'AI kigger på billedet…':esc(label)}<input type="file" accept="image/*" ${kind==='dok'?'multiple':'capture="environment"'} data-ai-guide="${kind}"${guideAI.busy?' disabled':''}></label>`:'';
   if(!btn&&!note)return '';
   return `<div class="ai-row">${btn}${note?`<p class="ai-note${note.err?' err':''}">${esc(note.t)}</p>`:''}</div>`;
 }
@@ -616,10 +638,11 @@ function genPlan(c){
   const vk=g.vaeg&&g.vaeg!=='vedikke'?g.vaeg:'tegl';let wp=E.vaeg[vk];
   if(wp==='hul_uiso'&&g.hulmur==='ja')wp='hul_efter';
   const wSk=!g.vaeg||g.vaeg==='vedikke'||(wp==='hul_uiso'&&g.hulmur!=='nej');
-  const hh=g.etager==='2'?5.4:2.7;
+  const tk=(num(g.t)>0?num(g.t):30)/100,Li=L-2*tk,Wi=W-2*tk,hv=num(g.hv)>0?num(g.hv):0;
+  const hh=hv||(g.etager==='2'?5.4:2.7);
   for(const[k,n,o,long]of facades(g)){
-    const f=mk(`Ydervæg ${n.toLowerCase()}`,'ydervaeg',wp,{fk:k,orient:o,mode:'lxh',l:dk(long?L:W),h:dk(hh)},wSk||g.etager==='1.5');
-    if(g.etager==='1.5'){if(long)f.h='3,0';else{f.mode='areal';f.areal=r1(W*4.4);}}
+    const f=mk(`Ydervæg ${n.toLowerCase()}`,'ydervaeg',wp,{fk:k,orient:o,mode:'lxh',l:dk(long?L:W),h:dk(hh)},wSk||g.etager==='1.5'||!hv);
+    if(g.etager==='1.5'){if(long)f.h=dk(hv||3.0);else{f.mode='areal';f.areal=r1(W*((hv||3.0)+1.4));}}
     P.flader.push(f);
   }
   // Loft / tag
@@ -627,17 +650,18 @@ function genPlan(c){
   const lp=cmMap[g.loftCm]||E.loft,lSk=!cmMap[g.loftCm];
   if(g.etager==='1.5'){
     const sk={uiso:'uiso',i50:'i50',i100:'i100',i150:'i150',i200:'i200',i250:'i200',i300:'i300',i400:'i300'}[lp];
-    P.flader.push(mk('Loft (hanebånd)','loft',lp,{areal:r1(L*W*.35)},true));
-    P.flader.push(mk('Skråvægge','skraavaeg',sk,{areal:r1(L*2*2)},true));
-    P.flader.push(mk('Skunkvægge','skunk',sk==='i300'?'i200':sk,{areal:r1(L*2)},true));
-  }else P.flader.push(mk(g.etager==='2'?'Loft over 1. sal':'Loft mod tagrum','loft',lp,{areal:r1(L*W)},lSk));
+    P.flader.push(mk('Loft (hanebånd)','loft',lp,{areal:r1(Li*Wi*.35)},true));
+    P.flader.push(mk('Skråvægge','skraavaeg',sk,{areal:r1(Li*2*2)},true));
+    P.flader.push(mk('Skunkvægge','skunk',sk==='i300'?'i200':sk,{areal:r1(Li*2)},true));
+    P.flader.push(mk('Gulv i skunkrum','loft',lp,{areal:r1(Li*2*.9)},true));
+  }else P.flader.push(mk(g.etager==='2'?'Loft over 1. sal':'Loft mod tagrum','loft',lp,{areal:r1(Li*Wi)},lSk));
   // Gulv
   const u=g.under&&g.under!=='vedikke'?g.under:(Y<1931?'kryb':'terraen'),uSk=!g.under||g.under==='vedikke';
   const dk_=Y<1961?'bj_uiso':Y<1979?'bet_uiso':'i100';
-  if(u==='terraen')P.flader.push(mk('Terrændæk','terraen',E.gulv,{areal:r1(L*W)},uSk||true));
-  if(u==='kryb')P.flader.push(mk('Gulv mod krybekælder','etage_kaelder',dk_,{areal:r1(L*W)},true));
-  if(u==='kaelder_kold')P.flader.push(mk('Etageadskillelse mod kælder','etage_kaelder',dk_,{areal:r1(L*W)},true));
-  if(u==='kaelder_varm'){const kp=Y<1979?'uiso':'i50';P.flader.push(mk('Kældervægge mod jord','kaelderv',kp,{areal:r1(2*(L+W)*2)},true));P.flader.push(mk('Kældergulv','kaelderg',kp,{areal:r1(L*W)},true));}
+  if(u==='terraen')P.flader.push(mk('Terrændæk','terraen',E.gulv,{areal:r1(Li*Wi)},true));
+  if(u==='kryb')P.flader.push(mk('Gulv mod krybekælder','etage_kaelder',dk_,{areal:r1(Li*Wi)},true));
+  if(u==='kaelder_kold')P.flader.push(mk('Etageadskillelse mod kælder','etage_kaelder',dk_,{areal:r1(Li*Wi)},true));
+  if(u==='kaelder_varm'){const kp=Y<1979?'uiso':'i50';P.flader.push(mk('Kældervægge mod jord','kaelderv',kp,{areal:r1(2*(L+W)*2)},true));P.flader.push(mk('Kældergulv','kaelderg',kp,{areal:r1(Li*Wi)},true));}
   P.under=u;
   // Linjetab
   const fu=LINJETAB.find(x=>x[0]===E.fund),fa=LINJETAB.find(x=>x[0]===E.fals);
@@ -704,30 +728,32 @@ function vGuide(c){
   const g=G(c),B=c.bygning,s=Math.min(5,Math.max(0,g.step||0)),y=num(B.opfoert);
   let body='';
   if(s===0)body=
+    qc('Sådan kommer du hurtigst igennem',`<ol class="next"><li><b>Hjemmefra:</b> skriv adressen, og hent BBR-meddelelsen og et evt. tidligere energimærke (se nedenfor).</li><li><b>På stedet:</b> gå guiden igennem, mens du går rundt om og ind i huset. Brug AI-foto-knapperne og mål op med ${maalBtn('oversigt','opmålingsguiden')}.</li><li><b>Bagefter:</b> tjek alt, der er markeret <span class="pill warn">skønnet</span>, og se fanen Energy10.</li></ol>`)+
+    qc('Har du BBR-meddelelse eller et tidligere energimærke?',aiRow('dok','Vælg skærmbilleder / tag foto – AI udfylder')+(aiImages()?'':'<p class="hint" style="margin:0">AI er ikke slået til her – åbn værktøjet i Claude-appen for at bruge det.</p>'),'Hent BBR-meddelelsen på bbr.dk og et tidligere energimærke på sparenergi.dk (Find energimærke) – søg på adressen. Tag skærmbilleder af siderne, og vælg dem her. AI udfylder byggeår, areal, vægtype, varmekilde m.m. Du kan rette alt bagefter.')+
     qc('Adresse',`<div class="grid">${field('Adresse','bygning.adresse',B.adresse,{ph:'Vej og nr.'})}${field('Postnr.','bygning.postnr',B.postnr,{num:true})}${field('By','bygning.by',B.by)}</div>`)+
     qc('Hvornår er huset bygget?',`<div class="grid">${field('Byggeår','bygning.opfoert',B.opfoert,{num:true,ph:'fx 1968',hint:'Står i BBR-meddelelsen (bbr.dk) eller på boligsiden.'})}${field('Boligareal','bygning.areal',B.areal,{unit:'m²',help:'areal',hint:'Fra BBR. Kan stå tomt – så beregnes det ud fra målene.'})}</div><div class="era" data-calc="era"></div>`)+
     qc('Hvilken slags hus?',chips('bygning.anvendelse',B.anvendelse,[['120','Fritliggende hus'],['132','Dobbelthus'],['131','Rækkehus'],['510','Sommerhus']]))+
     qc('Hvor mange etager?',chips('guide.etager',g.etager,[['1','1 plan'],['1.5','1½ plan','værelser under skrå vægge'],['2','2 plan','to hele etager']]))+
-    qc('Hvad er under stueetagen?',chips('guide.under',g.under,[['terraen','Beton direkte på jorden','ingen kælder'],['kryb','Krybekælder','lavt hulrum under gulvet'],['kaelder_kold','Kælder','ikke opvarmet'],['kaelder_varm','Kælder','opvarmet, bruges til beboelse'],['vedikke','Ved ikke']]))+
+    qc('Hvad er under stueetagen?',chips('guide.under',g.under,[['terraen','Beton direkte på jorden','ingen kælder'],['kryb','Krybekælder','lavt hulrum under gulvet'],['kaelder_kold','Kælder','ikke opvarmet'],['kaelder_varm','Kælder','opvarmet, bruges til beboelse'],['vedikke','Ved ikke']])+`<div>${maalBtn(g.under&&MAAL[g.under]?g.under:'terraen',`Sådan måler du: ${g.under&&MAAL[g.under]?MAAL[g.under].navn.toLowerCase():'gulv'}`)}</div>`)+
     `<details class="sub"><summary><h4 style="display:inline">Flere oplysninger (valgfrit)</h4></summary><div class="grid" style="margin-top:10px">
       ${field('Ejendomsnummer','bygning.ejendomsnr',B.ejendomsnr)}${field('Matrikel','bygning.matrikel',B.matrikel)}${field('Ejer / kontakt','bygning.ejer',B.ejer)}${field('Besigtigelsesdato','bygning.besigtigelse',B.besigtigelse,{type:'date'})}
       ${field('Væsentlig ombygning','bygning.ombygget',B.ombygget,{num:true,ph:'år'})}${field('Gns. rumhøjde','bygning.rumhoejde',B.rumhoejde,{unit:'m'})}
       ${field('Varmekapacitet','bygning.varmekapacitet',B.varmekapacitet,{options:{'80':'Let (80 Wh/K m²)','120':'Middel (120 Wh/K m²)','160':'Tung (160 Wh/K m²)'},blank:false,help:'varmekapacitet'})}
       ${field('Noter','bygning.noter',B.noter,{area:true,full:true,ph:'Tilbygninger, adgang, særlige forhold …'})}</div></details>`;
   if(s===1)body=
-    qc('Husets udvendige mål',`<div class="grid">${field('Længde (den lange side)','guide.L',g.L,{unit:'m'})}${field('Bredde (gavlen)','guide.W',g.W,{unit:'m'})}</div><div class="calcline" data-calc="gdims"></div>`,'Mål udvendigt langs soklen – en laserafstandsmåler gør det hurtigt. Er huset L-formet eller har en tilbygning, så indtast hovedhuset her og tilføj resten under Klimaskærm bagefter.')+
+    qc('Husets mål',`<div>${maalBtn('oversigt','Se hvordan du måler – med tegning')}</div><div class="grid">${field('Længde udvendigt (lang side)','guide.L',g.L,{unit:'m'})}${field('Bredde udvendigt (gavl)','guide.W',g.W,{unit:'m'})}${field('Vægtykkelse','guide.t',g.t,{unit:'cm',ph:'fx 30',hint:'Mål i en dør- eller vinduesåbning. Tomt = 30 cm.'})}${field('Væghøjde','guide.hv',g.hv,{unit:'m',ph:'fx 2,8',hint:'Fra gulv til oversiden af loftisoleringen. Tomt = skønnes.'})}</div><div class="calcline" data-calc="gdims"></div>`,'Mål udvendigt langs soklen – en laserafstandsmåler gør det hurtigt. Er huset L-formet eller har en tilbygning, så indtast hovedhuset her og tilføj resten under Klimaskærm bagefter.')+
     qc('Hvilken retning vender den ene lange facade?',chips('guide.front',g.front,ORIENT.slice(0,8).map(o=>[o[0],DIRNAVN[o[0]]]))+`<div class="calcline" data-calc="gfac"></div>`,'Stil dig med ryggen helt op ad en af de lange facader og åbn kompasset på telefonen. Den retning, du kigger, er den vej facaden vender. Resten regnes ud automatisk.');
   if(s===2){
-    body=qc('Hvad er ydervæggene lavet af?',chips('guide.vaeg',g.vaeg,[['tegl','Mursten','røde eller gule sten'],['letbeton','Gasbeton / letbeton','grå blokke, ofte pudset'],['trae','Træ','træbeklædning udvendigt'],['bindings','Bindingsværk'],['beton','Betonelementer'],['vedikke','Ved ikke']])+aiRow('facade','Tag foto af facaden – AI vurderer'));
+    body=qc('Hvad er ydervæggene lavet af?',chips('guide.vaeg',g.vaeg,[['tegl','Mursten','røde eller gule sten'],['letbeton','Gasbeton / letbeton','grå blokke, ofte pudset'],['trae','Træ','træbeklædning udvendigt'],['bindings','Bindingsværk'],['beton','Betonelementer'],['vedikke','Ved ikke']])+aiRow('facade','Tag foto af facaden – AI vurderer')+`<div>${maalBtn('ydervaeg','Sådan måler du ydervægge')}</div>`);
     if((!y||y<1961)&&(g.vaeg==='tegl'||g.vaeg==='vedikke'||!g.vaeg))body+=qc('Er der blæst isolering ind i hulmuren?',chips('guide.hulmur',g.hulmur,[['ja','Ja'],['nej','Nej'],['vedikke','Ved ikke']]),'Kig efter små runde, tilstoppede huller i fugerne med ca. 1 meters mellemrum. Så er der blæst isolering ind.');
-    body+=qc('Hvor tyk er isoleringen på loftet?',chips('guide.loftCm',g.loftCm,[['vedikke','Ved ikke'],['0','Ingen'],['5','ca. 5 cm'],['10','ca. 10 cm'],['15','ca. 15 cm'],['20','ca. 20 cm'],['25','ca. 25 cm'],['30','ca. 30 cm'],['40','40 cm +']])+aiRow('loft','Tag foto på loftet – AI vurderer'),'Stik en tommestok ned i isoleringen på loftet – eller tag et billede med tommestokken i.');
+    body+=qc('Hvor tyk er isoleringen på loftet?',chips('guide.loftCm',g.loftCm,[['vedikke','Ved ikke'],['0','Ingen'],['5','ca. 5 cm'],['10','ca. 10 cm'],['15','ca. 15 cm'],['20','ca. 20 cm'],['25','ca. 25 cm'],['30','ca. 30 cm'],['40','40 cm +']])+aiRow('loft','Tag foto på loftet – AI vurderer')+`<div>${maalBtn(g.etager==='1.5'?'tagetage':'loft',g.etager==='1.5'?'Sådan måler du tagetagen':'Sådan måler du loftet')}</div>`,'Stik en tommestok ned i isoleringen på loftet – eller tag et billede med tommestokken i.');
     body+=`<div class="era"><b>Det bliver brugt:</b>${planHTML(c,false)}</div>`;
   }
   if(s===3){
     body=qc('Hvor mange lag glas er der i ruderne?',chips('guide.glaslag',g.glaslag,[['1','1 lag'],['1f','1 lag + forsats','ekstra rude indvendigt'],['2','2 lag'],['3','3 lag'],['vedikke','Ved ikke']]),'Hold en tændt lighter eller telefonens lommelygte op mod ruden. Hvert lag glas giver ét spejlbillede af lyset – tæl dem.')+
       qc('Er vinduerne skiftet, siden huset blev bygget?',chips('guide.vinSkiftet',g.vinSkiftet,[['nej','Nej, de er originale'],['ja','Ja'],['vedikke','Ved ikke']])+(g.vinSkiftet==='ja'?`<div class="grid">${field('Ca. hvilket år?','guide.vinAar',g.vinAar,{num:true,hint:'Årstallet står ofte i metallisten mellem glassene.'})}</div>`:''));
     const ORD=['N','NØ','Ø','SØ','S','SV','V','NV'];
-    body+=qc('Sådan måler du',`<p class="hint" style="margin:0">Mål bredde og højde i cm på <b>karmens yderside</b> – hele vinduet inkl. karm, ikke kun glasset. Det er lettest udefra, fra kant til kant, hvor vinduet møder muren. Er flere vinduer helt ens, så skriv dem én gang og sæt antal.</p>`);
+    body+=qc('Sådan måler du',`<p class="hint" style="margin:0">Mål bredde og højde i cm på <b>karmens yderside</b> – hele vinduet inkl. karm, ikke kun glasset. Er flere vinduer helt ens, så skriv dem én gang og sæt antal.</p><div>${maalBtn('vindue','Se tegning og tips')}</div>`);
     body+=facades(g).slice().sort((x,y)=>ORD.indexOf(x[2])-ORD.indexOf(y[2])).map(([k,n,o])=>{const rows=vRows(g,k);return qc(`Facade mod ${n.toLowerCase()} <span class="pill acc">${esc(o)}</span>`,`<div class="wrows">${rows.map((r,i)=>`<div class="wrow">
         <div class="wrow-h"><select data-gv="${k}:${r.id}:type" aria-label="Type">${Object.entries(VTYPE).map(([tk,tn])=>`<option value="${tk}"${r.type===tk?' selected':''}>${tn}</option>`).join('')}</select><button type="button" class="btn sm ghost" data-act="gv-del" data-f="${k}" data-id="${r.id}" aria-label="Fjern">✕</button></div>
         <div class="wrow-m">${['b','h','antal'].map(fk=>`<label class="f"><span>${{b:'Bredde',h:'Højde',antal:'Antal ens'}[fk]}</span><div class="unit"><input type="text" inputmode="decimal" class="num-in" data-gv="${k}:${r.id}:${fk}" value="${esc(r[fk])}" placeholder="${fk==='antal'?'1':'fx 120'}"><i>${fk==='antal'?'stk':'cm'}</i></div></label>`).join('')}</div>
@@ -769,6 +795,7 @@ function vFlade(c,f){
     <span class="sum-s"><span>${esc(T.navn)}</span>${f.orient?`<span>${esc(f.orient)}</span>`:''}${f.skoen?'<span class="pill warn">skønnet</span>':edited?'<span class="pill">U rettet</span>':''}</span>
     <span class="sum-v"><span data-calc="fsum:${f.id}"></span><small data-calc="fsumU:${f.id}"></small></span></summary>
   <div class="item-body">
+    <div>${maalBtn(MAAL_TYPE[f.type]||'oversigt',`Sådan måler du: ${T.navn.toLowerCase()}`)}</div>
     <div class="grid">
       ${field('Betegnelse',p+'navn',f.navn)}
       ${field('Type',p+'type',f.type,{options:Object.entries(FLADE_TYPER).map(([k,v])=>[k,v.navn]),blank:false})}
@@ -806,6 +833,7 @@ function vVindue(c,v){
     <span class="sum-s"><span>${esc(v.orient||'–')}</span><span>${esc(R?R.navn:'')}</span>${v.skoen?'<span class="pill warn">skønnet</span>':''}</span>
     <span class="sum-v"><span data-calc="vsum:${v.id}"></span><small data-calc="vsumU:${v.id}"></small></span></summary>
   <div class="item-body">
+    <div>${maalBtn('vindue','Sådan måler du vinduer')}</div>
     <div class="grid">
       ${field('Betegnelse',p+'navn',v.navn)}
       ${field('Sidder i flade',p+'flade',v.flade,{options:c.flader.map(f=>[f.id,f.navn||FLADE_TYPER[f.type].navn]),blank:'(ingen – fratrækkes ikke)'})}
@@ -848,7 +876,7 @@ function vLinje(c,l){
   </div></details>`;
 }
 function vSkaerm(c){
-  return `<div class="page-h"><div><div class="eyebrow">Klimaskærm</div><h2>Flader, vinduer og linjetab</h2><p>Mål op på stedet. Vinduer, der knyttes til en flade, trækkes automatisk fra fladens areal.</p></div></div>
+  return `<div class="page-h"><div><div class="eyebrow">Klimaskærm</div><h2>Flader, vinduer og linjetab</h2><p>Mål op på stedet. Vinduer, der knyttes til en flade, trækkes automatisk fra fladens areal.</p></div>${maalBtn('oversigt','Opmålingsguide')}</div>
   <div class="stats">
     <div class="stat"><b data-calc="hf">–</b><span>Flader, W/K</span></div>
     <div class="stat"><b data-calc="hv">–</b><span>Vinduer/døre, W/K (<span data-calc="va_tot"></span> m²)</span></div>
@@ -861,7 +889,7 @@ function vSkaerm(c){
     <div class="items">${c.flader.length?c.flader.map(f=>vFlade(c,f)).join(''):'<div class="empty">Ingen flader endnu. Start med ydervæggene – én pr. facade gør det let at knytte vinduer til.</div>'}</div></section>
   <section class="block"><div class="block-h"><h3>Vinduer og døre</h3><div class="row"><button class="btn pri" data-act="add-vindue">${I.plus} Tilføj vindue/dør</button></div></div>
     <div class="items">${c.vinduer.length?c.vinduer.map(v=>vVindue(c,v)).join(''):'<div class="empty">Ingen vinduer endnu. Ens vinduer i samme facade kan registreres samlet med “Antal”.</div>'}</div></section>
-  <section class="block"><div class="block-h"><h3>Linjetab</h3><div class="row"><button class="btn" data-act="add-linje" data-type="fund_uiso">${I.plus} Fundament</button><button class="btn" data-act="add-linje" data-type="fals_uiso">${I.plus} Vinduesfals</button></div></div>
+  <section class="block"><div class="block-h"><h3>Linjetab</h3><div class="row">${maalBtn('terraen','Fundament')}<button class="btn" data-act="add-linje" data-type="fund_uiso">${I.plus} Fundament</button><button class="btn" data-act="add-linje" data-type="fals_uiso">${I.plus} Vinduesfals</button></div></div>
     <p class="hint">Samlet vinduesomkreds lige nu: <span class="mono" data-calc="fals"></span> m.</p>
     <div class="items">${c.linjetab.length?c.linjetab.map(l=>vLinje(c,l)).join(''):'<div class="empty">Tilføj fundamentets længde (husets omkreds) og vinduesfalse.</div>'}</div></section>`;
 }
@@ -1049,6 +1077,122 @@ function vMere(c){
   <section class="block"><div class="block-h"><h3>Om værdierne</h3></div><div class="panel"><p class="hint" style="margin:0">U-værdier, ψ-værdier, rudeværdier og b-faktorer i listerne er vejledende standardværdier til hurtig registrering. Kontrollér altid mod Håndbog for Energikonsulenter og de faktiske forhold, før data tastes i Energy10 – du står inde for energimærket.</p></div></section>`;
 }
 
+/* ============ Opmålingsguide ============ */
+const MK=id=>`<defs><marker id="${id}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L8,4L0,8z" class="d-af"/></marker></defs>`;
+const AR=(id,x1,y1,x2,y2)=>`<line class="d-a" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-start="url(#${id})" marker-end="url(#${id})"/>`;
+const FIG={
+  snit:{cap:'Vægge og fundament måles udvendigt. Gulv og loft måles indvendigt – mellem væggenes indersider. Væghøjden måles fra gulvet til oversiden af loftisoleringen.',svg:`<svg viewBox="0 0 360 225" role="img" aria-label="Snit gennem et hus i ét plan: væghøjde fra gulv til overside af loftisolering, indvendigt mål for gulv og loft, udvendigt mål for vægge og fundament">${MK('m-snit')}
+    <polyline class="d-l" points="58,40 185,6 312,40"/>
+    <rect class="d-ins" x="86" y="42" width="198" height="18"/><text class="d-t" x="185" y="55" text-anchor="middle">loftisolering</text>
+    <rect class="d-w" x="86" y="60" width="198" height="6"/>
+    <rect class="d-w" x="70" y="42" width="16" height="123"/><rect class="d-w" x="284" y="42" width="16" height="123"/>
+    <rect class="d-w" x="70" y="165" width="230" height="14"/>
+    <text class="d-t" x="185" y="112" text-anchor="middle">opvarmet rum</text>
+    <line class="d-g" x1="40" y1="42" x2="70" y2="42"/><line class="d-g" x1="40" y1="165" x2="70" y2="165"/>
+    ${AR('m-snit',50,44,50,163)}<text class="d-ta" transform="translate(40 104) rotate(-90)" text-anchor="middle">væghøjde</text>
+    ${AR('m-snit',88,148,282,148)}<text class="d-ta" x="185" y="141" text-anchor="middle">indvendigt: gulv og loft</text>
+    <line class="d-g" x1="70" y1="179" x2="70" y2="206"/><line class="d-g" x1="300" y1="179" x2="300" y2="206"/>
+    ${AR('m-snit',72,200,298,200)}<text class="d-ta" x="185" y="218" text-anchor="middle">udvendigt: vægge og fundament</text></svg>`},
+  tagetage:{cap:'I en tagetage (1½ plan) er klimaskærmen delt op: skunkvæg, skråvæg og hanebåndsloft – plus gulvet i skunkrummet over stueetagen. Mål dem hver for sig.',svg:`<svg viewBox="0 0 360 225" role="img" aria-label="Snit gennem et 1½-plans hus med skunkvæg, skråvæg, hanebåndsloft og gulv i skunk markeret">
+    <polyline class="d-l" points="48,122 180,12 312,122"/>
+    <rect class="d-w" x="60" y="118" width="12" height="92"/><rect class="d-w" x="288" y="118" width="12" height="92"/>
+    <rect class="d-w" x="72" y="150" width="216" height="6"/><rect class="d-w" x="60" y="210" width="240" height="8"/>
+    <line class="d-a" x1="104" y1="150" x2="104" y2="76"/><line class="d-a" x1="256" y1="150" x2="256" y2="76"/>
+    <line class="d-a" x1="104" y1="76" x2="137" y2="48"/><line class="d-a" x1="256" y1="76" x2="223" y2="48"/>
+    <line class="d-a" x1="137" y1="48" x2="223" y2="48"/>
+    <line class="d-a" x1="72" y1="150" x2="104" y2="150" stroke-dasharray="5 3"/><line class="d-a" x1="256" y1="150" x2="288" y2="150" stroke-dasharray="5 3"/>
+    <text class="d-ta" x="180" y="64" text-anchor="middle">hanebåndsloft</text>
+    <text class="d-ta" x="226" y="80" text-anchor="end">skråvæg</text>
+    <text class="d-ta" x="250" y="122" text-anchor="end">skunkvæg</text>
+    <text class="d-ta" x="88" y="170" text-anchor="middle">gulv i skunk</text>
+    <text class="d-t" x="180" y="34" text-anchor="middle">koldt loftrum</text>
+    <text class="d-t" x="180" y="112" text-anchor="middle">opvarmet 1. sal</text>
+    <text class="d-t" x="180" y="190" text-anchor="middle">stueetage</text></svg>`},
+  kaelder:{cap:'Uopvarmet kælder: kun dækket mellem bolig og kælder tæller. Opvarmet kælder: væggene mod jord og kældergulvet tæller, og den del af væggen, der står over terræn, er ydervæg.',svg:`<svg viewBox="0 0 360 210" role="img" aria-label="To snit: i en uopvarmet kælder måles dækket over kælderen; i en opvarmet kælder måles væggene mod jord og kældergulvet">${MK('m-kld')}
+    <text class="d-h" x="90" y="14" text-anchor="middle">Uopvarmet kælder</text>
+    <line class="d-g" x1="8" y1="84" x2="172" y2="84"/><text class="d-t" x="180" y="81" text-anchor="middle">terræn</text>
+    <rect class="d-w" x="22" y="26" width="10" height="34"/><rect class="d-w" x="148" y="26" width="10" height="34"/>
+    <rect class="d-hl" x="22" y="60" width="136" height="8"/><text class="d-t" x="90" y="48" text-anchor="middle">bolig</text>
+    <rect class="d-w" x="22" y="68" width="10" height="104"/><rect class="d-w" x="148" y="68" width="10" height="104"/><rect class="d-w" x="22" y="172" width="136" height="8"/>
+    <text class="d-ta" x="90" y="118" text-anchor="middle">mål dette dæk</text><text class="d-t" x="90" y="148" text-anchor="middle">koldt</text>
+    <text class="d-h" x="270" y="14" text-anchor="middle">Opvarmet kælder</text>
+    <line class="d-g" x1="188" y1="84" x2="352" y2="84"/>
+    <rect class="d-w" x="202" y="26" width="10" height="58"/><rect class="d-w" x="328" y="26" width="10" height="58"/>
+    <rect class="d-w" x="212" y="60" width="116" height="6"/><text class="d-t" x="270" y="48" text-anchor="middle">bolig</text>
+    <text class="d-t" x="270" y="79" text-anchor="middle">over terræn = ydervæg</text>
+    <rect class="d-hl" x="202" y="84" width="10" height="88"/><rect class="d-hl" x="328" y="84" width="10" height="88"/><rect class="d-hl" x="202" y="172" width="136" height="8"/>
+    <text class="d-ta" x="270" y="126" text-anchor="middle">væg mod jord</text><text class="d-ta" x="270" y="198" text-anchor="middle">kældergulv</text>
+    ${AR('m-kld',348,86,348,170)}<text class="d-ta" transform="translate(357 128) rotate(-90)" text-anchor="middle">dybde</text></svg>`},
+  vindue:{cap:'Mål hele vinduet på karmens yderside – ikke kun glasset.',svg:`<svg viewBox="0 0 260 180" role="img" aria-label="Vindue: bredde og højde måles på karmens yderside, ikke glasset">${MK('m-vin')}
+    <text class="d-ta" x="115" y="11" text-anchor="middle">karmens yderside</text>
+    <rect class="d-w" x="50" y="18" width="130" height="120" stroke-width="2"/><rect class="d-glass" x="62" y="30" width="106" height="96"/>
+    <text class="d-t" x="115" y="82" text-anchor="middle">glas</text>
+    <line class="d-g" x1="50" y1="138" x2="50" y2="162"/><line class="d-g" x1="180" y1="138" x2="180" y2="162"/>
+    ${AR('m-vin',52,156,178,156)}<text class="d-ta" x="115" y="174" text-anchor="middle">bredde</text>
+    <line class="d-g" x1="180" y1="18" x2="206" y2="18"/><line class="d-g" x1="180" y1="138" x2="206" y2="138"/>
+    ${AR('m-vin',200,20,200,136)}<text class="d-ta" transform="translate(216 78) rotate(-90)" text-anchor="middle">højde</text></svg>`},
+};
+const MAAL={
+  oversigt:{navn:'Grundregler',titel:'Grundreglerne for opmåling',fig:'snit',
+    trin:['Tegn en simpel skitse af huset set oppefra, og skriv målene på, mens du måler. Tag et foto af skitsen bagefter.','Ydervægge og fundament: mål udvendigt – fra hjørne til hjørne langs soklen.','Gulv og loft: brug de indvendige mål – fra væggens inderside til inderside. Har du kun de udvendige mål, så træk 2 × vægtykkelsen fra (det gør guiden automatisk).','Væghøjde: fra gulvet i stueetagen til oversiden af isoleringen på loftet. Mål rumhøjden inde, og læg loftets tykkelse og isoleringen til.','Vægtykkelse: mål i en dør- eller vinduesåbning, fra murens yderside til indersiden.','Mål hver del for sig, hvis den er bygget forskelligt – fx en tilbygning i træ eller en efterisoleret gavl.','Brug en laserafstandsmåler til de lange mål og en tommestok til tykkelser.'],
+    ind:'Start → trin “Mål”: udvendig længde og bredde, vægtykkelse og væghøjde. Derefter kan alt rettes under Klimaskærm.',
+    fejl:['At måle gulvarealet udvendigt – så tæller vægtykkelsen med.','At glemme dele af huset, der er bygget til senere.','At bruge BBR-arealet som gulvareal uden at tjekke det.']},
+  ydervaeg:{navn:'Ydervæg',titel:'Ydervægge og facader',fig:'snit',
+    trin:['Mål hver facade for sig udvendigt, fra hjørne til hjørne. Skriv verdenshjørnet på skitsen.','Højde: fra gulvet i stueetagen til oversiden af loftisoleringen (se tegningen). I 2-plans huse: til oversiden af isoleringen over 1. sal.','Gavle i 1½-plans huse: tag kun den del med, der er opvarmet – op til hanebåndsloftet.','Vinduer og døre skal ikke trækkes fra i hånden – det sker automatisk, når de knyttes til facaden.','Se hvad væggen er lavet af (mursten, letbeton, træ), og mål tykkelsen i en dør- eller vinduesåbning. Ca. 30–36 cm murværk er typisk hulmur.','Kig efter små, tilstoppede huller i fugerne – så er der blæst isolering ind i hulmuren.'],
+    ind:'Klimaskærm → Flader → Ydervæg: vælg “Længde × højde”, og skriv længde og højde i meter.',
+    fejl:['At måle højden til loftet indvendigt – så mangler loftets tykkelse og isoleringen.','At tage hele gavltrekanten med, selvom loftrummet over er koldt.']},
+  vindue:{navn:'Vinduer',titel:'Vinduer og døre',fig:'vindue',
+    trin:['Mål bredde og højde på karmens yderside – hele vinduet med karm, ikke kun glasset.','Udefra er det lettest: fra kant til kant, hvor karmen møder muren.','Registrér ens vinduer én gang og skriv antal.','Notér hvilken facade (verdenshjørne) vinduet sidder i.','Tæl lag glas med en lighter eller lommelygte – hvert lag giver ét spejlbillede.','Se efter årstal i metallisten mellem glassene, og tag et foto af det.','Døre måles på samme måde. Skriv om der er glas i.'],
+    ind:'Start → trin “Vinduer” (i cm), eller Klimaskærm → Vinduer og døre (i meter).',
+    fejl:['At måle kun glasset – så bliver arealet alt for lille.','At glemme ovenlysvinduer og kældervinduer.']},
+  loft:{navn:'Loft',titel:'Loft mod koldt tagrum',fig:'snit',
+    trin:['Areal: brug de indvendige mål af rummene under loftet – længde × bredde mellem ydervæggenes indersider.','Gå op på loftet, hvis det er muligt og sikkert. Stik en tommestok ned i isoleringen flere steder, og notér den typiske tykkelse.','Tag et foto med tommestokken i billedet.','Er isoleringen ujævn eller mangler den nogle steder, så skriv det i noter.','Se om loftslemmen er isoleret og tæt.'],
+    ind:'Klimaskærm → Flader → Loft mod uopvarmet tagrum: skriv arealet, og vælg den konstruktion, der passer til den målte isolering.',
+    fejl:['At bruge husets udvendige mål som loftareal.','At gætte isoleringen ud fra loftslemmen alene – mål flere steder.']},
+  tagetage:{navn:'Tagetage',titel:'Tagetage (1½ plan): skunk, skråvæg og hanebånd',fig:'tagetage',
+    trin:['Mål indefra i de opvarmede rum på 1. sal.','Skunkvæg: den lave lodrette væg. Mål højden fra gulv til der, hvor skråvæggen starter, og længden langs huset.','Skråvæg: mål langs skråningen – fra toppen af skunkvæggen til hanebåndsloftet – og længden langs huset.','Hanebåndsloft: det vandrette loft øverst. Mål bredde og længde.','Gulv i skunk: gulvet i skunkrummet ligger over stueetagen og taber også varme. Mål skunkrummets bredde (fra ydermur til skunkvæg) og længden.','Gør det for begge sider af huset. Gavlene registreres som ydervæg.','Kig ind i skunkrummet gennem skunklemmen, mål isoleringen og tag et foto.'],
+    ind:'Klimaskærm → Flader: opret “Skunkvæg”, “Skråvæg / tag i tagetage” og “Loft mod uopvarmet tagrum” (til både hanebåndsloft og gulv i skunk).',
+    fejl:['At måle skråvæggen vandret i stedet for langs skråningen.','At glemme gulvet i skunkrummet.']},
+  fladt:{navn:'Fladt tag',titel:'Fladt tag',fig:null,
+    trin:['Areal: de indvendige mål af rummene under taget.','Isoleringen kan sjældent ses. Se tegninger, spørg ejeren om tagrenovering, og brug ellers byggeåret.','Kig på tagkanten udvendigt – en høj tagkant kan tyde på, at der er isoleret oven på taget.'],
+    ind:'Klimaskærm → Flader → Fladt tag.',fejl:['At bruge husets udvendige mål som tagareal.']},
+  terraen:{navn:'Terrændæk',titel:'Terrændæk (gulv direkte på jorden)',fig:'snit',
+    trin:['Areal: de indvendige mål – mellem ydervæggenes indersider. Tag alle opvarmede rum med.','Fundament: mål husets omkreds udvendigt. Den længde bruges som linjetab (varmetab langs gulvets kant).','Isoleringen under gulvet kan ikke ses. Spørg ejeren, se tegninger, og brug ellers byggeåret.','Notér om der er gulvvarme – det giver et større varmetab mod jorden.'],
+    ind:'Klimaskærm → Flader → Terrændæk (areal) og Linjetab → Fundament (omkreds).',
+    fejl:['At bruge det udvendige areal.','At glemme fundamentet under linjetab.']},
+  kryb:{navn:'Krybekælder',titel:'Krybekælder',fig:'kaelder',
+    trin:['Det er gulvet over krybekælderen, der skal registreres – som “Etageadskillelse mod uopvarmet kælder”. Det svarer til venstre tegning.','Areal: de indvendige mål af rummene over krybekælderen.','Kig ned gennem lemmen med en lommelygte: er der isolering under gulvet? Tag et foto.','Krybekælderens vægge og bund registreres ikke.'],
+    ind:'Klimaskærm → Flader → Etageadskillelse mod uopvarmet kælder (b-faktor 0,7).',fejl:['At registrere krybekælderens vægge.']},
+  kaelder_kold:{navn:'Uopvarmet kælder',titel:'Uopvarmet kælder',fig:'kaelder',
+    trin:['Det er dækket mellem bolig og kælder (kælderens loft), der skal registreres – ikke kælderens vægge og gulv.','Areal: de indvendige mål af kælderen / rummene ovenover.','Se op i kælderloftet: er der isolering mellem eller under bjælkerne? Mål tykkelsen og tag et foto.','Væggen og døren mellem boligen og kælderen (fx ved trappen) registreres som “Væg mod uopvarmet rum”.','En kælder med radiatorer, der ikke bruges, regnes normalt som uopvarmet. Er du i tvivl, så brug “Spørg”.'],
+    ind:'Klimaskærm → Flader → Etageadskillelse mod uopvarmet kælder (b-faktor 0,7).',fejl:['At registrere kælderens vægge og gulv, når kælderen er kold.']},
+  kaelder_varm:{navn:'Opvarmet kælder',titel:'Opvarmet kælder',fig:'kaelder',
+    trin:['Kældervægge mod jord: mål kælderens omkreds udvendigt og dybden fra terræn ned til kældergulvet.','Den del af kældervæggen, der står over terræn, registreres som ydervæg.','Kældergulv: de indvendige mål.','Kælderens areal tæller med i det opvarmede etageareal.','Kældervinduer registreres som vinduer i den facade, de sidder i.','Se efter isolering indvendigt på væggene – kig ved vinduesåbninger, og bank på væggen.'],
+    ind:'Klimaskærm → Flader → Kælderydervæg mod jord og Kældergulv (b-faktor 0,7). Delen over terræn som Ydervæg.',
+    fejl:['At regne hele kældervæggen som mod jord, selvom en del står over terræn.']},
+  uopv_rum:{navn:'Mod uopvarmet rum',titel:'Væg mod uopvarmet rum (garage, udestue, bryggers)',fig:null,
+    trin:['Mål den væg, der adskiller boligen fra det kolde rum: længde × højde.','Døre i væggen registreres som døre og knyttes til væggen.','Er rummet opvarmet og bruges det som bolig, hører det med til boligen i stedet.'],
+    ind:'Klimaskærm → Flader → Væg mod uopvarmet rum (b-faktor 0,7).',fejl:['At glemme døren ud til garagen eller bryggerset.']},
+};
+const MAAL_TYPE={ydervaeg:'ydervaeg',loft:'loft',skraavaeg:'tagetage',skunk:'tagetage',fladt:'fladt',terraen:'terraen',kaelderv:'kaelder_varm',kaelderg:'kaelder_varm',etage_kaelder:'kaelder_kold',vaeg_uopv:'uopv_rum',gulv_ude:'oversigt'};
+let maalKey=null;
+const RULER='<svg viewBox="0 0 24 24"><path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg>';
+const maalBtn=(k,label)=>`<button type="button" class="btn sm maal-btn" data-act="maal" data-k="${k}">${RULER} ${esc(label||'Sådan måler du')}</button>`;
+function vMaal(){
+  const M=MAAL[maalKey]||MAAL.oversigt,F=M.fig&&FIG[M.fig];
+  $('#sheet').innerHTML=`<div class="sheet" data-act="close-sheet"><div class="sheet-in" role="dialog" aria-modal="true" aria-label="Sådan måler du">
+    <div class="block-h"><h3>Sådan måler du</h3><button class="btn sm" data-act="close-sheet">Luk</button></div>
+    <div class="chips maal-chips">${Object.entries(MAAL).map(([k,x])=>`<button type="button" class="chip" data-act="maal" data-k="${k}" aria-pressed="${k===maalKey}">${esc(x.navn)}</button>`).join('')}</div>
+    <h3 class="maal-t">${esc(M.titel)}</h3>
+    ${F?`<figure class="fig">${F.svg}<figcaption>${esc(F.cap)}</figcaption></figure>`:''}
+    <ol class="maal-trin">${M.trin.map(t=>`<li>${esc(t)}</li>`).join('')}</ol>
+    <div class="era"><b>Her skrives det ind:</b> ${esc(M.ind)}</div>
+    ${M.fejl&&M.fejl.length?`<div><div class="eyebrow" style="margin-bottom:4px">Typiske fejl</div><ul class="maal-fejl">${M.fejl.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`:''}
+    <p class="hint">Reglerne følger almindelig praksis for opmåling til energimærkning. Tjek detaljerne i Håndbog for Energikonsulenter, hvis du er i tvivl.</p>
+  </div></div>`;
+  const s=$('.sheet-in');if(s)s.scrollTop=0;
+}
+
 /* ============ Hændelser ============ */
 function getItem(c,list,id){return (c[list]||[]).find(x=>x.id===id);}
 function setPath(c,path,val){const p=path.split('.');if(['flader','vinduer','linjetab','fotos'].includes(p[0])){const it=getItem(c,p[0],p[1]);if(it)it[p[2]]=val;}else c[p[0]][p[1]]=val;}
@@ -1085,7 +1229,7 @@ document.addEventListener('change',async e=>{
   if(t.tagName==='SELECT'&&t.dataset.b){setPath(c,t.dataset.b,t.value);const re=onChanged(c,t.dataset.b,t.value);save();if(re==='sheet'){vSheet();render(true);}else if(re)render(true);else updateCalcs();return;}
   if(t.tagName==='SELECT'&&t.dataset.lag){const[id,i,k]=t.dataset.lag.split(':');const f=getItem(c,'flader',id);f.lag[i][k]=t.value;save();render(true);return;}
   if(t.id==='apiModel'){lsSet(LS_MODEL,t.value);return;}
-  if(t.dataset.aiGuide&&t.files&&t.files[0]){const f=t.files[0];t.value='';guideAIRun(c,t.dataset.aiGuide,f);return;}
+  if(t.dataset.aiGuide&&t.files&&t.files[0]){const fs=[...t.files];t.value='';guideAIRun(c,t.dataset.aiGuide,t.dataset.aiGuide==='dok'?fs:fs[0]);return;}
   if(t.dataset.smart&&t.files&&t.files[0]){const f=t.files[0];t.value='';try{const data=await readImage(f);const id=uid();await PhotoDB.put(id,data);c.fotos.push({id,kategori:'andet',element:'',note:'',t:new Date().toLocaleString('da-DK'),ai:null});save();render(true);sheetPhoto=id;runAI(id,true);}catch(err){toast(err.message);}return;}
   if(t.dataset.fotoKat&&t.files&&t.files.length){await addPhotos(c,[...t.files],t.dataset.fotoKat,t.dataset.fotoEl||'');t.value='';return;}
   if(t.id==='importFile'&&t.files[0]){importCase(t.files[0]);t.value='';}
@@ -1096,7 +1240,8 @@ document.addEventListener('click',async e=>{
   if(tabBtn){state.tab=tabBtn.dataset.tab;save();render();return;}
   const b=e.target.closest('[data-act]');if(!b)return;
   const act=b.dataset.act,c=cur(),id=b.dataset.id;
-  if(act==='close-sheet'){if(e.target!==b&&b.classList.contains('sheet'))return;sheetPhoto=null;chat.open=false;aiErr='';$('#sheet').innerHTML='';return;}
+  if(act==='close-sheet'){if(e.target!==b&&b.classList.contains('sheet'))return;sheetPhoto=null;chat.open=false;maalKey=null;aiErr='';$('#sheet').innerHTML='';return;}
+  if(act==='maal'){maalKey=b.dataset.k||'oversigt';sheetPhoto=null;chat.open=false;vMaal();return;}
   if(act==='help'){e.preventDefault();const h=b.closest('.f').querySelector('.help-t');if(h)h.hidden=!h.hidden;return;}
   if(act==='pick'){setPath(c,b.dataset.path,b.dataset.v);c.updated=Date.now();save();render(true);return;}
   if(act==='gv-add'){vRows(G(c),b.dataset.f).push({id:uid(),type:b.dataset.t,b:'',h:'',antal:'1',note:''});save();render(true);const ins=$$(`[data-gv^="${b.dataset.f}:"][data-gv$=":b"]`);if(ins.length)ins[ins.length-1].focus();return;}
@@ -1135,7 +1280,7 @@ document.addEventListener('click',async e=>{
   c.updated=Date.now();save();render(true);
 });
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'&&(sheetPhoto||chat.open)){sheetPhoto=null;chat.open=false;$('#sheet').innerHTML='';}
+  if(e.key==='Escape'&&(sheetPhoto||chat.open||maalKey)){sheetPhoto=null;chat.open=false;maalKey=null;$('#sheet').innerHTML='';}
   if(e.key==='Enter'&&!e.shiftKey&&e.target.id==='chatIn'){e.preventDefault();const v=e.target.value;e.target.value='';chatSend(v);}
 });
 document.addEventListener('submit',e=>{if(e.target.id==='chatForm'){e.preventDefault();const t=$('#chatIn');const v=t.value;t.value='';chatSend(v);}});
@@ -1150,7 +1295,7 @@ async function addPhotos(c,files,kat,el){
 
 /* ============ AI (Claude) ============ */
 // Inde i Claude bruges brugerens egen Claude-konto (capability "sample"); ellers en valgfri API-nøgle.
-let sampleFn=null,sampleImages=false,dlCap=null,aiBusy=false,aiErr='';
+let sampleMaxImg=5,sampleFn=null,sampleImages=false,dlCap=null,aiBusy=false,aiErr='';
 const guideAI={busy:'',msg:{}};
 const apiKey=()=>(lsGet(LS_KEY)||'').trim();
 const aiAvailable=()=>!!sampleFn||!!apiKey();
@@ -1243,6 +1388,7 @@ Svar kun med JSON: {"beskrivelse":"1-2 letforståelige sætninger på dansk","is
 function varmePrompt(){return `Du hjælper en dansk energikonsulent under uddannelse. Billedet viser et varmeanlæg eller dets typeskilt. Aflæs det, der kan læses; brug null for alt, der ikke kan ses. Virkningsgrader i procent (nyttevirkning ved fuld last og ved 30 % dellast, hvis angivet). Opfind ikke tal.
 Svar kun med JSON: {"beskrivelse":"1-2 letforståelige sætninger på dansk","kilde":"fjernvarme|gas_kond|gas|olie|pille|vp_lv|vp_jord|el|ukendt","fabrikat":null,"model":null,"aar":null,"effekt_kw":null,"eta100":null,"eta30":null,"scop":null}`;}
 async function guideAIRun(c,kind,file){
+  if(kind==='dok')return dokAIRun(c,file);
   let data;try{data=await readImage(file);}catch(e){toast(e.message);return;}
   const pid=uid();await PhotoDB.put(pid,data);
   c.fotos.push({id:pid,kategori:kind==='loft'?'loft':kind==='varme'?'varme':'facade',element:'',note:'Fra guiden',t:new Date().toLocaleString('da-DK'),ai:null});
@@ -1270,6 +1416,40 @@ async function guideAIRun(c,kind,file){
     }
     const p=c.fotos.find(x=>x.id===pid);if(p)p.ai={beskrivelse:guideAI.msg[kind].t,felter:[],ekstra:[]};
   }catch(e){guideAI.msg[kind]={t:e.message,err:true};}
+  guideAI.busy='';save();render(true);
+}
+/* BBR-meddelelse / tidligere energimærke → udfyld stamdata og guidens svar */
+function dokPrompt(){return `Du hjælper en dansk energikonsulent under uddannelse. Billederne er skærmbilleder eller fotos af en BBR-meddelelse og/eller en tidligere energimærkerapport for en bolig. Aflæs kun det, der faktisk står; brug null for alt, der ikke fremgår. Opfind intet.
+Oversæt til disse nøgler: vaeg ud fra ydervæggenes materiale (mursten = tegl, letbeton/gasbeton = letbeton, træ = trae, bindingsværk = bindings, beton = beton). etager = "1.5", hvis der er udnyttet tagetage. under ud fra kælder/krybekælder (kælder uden opvarmning = kaelder_kold, opvarmet/beboet kælder = kaelder_varm). varmekilde ud fra varmeinstallation og opvarmningsmiddel (naturgas = gas).
+Svar kun med JSON:
+{"beskrivelse":"1-2 sætninger på dansk: hvilke dokumenter du ser, og evt. tidligere energimærke (bogstav og år)","adresse":null,"postnr":null,"by":null,"ejendomsnr":null,"matrikel":null,"opfoert":null,"ombygget":null,"boligareal":null,"kaelder_areal":null,"anvendelse":"120|121|122|131|132|140|510 eller null","etager":"1|1.5|2 eller null","under":"terraen|kryb|kaelder_kold|kaelder_varm eller null","vaeg":"tegl|letbeton|trae|bindings|beton eller null","hulmursisoleret":null,"loft_isolering_cm":null,"glaslag":"1|1f|2|3 eller null","vinduer_skiftet_aar":null,"varmekilde":"fjernvarme|gas|olie|vp_lv|vp_jord|pille|el eller null","varme_aar":null,"ventilation":"naturlig|udsug|balanceret eller null","solceller_paneler":null,"tidligere_maerke":null,"noter":"korte, vigtige oplysninger, fx forbedringsforslag fra det gamle energimærke"}`;}
+async function dokAIRun(c,files){
+  const imgs=[];
+  for(const f of files.slice(0,Math.max(1,sampleFn?sampleMaxImg:5))){try{imgs.push(await readImage(f,2000));}catch(e){}}
+  if(!imgs.length){toast('Billederne kunne ikke læses');return;}
+  for(const d of imgs){const pid=uid();await PhotoDB.put(pid,d);c.fotos.push({id:pid,kategori:'andet',element:'',note:'BBR / tidligere energimærke',t:new Date().toLocaleString('da-DK'),ai:null});}
+  guideAI.busy='dok';save();render(true);
+  const B=c.bygning,g=G(c),done=[],ok=v=>v!=null&&v!==''&&v!=='null';
+  try{
+    const r=await askAI(dokPrompt(),{images:imgs});
+    const setB=(k,v,lbl,always)=>{if(ok(v)&&(always||!B[k])){B[k]=typeof v==='number'?dk(v):String(v);done.push(lbl);}};
+    setB('adresse',r.adresse,'adresse');setB('postnr',r.postnr,'postnr.');setB('by',r.by,'by');setB('ejendomsnr',r.ejendomsnr,'ejendomsnr.');setB('matrikel',r.matrikel,'matrikel');
+    setB('opfoert',r.opfoert,'byggeår',true);setB('ombygget',r.ombygget,'ombygningsår');setB('areal',r.boligareal,'boligareal',true);setB('arealKaelder',r.kaelder_areal,'kælderareal');
+    if(ANVENDELSE[r.anvendelse]){B.anvendelse=String(r.anvendelse);done.push('hustype');}
+    const setG=(k,v,allowed,lbl)=>{if(ok(v)&&(!allowed||allowed.includes(String(v)))&&(!g[k]||g[k]==='vedikke')){g[k]=String(v);done.push(lbl);}};
+    if(['1','1.5','2'].includes(String(r.etager))){g.etager=String(r.etager);done.push('etager');}setG('under',r.under,['terraen','kryb','kaelder_kold','kaelder_varm'],'kælder/gulv');
+    setG('vaeg',r.vaeg,Object.keys(VAEGNAVN),'vægtype');
+    if(r.hulmursisoleret===true||r.hulmursisoleret===false)setG('hulmur',r.hulmursisoleret?'ja':'nej',null,'hulmursisolering');
+    if(num(r.loft_isolering_cm)>=0){const cm=num(r.loft_isolering_cm),near=[0,5,10,15,20,25,30,40].reduce((a,b)=>Math.abs(b-cm)<Math.abs(a-cm)?b:a);setG('loftCm',String(near),null,'loftisolering');}
+    setG('glaslag',r.glaslag,['1','1f','2','3'],'glaslag');
+    if(num(r.vinduer_skiftet_aar)>1900){setG('vinSkiftet','ja',null,'vinduer skiftet');if(!g.vinAar)g.vinAar=String(r.vinduer_skiftet_aar);}
+    setG('varmeKilde',r.varmekilde,['fjernvarme','gas','olie','vp_lv','vp_jord','pille','el'],'varmekilde');setG('varmeAar',r.varme_aar,null,'varmeanlæggets år');
+    setG('vent',r.ventilation,['naturlig','udsug','balanceret'],'ventilation');
+    if(num(r.solceller_paneler)>0){setG('sol','ja',null,'solceller');if(!g.solPaneler)g.solPaneler=String(r.solceller_paneler);}
+    const n=[ok(r.tidligere_maerke)?`Tidligere energimærke: ${r.tidligere_maerke}.`:'',ok(r.noter)?String(r.noter):''].filter(Boolean).join(' ');
+    if(n&&!(B.noter||'').includes(n)){B.noter=(B.noter?B.noter+'\n':'')+n;done.push('noter');}
+    guideAI.msg.dok={t:(r.beskrivelse||'')+(done.length?` Udfyldt: ${done.join(', ')}. Tjek det i guidens trin – oplysninger fra BBR kan være forældede.`:' Der blev ikke fundet oplysninger, der kunne bruges.')};
+  }catch(e){guideAI.msg.dok={t:e.message,err:true};}
   guideAI.busy='';save();render(true);
 }
 /* Spørg: chat med sagen som kontekst */
@@ -1339,7 +1519,7 @@ PhotoDB.open().then(()=>hydrateThumbs());
   try{
     const[sm,dl]=await Promise.all([window.claude.use('sample').catch(()=>null),window.claude.use('downloads').catch(()=>null)]);
     sampleFn=sm;dlCap=dl;
-    if(sm){try{const l=await sm.limits();sampleImages=!!(l&&l.images);}catch(e){sampleImages=false;}}
+    if(sm){try{const l=await sm.limits();sampleImages=!!(l&&l.images);if(l&&l.images&&l.images.maxCount)sampleMaxImg=l.images.maxCount;}catch(e){sampleImages=false;}}
     const a=document.activeElement;if(!a||a===document.body)render(true);
   }catch(e){}
 })();
