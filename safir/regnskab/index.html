@@ -137,6 +137,22 @@ input,select,button{font:inherit;color:inherit}
 .btn:hover{background:var(--bottle-green-d)}
 .btn.ghost{background:transparent;color:var(--bottle-green)}
 .btn.ghost:hover{background:rgba(74,98,72,.07)}
+.lead{margin:0 26px 24px;padding:20px 0 0;border-top:1px solid var(--border)}
+.lead[hidden]{display:none}
+.lead-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;line-height:1.2}
+.lead-sub{font-size:12.5px;color:var(--muted);margin:4px 0 16px}
+.lead-field{margin-bottom:12px}
+.flabel{display:block;font-size:11px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.finput{width:100%;height:44px;padding:0 12px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);transition:border-color .15s,background .15s}
+.finput:focus{outline:none;border-color:var(--bottle-green);background:#fff}
+.privacy-check{display:flex;align-items:flex-start;gap:9px;margin:16px 0 18px;font-size:12.5px;color:var(--muted)}
+.privacy-check input{margin-top:3px;accent-color:var(--bottle-green)}
+.btn-submit{width:100%;padding:14px;border-radius:var(--r);border:none;cursor:pointer;background:var(--bottle-green);color:var(--cream);font-size:10.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:background .22s}
+.btn-submit:hover{background:var(--bottle-green-d)}
+.btn-submit:disabled{opacity:.7;cursor:default}
+.fmsg{display:none;margin-top:12px;padding:11px 14px;border-radius:3px;font-size:13px;text-align:center}
+.fmsg.err{display:block;background:rgba(185,28,28,.06);color:#b91c1c;border:1px solid rgba(185,28,28,.18)}
+.fmsg.ok{display:block;background:rgba(34,197,94,.07);color:#15803d;border:1px solid rgba(34,197,94,.22)}
 .note{padding:16px 26px 22px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--border);line-height:1.55}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--bg-dark);color:var(--cream);padding:10px 18px;border-radius:20px;font-size:13px;opacity:0;transition:all .25s;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -163,9 +179,10 @@ footer a:hover{color:rgba(245,240,230,.82)}
   .sum-head,.sum-body{padding-left:20px;padding-right:20px}
   .actions{padding:0 20px 20px}
   .note{padding:14px 20px 18px}
+  .lead{margin:0 20px 20px}
 }
 @media print{
-  .top,.actions,footer,.toast{display:none}
+  .top,.actions,.lead,footer,.toast{display:none}
   body{background:#fff}
   .wrap{display:block;margin:0;padding:0}
   .panel{box-shadow:none}
@@ -411,10 +428,28 @@ footer a:hover{color:rgba(245,240,230,.82)}
       <div id="sumRows"></div>
     </div>
     <div class="actions">
-      <a class="btn" id="mailBtn" href="mailto:kontakt@safirconsulting.dk">Send forespørgsel</a>
+      <button class="btn" type="button" id="openLead" aria-expanded="false" aria-controls="lead">Send forespørgsel</button>
       <button class="btn ghost" type="button" id="copyBtn">Kopiér opsummering</button>
       <button class="btn ghost" type="button" onclick="window.print()">Print / gem som PDF</button>
     </div>
+    <form class="lead" id="lead" hidden onsubmit="return false" novalidate>
+      <div class="lead-title">Send os din forespørgsel</div>
+      <p class="lead-sub">Dit estimat sendes med automatisk. Vi vender tilbage inden for én hverdag.</p>
+      <div class="lead-field"><label class="flabel" for="fNavn">Navn</label>
+        <input class="finput" type="text" id="fNavn" name="name" autocomplete="name" placeholder="Dit fulde navn"></div>
+      <div class="lead-field"><label class="flabel" for="fEmail">E-mail</label>
+        <input class="finput" type="email" id="fEmail" name="email" autocomplete="email" placeholder="din@email.dk"></div>
+      <div class="lead-field"><label class="flabel" for="fTlf">Telefon</label>
+        <input class="finput" type="tel" id="fTlf" name="telefon" autocomplete="tel" placeholder="+45 00 00 00 00"></div>
+      <div class="lead-field"><label class="flabel" for="fNote">Besked (valgfrit)</label>
+        <input class="finput" type="text" id="fNote" name="besked" placeholder="Kort beskrivelse af jeres situation"></div>
+      <div class="privacy-check">
+        <input type="checkbox" id="priv">
+        <label for="priv">Jeg accepterer at Safir Consulting må kontakte mig vedr. denne henvendelse.</label>
+      </div>
+      <button class="btn-submit" type="button" id="submitLead">Send besked</button>
+      <div class="fmsg" id="formMsg" role="status"></div>
+    </form>
     <p class="note">Estimatet er vejledende og baseret på de oplyste parametre. Alle priser er ekskl. moms. Momsindberetning afregnes til fast pris pr. indberetning. Løbende opgaver har en minimumspris på <span id="minNote"></span> pr. måned, og løn min. <span id="minPayNote"></span> pr. måned. Endeligt tilbud gives efter en kort, uforpligtende gennemgang.</p>
   </aside>
 </main>
@@ -614,9 +649,6 @@ function render() {
     html += row('Inkl. moms', kr(r.total * (1 + CONFIG.vat)));
   }
   $('sumRows').innerHTML = html;
-  $('mailBtn').href = 'mailto:kontakt@safirconsulting.dk?subject=' +
-    encodeURIComponent('Forespørgsel: regnskab & bogholderi' + ($('company').value ? ' – ' + $('company').value : '')) +
-    '&body=' + encodeURIComponent(summaryText(r));
 }
 
 // Prisinterval: kun timebaserede beløb varierer; faste priser og minimumspriser ligger fast
@@ -688,6 +720,36 @@ $('copyBtn').addEventListener('click', async () => {
   const text = summaryText(calc());
   try { await navigator.clipboard.writeText(text); toast('Opsummering kopieret'); }
   catch { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('Opsummering kopieret'); }
+});
+
+// ── Forespørgsel: samme Formspree-formular som på forsiden ──
+const FORMSPREE_URL = 'https://formspree.io/f/meedvdnb';
+$('openLead').addEventListener('click', () => {
+  const f = $('lead'), open = f.hidden;
+  f.hidden = !open;
+  $('openLead').setAttribute('aria-expanded', open);
+  if (open) { f.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); $('fNavn').focus({ preventScroll: true }); }
+});
+$('submitLead').addEventListener('click', () => {
+  const navn = $('fNavn').value.trim(), email = $('fEmail').value.trim(), tlf = $('fTlf').value.trim();
+  const msg = $('formMsg'), btn = $('submitLead');
+  const show = (cls, txt) => { msg.className = 'fmsg ' + cls; msg.textContent = txt; };
+  if (!navn || !email || !tlf) return show('err', 'Udfyld venligst navn, e-mail og telefon.');
+  if (!/^\S+@\S+\.\S+$/.test(email)) return show('err', 'Tjek venligst e-mailadressen.');
+  if (!$('priv').checked) return show('err', 'Du skal acceptere, at vi må kontakte dig.');
+
+  const data = new FormData();
+  data.append('name', navn);
+  data.append('email', email);
+  data.append('telefon', tlf);
+  data.append('emne', 'Regnskab & bogholderi – tidsoverslag' + ($('company').value ? ' – ' + $('company').value : ''));
+  data.append('besked', ($('fNote').value.trim() ? $('fNote').value.trim() + '\n\n' : '') + summaryText(calc()));
+  data.append('tidspunkt', new Date().toLocaleString('da-DK'));
+
+  btn.disabled = true; btn.textContent = 'Sender…';
+  fetch(FORMSPREE_URL, { method: 'POST', headers: { 'Accept': 'application/json' }, body: data })
+    .then(res => { if (!res.ok) throw new Error(); show('ok', 'Tak, ' + navn + '! Vi vender tilbage inden for én hverdag.'); btn.textContent = 'Sendt'; })
+    .catch(() => { show('err', 'Noget gik galt. Prøv igen eller skriv til kontakt@safirconsulting.dk.'); btn.disabled = false; btn.textContent = 'Send besked'; });
 });
 
 $('minNote').textContent = kr(CONFIG.minMonthly); $('minPayNote').textContent = kr(CONFIG.minPayrollMonthly);
