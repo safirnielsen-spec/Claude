@@ -401,7 +401,7 @@ footer a:hover{color:rgba(245,240,230,.82)}
       <details class="breakdown" id="breakdown">
         <summary>Se specifikation</summary>
         <table>
-          <thead><tr><th>Opgave</th><th>Timer</th><th>Beløb</th></tr></thead>
+          <thead id="thead"></thead>
           <tbody id="tbl"></tbody>
         </table>
       </details>
@@ -411,7 +411,7 @@ footer a:hover{color:rgba(245,240,230,.82)}
       <button class="btn ghost" type="button" id="copyBtn">Kopiér opsummering</button>
       <button class="btn ghost" type="button" onclick="window.print()">Print / gem som PDF</button>
     </div>
-    <p class="note">Estimatet er vejledende og baseret på de oplyste parametre. Timepris 595–795 kr. ekskl. moms afhængigt af opgavetype. Momsindberetning afregnes til fast pris pr. indberetning. Løbende opgaver har en minimumspris på <span id="minNote"></span> pr. måned, og løn min. <span id="minPayNote"></span> pr. måned. Endeligt tilbud gives efter en kort, uforpligtende gennemgang.</p>
+    <p class="note">Estimatet er vejledende og baseret på de oplyste parametre. Alle priser er ekskl. moms. Momsindberetning afregnes til fast pris pr. indberetning. Løbende opgaver har en minimumspris på <span id="minNote"></span> pr. måned, og løn min. <span id="minPayNote"></span> pr. måned. Endeligt tilbud gives efter en kort, uforpligtende gennemgang.</p>
   </aside>
 </main>
 
@@ -459,6 +459,9 @@ const NAMES = {
 };
 const SYSTEM_NAMES = {}; document.querySelectorAll('#system option').forEach(o => SYSTEM_NAMES[o.value] = o.textContent);
 
+// Intern visning med timer og timepriser: tilføj ?intern til adressen, fx /regnskab?intern
+const INTERNAL = new URLSearchParams(location.search).has('intern');
+
 const $ = id => document.getElementById(id);
 const num = (id, min = 0) => Math.max(min, parseFloat($(id).value) || 0);
 const radio = n => parseFloat(document.querySelector(`input[name="${n}"]:checked`).value);
@@ -470,7 +473,10 @@ const isOn = t => document.querySelector(`[data-task="${t}"] input[type=checkbox
 // Vis timepris på hver opgave
 document.querySelectorAll('.task').forEach(el => {
   const t = el.dataset.task, tag = el.querySelector('[data-rate]');
-  tag.textContent = t === 'moms' ? kr(CONFIG.vatFee) + ' / stk.' : CONFIG.rates[t] + ' kr./t' + (t === 'lon' && CONFIG.minPayrollMonthly ? ` · min. ${kr(CONFIG.minPayrollMonthly)}/md.` : '');
+  if (t === 'moms') tag.textContent = kr(CONFIG.vatFee) + ' / stk.';
+  else if (INTERNAL) tag.textContent = CONFIG.rates[t] + ' kr./t' + (t === 'lon' && CONFIG.minPayrollMonthly ? ` · min. ${kr(CONFIG.minPayrollMonthly)}/md.` : '');
+  else if (t === 'lon' && CONFIG.minPayrollMonthly) tag.textContent = `Fra ${kr(CONFIG.minPayrollMonthly)}/md.`;
+  else tag.remove();
 });
 
 function calc() {
@@ -530,7 +536,7 @@ function calc() {
   const sum = c => lines.filter(l => !c || l.cat === c).reduce((a, l) => a + l.amount, 0);
   const sumH = c => lines.filter(l => !c || l.cat === c).reduce((a, l) => a + l.h, 0);
   const recurring = sum('monthly') + sum('yearly');
-  return { lines, months, posts, recurring, recurringH: sumH('monthly') + sumH('yearly'),
+  return { lines, months, posts, minActive: lines.some(l => l.minimum), recurring, recurringH: sumH('monthly') + sumH('yearly'),
            once: sum('once'), onceH: sumH('once'), total: sum(), totalH: sumH() };
 }
 
@@ -540,46 +546,68 @@ function render() {
   const periodLbl = r.months === 12 ? 'første år' : `${r.months} måneder`;
 
   $('sumMonthly').innerHTML = `${kr(perMonth)}<small>/ md.</small>`;
-  $('sumMonthlySub').textContent = r.lines.length
-    ? `Ca. ${hrs(r.recurringH / r.months)} pr. måned i gennemsnit (inkl. årlige opgaver)`
-    : 'Vælg mindst én opgave';
+  $('sumMonthlySub').textContent = !r.lines.length ? 'Vælg mindst én opgave'
+    : INTERNAL ? `Ca. ${hrs(r.recurringH / r.months)} pr. måned i gennemsnit (inkl. årlige opgaver)`
+    : 'Gennemsnitlig månedspris inkl. årlige opgaver';
 
-  const lo = 1 - CONFIG.rangePct, hi = 1 + CONFIG.rangePct;
   let html = '';
   if (!r.lines.length) {
     html = '<p class="empty">Ingen opgaver valgt endnu.</p>';
   } else {
+    const [lo, hi] = priceRange(r);
     html += row('Løbende + årlige opgaver', kr(r.recurring));
     if (r.once) html += row('Engangsopgaver', kr(r.once));
-    html += row('Samlet tidsforbrug', `${hrs(r.totalH * lo)} – ${hrs(r.totalH * hi)}`);
-    html += row('Prisinterval', `${kr(variable(r) * lo + fixed(r))} – ${kr(variable(r) * hi + fixed(r))}`);
+    if (INTERNAL) html += row('Samlet tidsforbrug', `${hrs(r.totalH * (1 - CONFIG.rangePct))} – ${hrs(r.totalH * (1 + CONFIG.rangePct))}`);
+    if (hi - lo > 1) html += row('Prisinterval', `${kr(lo)} – ${kr(hi)}`);
     html += row(`Moms (25 %)`, kr(r.total * CONFIG.vat));
     html += `<div class="kv total"><span>I alt, ${periodLbl}</span><b>${kr(r.total)}</b></div>`;
     html += `<div class="kv"><span>Inkl. moms</span><b>${kr(r.total * (1 + CONFIG.vat))}</b></div>`;
   }
   $('sumRows').innerHTML = html;
 
+  const cols = INTERNAL ? 3 : 2;
+  $('thead').innerHTML = `<tr><th>Opgave</th>${INTERNAL ? '<th>Timer</th>' : ''}<th>Beløb</th></tr>`;
+  const tr = (name, sub, h, amount) =>
+    `<tr><td>${name}${sub ? `<small>${sub}</small>` : ''}</td>${INTERNAL ? `<td>${h}</td>` : ''}<td>${amount}</td></tr>`;
   const cats = { monthly: 'Løbende', yearly: 'Årlige', once: 'Engangsopgaver' };
   let tb = '';
   for (const c in cats) {
     const ls = r.lines.filter(l => l.cat === c);
     if (!ls.length) continue;
-    tb += `<tr class="cat"><td colspan="3">${cats[c]}</td></tr>`;
+    tb += `<tr class="cat"><td colspan="${cols}">${cats[c]}</td></tr>`;
+    // Kunden ser en samlet fast månedspris, når minimumsprisen slår igennem
+    if (c === 'monthly' && r.minActive && !INTERNAL) {
+      tb += tr('Fast månedspris', `${kr(CONFIG.minMonthly)} pr. måned · ${ls.filter(l => !l.minimum).map(l => NAMES[l.t]).join(', ')}`, '', kr(CONFIG.minMonthly * r.months));
+      continue;
+    }
     ls.forEach(l => {
-      tb += l.minimum
-        ? `<tr><td>${NAMES[l.t]}<small>Min. ${kr(CONFIG.minMonthly)} pr. måned for løbende opgaver</small></td><td>–</td><td>${kr(l.amount)}</td></tr>`
-        : l.fixed
-        ? `<tr><td>${NAMES[l.t]}<small>${l.count} × ${kr(CONFIG.vatFee)} (fast pris)</small></td><td>–</td><td>${kr(l.amount)}</td></tr>`
-        : `<tr><td>${NAMES[l.t]}<small>${l.minApplied ? `Minimumspris ${kr(CONFIG.minPayrollMonthly)} pr. måned` : `${l.rate} kr./t · ${l.periodTxt}`}</small></td><td>${hrs(l.h)}</td><td>${kr(l.amount)}</td></tr>`;
+      tb += l.minimum ? tr(NAMES[l.t], `Min. ${kr(CONFIG.minMonthly)} pr. måned for løbende opgaver`, '–', kr(l.amount))
+        : l.fixed ? tr(NAMES[l.t], `${l.count} × ${kr(CONFIG.vatFee)} (fast pris)`, '–', kr(l.amount))
+        : l.minApplied ? tr(NAMES[l.t], `Minimumspris ${kr(CONFIG.minPayrollMonthly)} pr. måned`, hrs(l.h), kr(l.amount))
+        : tr(NAMES[l.t], INTERNAL ? `${l.rate} kr./t · ${l.periodTxt}` : l.periodTxt, hrs(l.h), kr(l.amount));
     });
   }
-  $('tbl').innerHTML = tb || '<tr><td colspan="3" class="empty">–</td></tr>';
+  $('tbl').innerHTML = tb || `<tr><td colspan="${cols}" class="empty">–</td></tr>`;
   $('mailBtn').href = 'mailto:kontakt@safirconsulting.dk?subject=' +
     encodeURIComponent('Forespørgsel: regnskab & bogholderi' + ($('company').value ? ' – ' + $('company').value : '')) +
     '&body=' + encodeURIComponent(summaryText(r));
 }
-const fixed = r => r.lines.filter(l => l.fixed).reduce((a, l) => a + l.amount, 0);
-const variable = r => r.total - fixed(r);
+
+// Prisinterval: kun timebaserede beløb varierer; faste priser og minimumspriser ligger fast
+function priceRange(r) {
+  const out = [0, 0];
+  [1 - CONFIG.rangePct, 1 + CONFIG.rangePct].forEach((k, i) => {
+    let monthly = 0, rest = 0;
+    r.lines.forEach(l => {
+      if (l.minimum) return;
+      const v = l.fixed ? l.amount : l.t === 'lon' ? Math.max(l.h * l.rate * k, CONFIG.minPayrollMonthly * r.months) : l.amount * k;
+      if (l.cat === 'monthly') monthly += v; else rest += v;
+    });
+    if (r.minActive || monthly > 0) monthly = Math.max(monthly, CONFIG.minMonthly * r.months);
+    out[i] = monthly + rest;
+  });
+  return out;
+}
 const row = (k, v) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`;
 
 function summaryText(r) {
@@ -598,12 +626,14 @@ function summaryText(r) {
     '',
     'Valgte opgaver:'
   ].filter(x => x !== null);
-  r.lines.forEach(l => out.push(l.minimum
+  if (r.minActive && !INTERNAL) out.push(`- Fast månedspris for løbende opgaver: ${kr(CONFIG.minMonthly)} pr. måned (${r.lines.filter(l => l.cat === 'monthly' && !l.minimum).map(l => NAMES[l.t]).join(', ')})`);
+  r.lines.filter(l => INTERNAL || !(r.minActive && l.cat === 'monthly')).forEach(l => out.push(l.minimum
     ? `- ${NAMES[l.t]} (min. ${kr(CONFIG.minMonthly)}/md.): ${kr(l.amount)}`
     : l.fixed
     ? `- ${NAMES[l.t]}: ${l.count} × ${kr(CONFIG.vatFee)} = ${kr(l.amount)}`
-    : `- ${NAMES[l.t]}: ${hrs(l.h)} à ${l.rate} kr. = ${kr(l.amount)}${l.minApplied ? ' (minimumspris)' : ''}`));
-  out.push('', `I alt: ${hrs(r.totalH)} · ${kr(r.total)} ekskl. moms (${kr(r.total * (1 + CONFIG.vat))} inkl. moms)`);
+    : INTERNAL ? `- ${NAMES[l.t]}: ${hrs(l.h)} à ${l.rate} kr. = ${kr(l.amount)}${l.minApplied ? ' (minimumspris)' : ''}`
+    : `- ${NAMES[l.t]}: ${kr(l.amount)}`));
+  out.push('', `I alt: ${INTERNAL ? hrs(r.totalH) + ' · ' : ''}${kr(r.total)} ekskl. moms (${kr(r.total * (1 + CONFIG.vat))} inkl. moms)`);
   out.push(`Gennemsnit pr. måned (løbende): ${kr(r.recurring / r.months)} ekskl. moms`);
   out.push('', 'Estimatet er vejledende.');
   return out.join('\n');
