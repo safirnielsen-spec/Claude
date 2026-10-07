@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tidsoverslag – Regnskab & Bogholderi | Safir Consulting</title>
+  <!-- Skjult side: må ikke indekseres af søgemaskiner og linkes ikke fra forsiden -->
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="description" content="Beregn et vejledende tidsoverslag og prisestimat på jeres regnskabs- og bogholderiopgaver.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:focus-visible{outline:2px solid var(--bottle-green);outline-offset:3px;border-radius:2px}
+
+:root{
+  --bg:#faf8f3;--bg-warm:#f4ede0;--bg-alt:#ede5d4;--bg-dark:#1a1710;--bg-dark2:#221e15;
+  --bottle-green:#4a6248;--bottle-green-l:#6b8a69;--bottle-green-d:#334435;--sage:#788f76;
+  --warm-brown:#8a6040;--amber:#b8905a;--amber-l:#d4a870;--cream:#f5f0e6;--beige:#ddd0b8;--beige-d:#c8b898;
+  --text:#231e16;--muted:rgba(35,30,22,.6);--muted2:rgba(35,30,22,.4);
+  --border:rgba(35,30,22,.09);--border2:rgba(35,30,22,.17);
+  --r:4px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+input,select,button{font:inherit;color:inherit}
+
+/* HEADER */
+.top{background:var(--bg-dark);color:var(--cream);padding:22px 16px 64px}
+.top-bar{max-width:1140px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:13px;text-decoration:none}
+.logo-mark{width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(245,240,230,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-name{font-family:'Cormorant Garamond',serif;font-size:18px;letter-spacing:.4px;color:rgba(245,240,230,.9)}
+.logo-name span{font-weight:300;opacity:.8}
+.badge{font-size:9.5px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;padding:5px 14px;border-radius:20px;border:1px solid rgba(245,240,230,.18);color:rgba(245,240,230,.5)}
+.hero{max-width:1140px;margin:52px auto 0}
+.eyebrow{font-size:10.5px;letter-spacing:3px;text-transform:uppercase;color:var(--amber-l);margin-bottom:14px}
+.hero h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(34px,5vw,54px);line-height:1.08;max-width:760px}
+.hero h1 em{font-style:italic;color:var(--amber-l)}
+.hero p{margin-top:18px;max-width:620px;color:rgba(245,240,230,.62);font-size:15px;font-weight:300}
+
+/* LAYOUT */
+.wrap{max-width:1140px;margin:-36px auto 0;padding:0 16px 80px;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:28px;align-items:start}
+.wrap>*{min-width:0}
+.panel{background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:0 2px 24px rgba(35,30,22,.05)}
+.section{padding:28px 30px;border-bottom:1px solid var(--border)}
+.section:last-child{border-bottom:0}
+.section-head{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
+.step{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--amber);font-style:italic}
+.section h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:24px;line-height:1.2}
+.hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.field label,.field .lbl{display:block;font-size:11.5px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.field input[type=text],.field input[type=number],.field select{
+  width:100%;height:44px;padding:0 12px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);
+  transition:border-color .15s,background .15s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--bottle-green);background:#fff}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23231e16' stroke-opacity='.5' fill='none' stroke-width='1.3'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:34px}
+
+.range-row{display:flex;align-items:center;gap:14px}
+.range-row input[type=range]{flex:1;accent-color:var(--bottle-green);height:24px}
+.range-row input[type=number]{width:110px;flex:none;text-align:right}
+
+/* Segmented radio */
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{display:block;padding:11px 12px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;font-size:13px;line-height:1.35;background:var(--bg);transition:all .15s;text-transform:none;letter-spacing:0;color:var(--text);font-weight:400;margin:0}
+.seg label small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+.seg input:checked+label{border-color:var(--bottle-green);background:rgba(74,98,72,.07);box-shadow:inset 0 0 0 1px var(--bottle-green)}
+.seg input:focus-visible+label{outline:2px solid var(--bottle-green);outline-offset:2px}
+
+/* Task cards */
+.tasks{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.task{border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);transition:border-color .15s,background .15s}
+.task.on{border-color:var(--bottle-green);background:#fff;box-shadow:inset 3px 0 0 var(--bottle-green)}
+.task-main{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;cursor:pointer}
+.task-main input[type=checkbox]{width:18px;height:18px;margin-top:2px;accent-color:var(--bottle-green);flex:none;cursor:pointer}
+.task-txt{flex:1;min-width:0}
+.task-title{display:block;font-weight:500;font-size:14.5px}
+.task-desc{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.task-tag{flex:none;font-size:10.5px;letter-spacing:.4px;padding:3px 9px;border-radius:20px;background:var(--bg-alt);color:var(--warm-brown);white-space:nowrap;margin-top:1px}
+.task-tag.fixed{background:rgba(74,98,72,.1);color:var(--bottle-green-d)}
+.task-opts{display:none;padding:0 16px 16px 48px;gap:14px;grid-template-columns:1fr 1fr}
+.task.on .task-opts{display:grid}
+.task-opts .field input,.task-opts .field select{height:40px;background:#fff}
+.group-lbl{font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--amber);margin:18px 0 4px}
+.group-lbl:first-child{margin-top:0}
+
+/* Summary */
+.summary{position:sticky;top:20px}
+.sum-head{padding:24px 26px 20px;background:var(--bottle-green-d);color:var(--cream);border-radius:6px 6px 0 0}
+.sum-head .eyebrow{color:var(--amber-l);margin-bottom:8px}
+.sum-big{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:400;line-height:1}
+.sum-big small{font-family:'Inter',sans-serif;font-size:13px;font-weight:300;opacity:.7;margin-left:4px}
+.sum-sub{font-size:12.5px;opacity:.72;margin-top:8px}
+.sum-body{padding:20px 26px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13.5px}
+.kv:last-child{border-bottom:0}
+.kv span:first-child{color:var(--muted)}
+.kv b{font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+.kv.total{border-top:1px solid var(--border2);border-bottom:0;margin-top:6px;padding-top:14px;font-size:15px}
+.kv.total span:first-child{color:var(--text);font-weight:500}
+.empty{font-size:13px;color:var(--muted);padding:6px 0}
+
+.breakdown{margin-top:18px}
+.breakdown summary{cursor:pointer;font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--bottle-green);font-weight:500;list-style:none}
+.breakdown summary::-webkit-details-marker{display:none}
+.breakdown summary::after{content:' +'}
+.breakdown[open] summary::after{content:' −'}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12.5px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-weight:500;color:var(--muted);font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;padding:6px 0;border-bottom:1px solid var(--border2)}
+td{padding:7px 0;border-bottom:1px solid var(--border);vertical-align:top}
+th:not(:first-child),td:not(:first-child){text-align:right;padding-left:8px;white-space:nowrap}
+td small{display:block;color:var(--muted2);font-size:11px}
+tr.cat td{padding-top:12px;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);border-bottom:0}
+
+.actions{display:grid;gap:8px;padding:0 26px 24px}
+.btn{display:block;width:100%;text-align:center;padding:13px 16px;border-radius:var(--r);border:1px solid var(--bottle-green);background:var(--bottle-green);color:var(--cream);font-size:13px;font-weight:500;letter-spacing:.4px;cursor:pointer;text-decoration:none;transition:background .15s}
+.btn:hover{background:var(--bottle-green-d)}
+.btn.ghost{background:transparent;color:var(--bottle-green)}
+.btn.ghost:hover{background:rgba(74,98,72,.07)}
+.note{padding:16px 26px 22px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--border);line-height:1.55}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--bg-dark);color:var(--cream);padding:10px 18px;border-radius:20px;font-size:13px;opacity:0;transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+footer{background:var(--bg-dark2);padding:44px 16px 36px;text-align:center}
+footer .f-logo{font-family:'Cormorant Garamond',serif;font-size:20px;color:rgba(245,240,230,.75);margin-bottom:14px}
+footer p{font-size:11.5px;color:rgba(245,240,230,.42);letter-spacing:.4px;line-height:2.1}
+footer a{text-decoration:none;transition:color .15s}
+footer a:hover{color:rgba(245,240,230,.82)}
+
+@media (max-width:960px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  .summary{position:static}
+}
+@media (max-width:620px){
+  .top{padding-bottom:56px}
+  .badge{display:none}
+  .hero{margin-top:36px}
+  .section{padding:22px 18px}
+  .grid2,.task-opts{grid-template-columns:minmax(0,1fr)}
+  .task-opts{padding-left:16px}
+  .seg{grid-template-columns:1fr}
+  .range-row input[type=number]{width:90px}
+  .sum-head,.sum-body{padding-left:20px;padding-right:20px}
+  .actions{padding:0 20px 20px}
+  .note{padding:14px 20px 18px}
+}
+@media print{
+  .top,.actions,footer,.toast{display:none}
+  body{background:#fff}
+  .wrap{display:block;margin:0;padding:0}
+  .panel{box-shadow:none}
+  .summary{margin-top:20px;break-inside:avoid}
+  .breakdown:not([open]) table{display:table}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-bar">
+    <a class="logo" href="/" aria-label="Safir Consulting – forsiden">
+      <span class="logo-mark">
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="none" aria-hidden="true">
+          <path d="M1 8C3.5 2.5 6 1.5 7.5 5.5C9 9.5 11.5 8.5 14 3.5" stroke="rgba(245,240,230,.75)" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="logo-name">Safir<span> Consulting</span></span>
+    </a>
+    <span class="badge">Regnskab · Bogholderi</span>
+  </div>
+  <div class="hero">
+    <div class="eyebrow">Tidsoverslag</div>
+    <h1>Hvad koster <em>jeres bogholderi?</em></h1>
+    <p>Udfyld de få oplysninger nedenfor og vælg de opgaver, I ønsker hjælp til. Beregningen opdateres løbende og giver et vejledende estimat på tidsforbrug og pris.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <form class="panel" id="calc" onsubmit="return false" autocomplete="off">
+
+    <!-- 1. Virksomheden -->
+    <section class="section">
+      <div class="section-head"><span class="step">01</span><h2>Virksomheden</h2></div>
+      <div class="grid2">
+        <div class="field">
+          <label for="company">Virksomhedsnavn <span style="text-transform:none;letter-spacing:0">(valgfrit)</span></label>
+          <input type="text" id="company" placeholder="Fx Ejendomsselskabet ApS">
+        </div>
+        <div class="field">
+          <label for="form">Virksomhedsform</label>
+          <select id="form">
+            <option value="enk">Enkeltmandsvirksomhed / I/S</option>
+            <option value="aps" selected>ApS / A/S</option>
+            <option value="holding">Holdingselskab</option>
+            <option value="ejendom">Ejendomsselskab</option>
+            <option value="forening">Forening / ejerforening</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="system">Regnskabsprogram</label>
+          <select id="system">
+            <option value="economic" selected>e-conomic</option>
+            <option value="dinero">Dinero</option>
+            <option value="billy">Billy</option>
+            <option value="uniconta">Uniconta</option>
+            <option value="bc">Microsoft Dynamics 365 Business Central</option>
+            <option value="c5">Dynamics C5 / NAV</option>
+            <option value="visma">Visma Business / Visma.net</option>
+            <option value="andet">Andet program</option>
+            <option value="intet">Har ikke et program endnu</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="startMonths">Opgaven løber</label>
+          <select id="startMonths">
+            <option value="12" selected>Løbende (helårsestimat)</option>
+            <option value="6">6 måneder</option>
+            <option value="3">3 måneder</option>
+            <option value="1">1 måned</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Omfang -->
+    <section class="section">
+      <div class="section-head"><span class="step">02</span><h2>Omfang & kompleksitet</h2></div>
+
+      <div class="field">
+        <label for="postsNum">Posteringer pr. måned</label>
+        <div class="range-row">
+          <input type="range" id="postsRange" min="0" max="1500" step="10" value="150" aria-label="Posteringer pr. måned">
+          <input type="number" id="postsNum" min="0" max="20000" step="10" value="150">
+        </div>
+        <p class="hint">Et bilag med flere linjer tæller som én postering pr. linje. Er I i tvivl, så brug antal bilag pr. måned × 2.</p>
+      </div>
+
+      <div class="field" style="margin-top:22px">
+        <span class="lbl">Bilagsstand</span>
+        <div class="seg" role="radiogroup" aria-label="Bilagsstand">
+          <input type="radio" name="docs" id="docs1" value="0.9"><label for="docs1">Digitalt & ordnet<small>Bilag scannes / matches automatisk</small></label>
+          <input type="radio" name="docs" id="docs2" value="1" checked><label for="docs2">Blandet<small>Nogle bilag skal efterlyses</small></label>
+          <input type="radio" name="docs" id="docs3" value="1.3"><label for="docs3">Mangelfuldt<small>Papirbilag / mange mangler</small></label>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:18px">
+        <span class="lbl">Kompleksitet</span>
+        <div class="seg" role="radiogroup" aria-label="Kompleksitet">
+          <input type="radio" name="cx" id="cx1" value="1" checked><label for="cx1">Standard<small>Én afdeling, DKK</small></label>
+          <input type="radio" name="cx" id="cx2" value="1.15"><label for="cx2">Moderat<small>Afdelinger, projekter, valuta</small></label>
+          <input type="radio" name="cx" id="cx3" value="1.3"><label for="cx3">Høj<small>Koncern, mange lejere/ejendomme</small></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Opgaver -->
+    <section class="section">
+      <div class="section-head"><span class="step">03</span><h2>Hvad ønsker I hjælp til?</h2></div>
+      <div class="tasks" id="tasks">
+
+        <div class="group-lbl">Løbende opgaver</div>
+
+        <div class="task" data-task="bogforing">
+          <label class="task-main"><input type="checkbox" checked>
+            <span class="task-txt"><span class="task-title">Bogføring</span><span class="task-desc">Registrering af køb, salg og øvrige bilag.</span></span>
+            <span class="task-tag" data-rate></span></label>
+        </div>
+
+        <div class="task" data-task="afstemning">
+          <label class="task-main"><input type="checkbox" checked>
+            <span class="task-txt"><span class="task-title">Bankafstemning</span><span class="task-desc">Afstemning af bankkonti og kreditkort mod bogføringen.</span></span>
+            <span class="task-tag" data-rate></span></label>
+          <div class="task-opts">
+            <div class="field"><label for="banks">Antal bank-/kortkonti</label><input type="number" id="banks" min="1" max="50" value="2"></div>
+          </div>
+        </div>
+
+        <div class="task" data-task="debkred">
+          <label class="task-main"><input type="checkbox">
+            <span class="task-txt"><span class="task-title">Debitor- & kreditorafstemning</span><span class="task-desc">Afstemning af kunde- og leverandørsaldi samt mellemregninger.</span></span>
+            <span class="task-tag" data-rate></span></label>
+        </div>
+
+        <div class="task" data-task="betaling">
+          <label class="task-main"><input type="checkbox">
+            <span class="task-txt"><span class="task-title">Betaling af fakturaer</span><span class="task-desc">Godkendelsesflow, klargøring og betaling af leverandørfakturaer.</span></span>
+            <span class="task-tag" data-rate></span></label>
+          <div class="task-opts">
+            <div class="field"><label for="bills">Leverandørfakturaer pr. måned</label><input type="number" id="bills" min="0" max="5000" value="30"></div>
+          </div>
+        </div>
+
+        <div class="task" data-task="fakturering">
+          <label class="task-main"><input type="checkbox">
+            <span class="task-txt"><span class="task-title">Fakturering af kunder</span><span class="task-desc">Udstedelse af salgsfakturaer, kreditnotaer og huslejeopkrævninger.</span></span>
+            <span class="task-tag" data-rate></span></label>
+          <div class="task-opts">
+            <div class="field"><label for="invoices">Salgsfakturaer pr. måned</label><input type="number" id="invoices" min="0" max="5000" value="20"></div>
+          </div>
+        </div>
+
+        <div class="task" data-task="rykker">
+          <label class="task-main"><input type="checkbox">
+            <span class="task-txt"><span class="task-title">Debitoropfølgning & rykkere</span><span class="task-desc">Opfølgning på forfaldne betalinger og udsendelse af rykkere.</span></span>
+            <span class="task-tag" data-rate></span></label>
+          <div class="task-opts">
+            <div class="field"><label for="overdue">Forfaldne fakturaer pr. måned</label><input type="number" id="overdue" min="0" max="2000" value="5"></div>
+          </div>
+        </div>
+
+        <div class="task" data-task="lon">
+          <label class="task-main"><input type="checkbox">
+            <span class="task-txt"><span class="task-title">Løn</span><span class="task-desc">Lønkørsel, indberetning, ferie, sygdom og bogføring af løn.</span></span>
+            <span class="task-tag" data-rate></span></label>
+          <div class="task-opts">
+            <div class="field"><label for="employees">Antal medarbejdere</label><input type="number" id="employees" min="1" max="500" value="3"></div>
+            <div class="field"><label for="payFreq">Lønperiode</label>
+              <select id="payFreq"><option value="1" selected>Månedsløn</option><option value="2.17">14-dagesløn</option><option value="3.17">Både måneds- og 14-dagesløn</option></select></div>
+          </div>
+        </div>
+
+        <div class="task" data-task="moms">
+          <label class="task-main"><input type="checkbox" checked>
+            <span class="task-txt"><span class="task-title">Momsindberetning</span><span class="task-desc">Opgørelse, afstemning og indberetning af moms til SKAT.</span></span>
+            <span class="task-tag fixed" data-rate></span></label>
+          <div class="task-opts">
+            <div class="field"><label for="vatPeriod">Momsperiode</label>
+              <select id="vatPeriod"><option value="12">Månedlig</option><option value="4" selected>Kvartalsvis</option><option value="2">Halvårlig</option></select></div>
+          </div>
+        </div>
+
+        <div class="task" data-task="rapport">
+          <label class="task-main"><input type="checkbox">
+            <span class="task-txt"><span class="task-title">Periodeafslutning & rapportering</span><span class="task-desc">Periodisering, afskrivninger og rapport med nøgletal til ledelsen.</span></span>
+            <span class="task-tag" data-rate></span></label>
+          <div class="task-opts">
+            <div class="field"><label for="reportFreq">Frekvens</label>
+              <select id="reportFreq"><option value="12" selected>Månedlig</option><option value="4">Kvartalsvis</option></select></div>
+          </div>
+        </div>
+
+        <div class="group-lbl">Årlige opgaver</div>
+
+        <div class="task" data-task="aarsregnskab">
+          <label class="task-main"><input type="checkbox" checked>
+            <span class="task-txt"><span class="task-title">Årsregnskab & årsafslutning</span><span class="task-desc">Årsafstemninger, efterposteringer og materiale til revisor / årsrapport.</span></span>
+            <span class="task-tag" data-rate></span></label>
+        </div>
+
+        <div class="task" data-task="budget">
+          <label class="task-main"><input type="checkbox">
+            <span class="task-txt"><span class="task-title">Budget & likviditetsprognose</span><span class="task-desc">Udarbejdelse af årsbudget og likviditetsbudget.</span></span>
+            <span class="task-tag" data-rate></span></label>
+        </div>
+
+        <div class="group-lbl">Engangsopgaver</div>
+
+        <div class="task" data-task="oprydning">
+          <label class="task-main"><input type="checkbox">
+            <span class="task-txt"><span class="task-title">Oprydning / bagudrettet bogføring</span><span class="task-desc">Indhentning af efterslæb og oprydning i tidligere perioder.</span></span>
+            <span class="task-tag" data-rate></span></label>
+          <div class="task-opts">
+            <div class="field"><label for="backlog">Antal måneder i efterslæb</label><input type="number" id="backlog" min="1" max="60" value="3"></div>
+          </div>
+        </div>
+
+        <div class="task" data-task="opsaetning">
+          <label class="task-main"><input type="checkbox">
+            <span class="task-txt"><span class="task-title">Opsætning / skift af regnskabsprogram</span><span class="task-desc">Kontoplan, momskoder, bankintegration og overførsel af saldi.</span></span>
+            <span class="task-tag" data-rate></span></label>
+        </div>
+
+      </div>
+    </section>
+  </form>
+
+  <!-- Opsummering -->
+  <aside class="panel summary" aria-live="polite">
+    <div class="sum-head">
+      <div class="eyebrow">Estimat · ekskl. moms</div>
+      <div class="sum-big" id="sumMonthly">0 kr.<small>/ md.</small></div>
+      <div class="sum-sub" id="sumMonthlySub">Gennemsnit pr. måned</div>
+    </div>
+    <div class="sum-body">
+      <div id="sumRows"></div>
+      <details class="breakdown" id="breakdown">
+        <summary>Se specifikation</summary>
+        <table>
+          <thead><tr><th>Opgave</th><th>Timer</th><th>Beløb</th></tr></thead>
+          <tbody id="tbl"></tbody>
+        </table>
+      </details>
+    </div>
+    <div class="actions">
+      <a class="btn" id="mailBtn" href="mailto:kontakt@safirconsulting.dk">Send forespørgsel</a>
+      <button class="btn ghost" type="button" id="copyBtn">Kopiér opsummering</button>
+      <button class="btn ghost" type="button" onclick="window.print()">Print / gem som PDF</button>
+    </div>
+    <p class="note">Estimatet er vejledende og baseret på de oplyste parametre. Timepris 595–795 kr. ekskl. moms afhængigt af opgavetype. Momsindberetning afregnes til fast pris pr. indberetning. Endeligt tilbud gives efter en kort, uforpligtende gennemgang.</p>
+  </aside>
+</main>
+
+<footer>
+  <div class="f-logo">Safir Consulting</div>
+  <p>
+    <a href="mailto:kontakt@safirconsulting.dk">kontakt@safirconsulting.dk</a>
+    &nbsp;&middot;&nbsp;
+    <a href="tel:+4530729393">+45 30 72 93 93</a>
+  </p>
+  <p>&copy; 2026 Safir Consulting &nbsp;&middot;&nbsp; Gersonsvej 37, 2900 Hellerup &nbsp;&middot;&nbsp; CVR 43260243</p>
+</footer>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   PRISER & ANTAGELSER – ret tallene her for at justere beregningen
+   ═══════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  vatFee: 1000,          // Fast pris pr. momsindberetning (kr. ekskl. moms)
+  vat: 0.25,             // Dansk moms
+  rangePct: 0.15,        // ± usikkerhed på timeestimatet
+  rates: {               // Timepris pr. opgave (kr. ekskl. moms)
+    bogforing: 595, afstemning: 595, betaling: 595, fakturering: 595, rykker: 595,
+    debkred: 650, lon: 695, oprydning: 695,
+    rapport: 795, aarsregnskab: 795, budget: 795, opsaetning: 795
+  },
+  // Tidsfaktor pr. regnskabsprogram (1 = normal)
+  system: { economic:1, dinero:0.9, billy:0.9, uniconta:1.05, bc:1.15, c5:1.2, visma:1.15, andet:1.15, intet:1.25 },
+  // Grundtimer til årsregnskab pr. virksomhedsform
+  yearBase: { enk:8, aps:14, holding:10, ejendom:18, forening:8 },
+  minPerPost: 2          // Minutter pr. postering ved bogføring
+};
+
+const NAMES = {
+  bogforing:'Bogføring', afstemning:'Bankafstemning', debkred:'Debitor- & kreditorafstemning',
+  betaling:'Betaling af fakturaer', fakturering:'Fakturering af kunder', rykker:'Debitoropfølgning & rykkere',
+  lon:'Løn', moms:'Momsindberetning', rapport:'Periodeafslutning & rapportering',
+  aarsregnskab:'Årsregnskab & årsafslutning', budget:'Budget & likviditetsprognose',
+  oprydning:'Oprydning / bagudrettet bogføring', opsaetning:'Opsætning / skift af regnskabsprogram'
+};
+const SYSTEM_NAMES = {}; document.querySelectorAll('#system option').forEach(o => SYSTEM_NAMES[o.value] = o.textContent);
+
+const $ = id => document.getElementById(id);
+const num = (id, min = 0) => Math.max(min, parseFloat($(id).value) || 0);
+const radio = n => parseFloat(document.querySelector(`input[name="${n}"]:checked`).value);
+const kr = v => Math.round(v).toLocaleString('da-DK') + ' kr.';
+const hrs = v => (Math.round(v * 4) / 4).toLocaleString('da-DK', { maximumFractionDigits: 2 }) + ' t';
+const isOn = t => document.querySelector(`[data-task="${t}"] input[type=checkbox]`).checked;
+
+// Vis timepris på hver opgave
+document.querySelectorAll('.task').forEach(el => {
+  const t = el.dataset.task, tag = el.querySelector('[data-rate]');
+  tag.textContent = t === 'moms' ? kr(CONFIG.vatFee) + ' / stk.' : CONFIG.rates[t] + ' kr./t';
+});
+
+function calc() {
+  const posts = num('postsNum');
+  const sys = CONFIG.system[$('system').value];
+  const docs = radio('docs'), cx = radio('cx');
+  const months = parseInt($('startMonths').value, 10);
+  const f = sys * docs * cx;               // samlet tidsfaktor for bilagstunge opgaver
+
+  // Timer pr. måned for løbende opgaver
+  const bogMonthly = posts * CONFIG.minPerPost / 60 * f;
+  const monthly = {
+    bogforing:   bogMonthly,
+    afstemning:  (num('banks', 1) * 0.4 + posts * 0.25 / 60) * sys * cx,
+    debkred:     (1 + posts * 0.2 / 60) * f,
+    betaling:    (0.25 + num('bills') * 2.5 / 60) * sys,
+    fakturering: (0.25 + num('invoices') * 4 / 60) * sys,
+    rykker:      (0.25 + num('overdue') * 6 / 60),
+    lon:         parseFloat($('payFreq').value) * (0.75 + num('employees', 1) * 10 / 60) * sys,
+    rapport:     (parseInt($('reportFreq').value, 10) === 12 ? 2.5 : 3.5 / 3) * cx
+  };
+  // Timer pr. år for årlige opgaver
+  const yearly = {
+    aarsregnskab: (CONFIG.yearBase[$('form').value] + posts * 12 * 0.3 / 60) * f,
+    budget:       6 * cx
+  };
+  // Engangsopgaver
+  const once = {
+    oprydning:  num('backlog', 1) * (bogMonthly + 1.5) * 1.25,
+    opsaetning: 6 * cx * (sys > 1 ? 1.2 : 1)
+  };
+
+  const lines = [];
+  const add = (cat, t, h, periodTxt) => {
+    if (!isOn(t)) return;
+    h = Math.round(h * 4) / 4;              // afrund til kvarter
+    lines.push({ cat, t, h, rate: CONFIG.rates[t], amount: h * CONFIG.rates[t], periodTxt });
+  };
+  for (const t in monthly) add('monthly', t, monthly[t] * months, months === 12 ? 'pr. år' : `${months} md.`);
+  for (const t in yearly)  add('yearly', t, yearly[t], 'pr. år');
+  for (const t in once)    add('once', t, once[t], 'engang');
+
+  if (isOn('moms')) {
+    const perYear = parseInt($('vatPeriod').value, 10);
+    const count = Math.max(1, Math.round(perYear * months / 12));
+    lines.push({ cat: 'monthly', t: 'moms', h: 0, count, amount: count * CONFIG.vatFee, fixed: true });
+  }
+
+  const sum = c => lines.filter(l => !c || l.cat === c).reduce((a, l) => a + l.amount, 0);
+  const sumH = c => lines.filter(l => !c || l.cat === c).reduce((a, l) => a + l.h, 0);
+  const recurring = sum('monthly') + sum('yearly');
+  return { lines, months, posts, recurring, recurringH: sumH('monthly') + sumH('yearly'),
+           once: sum('once'), onceH: sumH('once'), total: sum(), totalH: sumH() };
+}
+
+function render() {
+  const r = calc();
+  const perMonth = r.recurring / r.months;
+  const periodLbl = r.months === 12 ? 'første år' : `${r.months} måneder`;
+
+  $('sumMonthly').innerHTML = `${kr(perMonth)}<small>/ md.</small>`;
+  $('sumMonthlySub').textContent = r.lines.length
+    ? `Ca. ${hrs(r.recurringH / r.months)} pr. måned i gennemsnit (inkl. årlige opgaver)`
+    : 'Vælg mindst én opgave';
+
+  const lo = 1 - CONFIG.rangePct, hi = 1 + CONFIG.rangePct;
+  let html = '';
+  if (!r.lines.length) {
+    html = '<p class="empty">Ingen opgaver valgt endnu.</p>';
+  } else {
+    html += row('Løbende + årlige opgaver', kr(r.recurring));
+    if (r.once) html += row('Engangsopgaver', kr(r.once));
+    html += row('Samlet tidsforbrug', `${hrs(r.totalH * lo)} – ${hrs(r.totalH * hi)}`);
+    html += row('Prisinterval', `${kr(variable(r) * lo + fixed(r))} – ${kr(variable(r) * hi + fixed(r))}`);
+    html += row(`Moms (25 %)`, kr(r.total * CONFIG.vat));
+    html += `<div class="kv total"><span>I alt, ${periodLbl}</span><b>${kr(r.total)}</b></div>`;
+    html += `<div class="kv"><span>Inkl. moms</span><b>${kr(r.total * (1 + CONFIG.vat))}</b></div>`;
+  }
+  $('sumRows').innerHTML = html;
+
+  const cats = { monthly: 'Løbende', yearly: 'Årlige', once: 'Engangsopgaver' };
+  let tb = '';
+  for (const c in cats) {
+    const ls = r.lines.filter(l => l.cat === c);
+    if (!ls.length) continue;
+    tb += `<tr class="cat"><td colspan="3">${cats[c]}</td></tr>`;
+    ls.forEach(l => {
+      tb += l.fixed
+        ? `<tr><td>${NAMES[l.t]}<small>${l.count} × ${kr(CONFIG.vatFee)} (fast pris)</small></td><td>–</td><td>${kr(l.amount)}</td></tr>`
+        : `<tr><td>${NAMES[l.t]}<small>${l.rate} kr./t · ${l.periodTxt}</small></td><td>${hrs(l.h)}</td><td>${kr(l.amount)}</td></tr>`;
+    });
+  }
+  $('tbl').innerHTML = tb || '<tr><td colspan="3" class="empty">–</td></tr>';
+  $('mailBtn').href = 'mailto:kontakt@safirconsulting.dk?subject=' +
+    encodeURIComponent('Forespørgsel: regnskab & bogholderi' + ($('company').value ? ' – ' + $('company').value : '')) +
+    '&body=' + encodeURIComponent(summaryText(r));
+}
+const fixed = r => r.lines.filter(l => l.fixed).reduce((a, l) => a + l.amount, 0);
+const variable = r => r.total - fixed(r);
+const row = (k, v) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`;
+
+function summaryText(r) {
+  const docsLbl = document.querySelector('input[name="docs"]:checked + label').firstChild.textContent;
+  const cxLbl = document.querySelector('input[name="cx"]:checked + label').firstChild.textContent;
+  const out = [
+    'TIDSOVERSLAG – REGNSKAB & BOGHOLDERI',
+    '',
+    $('company').value ? 'Virksomhed: ' + $('company').value : null,
+    'Virksomhedsform: ' + $('form').selectedOptions[0].textContent,
+    'Regnskabsprogram: ' + SYSTEM_NAMES[$('system').value],
+    'Posteringer pr. måned: ' + r.posts,
+    'Bilagsstand: ' + docsLbl + ' · Kompleksitet: ' + cxLbl,
+    'Periode: ' + $('startMonths').selectedOptions[0].textContent,
+    '',
+    'Valgte opgaver:'
+  ].filter(x => x !== null);
+  r.lines.forEach(l => out.push(l.fixed
+    ? `- ${NAMES[l.t]}: ${l.count} × ${kr(CONFIG.vatFee)} = ${kr(l.amount)}`
+    : `- ${NAMES[l.t]}: ${hrs(l.h)} à ${l.rate} kr. = ${kr(l.amount)}`));
+  out.push('', `I alt: ${hrs(r.totalH)} · ${kr(r.total)} ekskl. moms (${kr(r.total * (1 + CONFIG.vat))} inkl. moms)`);
+  out.push(`Gennemsnit pr. måned (løbende): ${kr(r.recurring / r.months)} ekskl. moms`);
+  out.push('', 'Estimatet er vejledende.');
+  return out.join('\n');
+}
+
+// Synkronisér slider og talfelt
+$('postsRange').addEventListener('input', e => { $('postsNum').value = e.target.value; render(); });
+$('postsNum').addEventListener('input', e => { $('postsRange').value = Math.min(1500, e.target.value || 0); render(); });
+
+// Markér valgte opgaver
+function syncTasks() { document.querySelectorAll('.task').forEach(el => el.classList.toggle('on', el.querySelector('input[type=checkbox]').checked)); }
+$('calc').addEventListener('input', () => { syncTasks(); render(); });
+$('calc').addEventListener('change', () => { syncTasks(); render(); });
+
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
+$('copyBtn').addEventListener('click', async () => {
+  const text = summaryText(calc());
+  try { await navigator.clipboard.writeText(text); toast('Opsummering kopieret'); }
+  catch { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('Opsummering kopieret'); }
+});
+window.addEventListener('beforeprint', () => $('breakdown').open = true);
+
+syncTasks(); render();
+</script>
+</body>
+</html>
