@@ -585,7 +585,7 @@ function render() {
       const sub = g.id === 'moms' ? `Faktureres ${VAT_BILL[radioVal('vatPeriod')]} · ${kr(total)} ${perLbl}`
         : g.id === 'yearly' ? 'Faktureres én gang årligt'
         : g.id === 'once' ? 'Faktureres én gang'
-        : `${kr(total)} ${perLbl}`;
+        : '';
       if (g.id === 'moms' && !sepShown) { html += '<div class="grp-sep">Faktureres separat</div>'; sepShown = true; }
       if (g.id === 'loebende' || (g.id === 'lon' && !r.sum('loebende'))) html += '<div class="grp-sep">Månedlig betaling</div>';
       if ((g.id === 'yearly' || g.id === 'once') && !sepShown) { html += '<div class="grp-sep">Faktureres separat</div>'; sepShown = true; }
@@ -596,11 +596,13 @@ function render() {
       if (g.id === 'loebende' || g.id === 'yearly' || g.id === 'once' || INTERNAL) {
         html += '<ul class="grp-items">' + items.map(l => {
           const showAmt = INTERNAL || !(g.id === 'loebende' && r.minActive);
-          const extra = INTERNAL && !l.fixed ? ` <i>${hrs(l.h)} à ${l.rate} kr.</i>` : '';
-          return `<li><span>${NAMES[l.t]}${extra}</span>${showAmt ? `<b>${kr(l.amount)}</b>` : ''}</li>`;
+          const monthly = g.id === 'loebende' || g.id === 'lon';   // løbende og løn vises kun som månedsbeløb
+          const div = monthly ? r.months : 1;
+          const extra = INTERNAL && !l.fixed ? ` <i>${hrs(l.h / div)}${monthly ? ' pr. md.' : ''} à ${l.rate} kr.</i>` : '';
+          return `<li><span>${NAMES[l.t]}${extra}</span>${showAmt ? `<b>${kr(l.amount / div)}${monthly ? ' / md.' : ''}</b>` : ''}</li>`;
         }).join('') + '</ul>';
       }
-      if (g.id === 'loebende' && r.minActive) html += `<div class="grp-note">${INTERNAL ? `Tillæg til minimumspris: ${kr(ls.find(l => l.minimum).amount)}` : `Fast månedspris (minimum ${kr(CONFIG.minMonthly)} pr. måned)`}</div>`;
+      if (g.id === 'loebende' && r.minActive) html += `<div class="grp-note">${INTERNAL ? `Tillæg til minimumspris: ${kr(ls.find(l => l.minimum).amount / r.months)} / md.` : `Fast månedspris (minimum ${kr(CONFIG.minMonthly)} pr. måned)`}</div>`;
       if (g.id === 'lon' && ls[0].minApplied) html += `<div class="grp-note">Minimumspris ${kr(CONFIG.minPayrollMonthly)} pr. måned</div>`;
       html += '</div>';
     });
@@ -659,13 +661,13 @@ function summaryText(r) {
     if (g.id === 'moms') { out.push(`${kr(CONFIG.vatFee)} pr. ${VAT_UNIT[radioVal('vatPeriod')]}, faktureres ${VAT_BILL[radioVal('vatPeriod')]} ved indberetning (${ls[0].count} × ${kr(CONFIG.vatFee)} = ${kr(total)} ${perLbl})`); return; }
     if (g.id === 'yearly') out.push(`${kr(total)} pr. år, faktureres én gang årligt`);
     if (g.id === 'once') out.push(`${kr(total)}, faktureres én gang`);
-    if (g.id === 'lon') out.push(`${kr(total / r.months)} pr. måned (${kr(total)} ${perLbl})${ls[0].minApplied ? ' – minimumspris' : ''}`);
-    if (g.id === 'loebende') out.push(`${kr(total / r.months)} pr. måned (${kr(total)} ${perLbl})${r.minActive ? ' – fast månedspris' : ''}`);
+    if (g.id === 'lon') out.push(`${kr(total / r.months)} pr. måned${ls[0].minApplied ? ' – minimumspris' : ''}`);
+    if (g.id === 'loebende') out.push(`${kr(total / r.months)} pr. måned${r.minActive ? ' – fast månedspris' : ''}`);
     if (g.id === 'lon') return;
     ls.filter(l => !l.minimum).forEach(l => out.push(
-      INTERNAL ? `- ${NAMES[l.t]}: ${hrs(l.h)} à ${l.rate} kr. = ${kr(l.amount)}`
-      : g.id === 'loebende' && r.minActive ? `- ${NAMES[l.t]}` : `- ${NAMES[l.t]}: ${kr(l.amount)}`));
-    if (INTERNAL && g.id === 'loebende' && r.minActive) out.push(`- Tillæg til minimumspris: ${kr(ls.find(l => l.minimum).amount)}`);
+      INTERNAL ? (g.id === 'loebende' ? `- ${NAMES[l.t]}: ${hrs(l.h / r.months)} pr. md. à ${l.rate} kr. = ${kr(l.amount / r.months)} pr. md.` : `- ${NAMES[l.t]}: ${hrs(l.h)} à ${l.rate} kr. = ${kr(l.amount)}`)
+      : g.id === 'loebende' ? (r.minActive ? `- ${NAMES[l.t]}` : `- ${NAMES[l.t]}: ${kr(l.amount / r.months)} pr. måned`) : `- ${NAMES[l.t]}: ${kr(l.amount)}`));
+    if (INTERNAL && g.id === 'loebende' && r.minActive) out.push(`- Tillæg til minimumspris: ${kr(ls.find(l => l.minimum).amount / r.months)} pr. måned`);
   });
   out.push('', `I alt: ${INTERNAL ? hrs(r.totalH) + ' · ' : ''}${kr(r.total)} ekskl. moms (${kr(r.total * (1 + CONFIG.vat))} inkl. moms)`);
   out.push('', 'Estimatet er vejledende.');
