@@ -107,8 +107,9 @@ input,select,button{font:inherit;color:inherit}
 .kv.total{border-top:1px solid var(--border2);border-bottom:0;margin-top:6px;padding-top:14px;font-size:15px}
 .kv.total span:first-child{color:var(--text);font-weight:500}
 /* Opdelte grupper i estimatet */
-.grp{padding:12px 0 13px;border-bottom:1px solid var(--border)}
-.grp:first-child{padding-top:2px}
+.grp{padding:10px 0 13px;border-bottom:1px solid var(--border)}
+.grp-sep{font-size:10.5px;letter-spacing:2.2px;text-transform:uppercase;color:var(--amber);margin-top:16px}
+.grp-sep:first-child{margin-top:0}
 .grp-head{display:flex;justify-content:space-between;gap:12px;font-size:14.5px}
 .grp-head span{font-weight:500}
 .grp-head b{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -393,7 +394,7 @@ footer a:hover{color:rgba(245,240,230,.82)}
   <!-- Opsummering -->
   <aside class="panel summary" aria-live="polite">
     <div class="sum-head">
-      <div class="eyebrow">Estimat · ekskl. moms</div>
+      <div class="eyebrow" id="sumEyebrow">Månedlig betaling · ekskl. moms</div>
       <div class="sum-big" id="sumMonthly">0 kr.<small>/ md.</small></div>
       <div class="sum-sub" id="sumMonthlySub">Gennemsnit pr. måned</div>
     </div>
@@ -458,6 +459,8 @@ const GROUPS = [
   { id: 'yearly',   name: 'Årlige opgaver' },
   { id: 'once',     name: 'Engangsopgaver' }
 ];
+const VAT_UNIT = { 12: 'måned', 4: 'kvartal', 2: 'halvår' };
+const VAT_BILL = { 12: 'månedligt', 4: 'kvartalsvis', 2: 'halvårligt' };
 const vatLbl = () => document.querySelector('input[name="vatPeriod"]:checked + label').firstChild.textContent;
 const SYSTEM_NAMES = {}; document.querySelectorAll('#system option').forEach(o => SYSTEM_NAMES[o.value] = o.textContent);
 
@@ -544,16 +547,21 @@ function calc() {
 
 function render() {
   const r = calc();
-  const perMonth = r.recurring / r.months;
   const periodLbl = r.months === 12 ? 'første år' : `${r.months} måneder`;
 
-  $('sumMonthly').innerHTML = `${kr(perMonth)}<small>/ md.</small>`;
+  // Månedlig betaling = løbende opgaver + løn. Moms, årlige og engangsopgaver faktureres for sig.
+  const monthlyCats = ['loebende', 'lon'];
+  const perMonth = (r.sum('loebende') + r.sum('lon')) / r.months;
+  const monthlyH = r.lines.filter(l => monthlyCats.includes(l.cat)).reduce((a, l) => a + l.h, 0) / r.months;
+  const hasMonthly = perMonth > 0;
+  $('sumEyebrow').textContent = (hasMonthly || !r.lines.length ? 'Månedlig betaling' : 'Samlet pris') + ' · ekskl. moms';
+  $('sumMonthly').innerHTML = hasMonthly || !r.lines.length ? `${kr(perMonth)}<small>/ md.</small>` : kr(r.total);
   $('sumMonthlySub').textContent = !r.lines.length ? 'Vælg mindst én opgave'
-    : INTERNAL ? `Ca. ${hrs(r.recurringH / r.months)} pr. måned i gennemsnit (inkl. årlige opgaver)`
-    : 'Gennemsnitlig månedspris inkl. årlige opgaver';
+    : !hasMonthly ? 'Faktureres som angivet nedenfor'
+    : (INTERNAL ? `Ca. ${hrs(monthlyH)} pr. måned · ` : '') + 'Løbende opgaver' + (r.sum('lon') ? ' og løn' : '') + '. Moms og årlige opgaver faktureres for sig.';
 
   const perLbl = r.months === 12 ? 'pr. år' : `for ${r.months} md.`;
-  let html = '';
+  let html = '', sepShown = false;
   if (!r.lines.length) {
     html = '<p class="empty">Ingen opgaver valgt endnu.</p>';
   } else {
@@ -561,13 +569,17 @@ function render() {
       const ls = r.lines.filter(l => l.cat === g.id);
       if (!ls.length) return;
       const total = r.sum(g.id);
-      const main = g.id === 'moms' ? `${ls[0].count} × ${kr(CONFIG.vatFee)}`
+      const main = g.id === 'moms' ? `${kr(CONFIG.vatFee)} / ${VAT_UNIT[radioVal('vatPeriod')]}`
         : g.id === 'once' ? kr(total)
         : g.id === 'yearly' ? `${kr(total)} / år`
         : `${kr(total / r.months)} / md.`;
-      const sub = g.id === 'moms' ? `${vatLbl()} · ${kr(total)} ${perLbl}`
-        : g.id === 'loebende' || g.id === 'lon' ? `${kr(total)} ${perLbl}`
-        : '';
+      const sub = g.id === 'moms' ? `Faktureres ${VAT_BILL[radioVal('vatPeriod')]} · ${kr(total)} ${perLbl}`
+        : g.id === 'yearly' ? 'Faktureres én gang årligt'
+        : g.id === 'once' ? 'Faktureres én gang'
+        : `${kr(total)} ${perLbl}`;
+      if (g.id === 'moms' && !sepShown) { html += '<div class="grp-sep">Faktureres separat</div>'; sepShown = true; }
+      if (g.id === 'loebende' || (g.id === 'lon' && !r.sum('loebende'))) html += '<div class="grp-sep">Månedlig betaling</div>';
+      if ((g.id === 'yearly' || g.id === 'once') && !sepShown) { html += '<div class="grp-sep">Faktureres separat</div>'; sepShown = true; }
       html += `<div class="grp"><div class="grp-head"><span>${g.name}</span><b>${main}</b></div>`;
       if (sub) html += `<div class="grp-sub">${sub}</div>`;
       // Opgavelinjer i gruppen
@@ -626,7 +638,8 @@ function summaryText(r) {
     'Bilagsstand: ' + docsLbl + ' · Kompleksitet: ' + cxLbl,
         'Periode: ' + $('startMonths').selectedOptions[0].textContent,
     '',
-    'ESTIMAT (ekskl. moms)'
+    'ESTIMAT (ekskl. moms)',
+    (r.sum('loebende') + r.sum('lon')) ? `Månedlig betaling: ${kr((r.sum('loebende') + r.sum('lon')) / r.months)} pr. måned` : null
   ].filter(x => x !== null);
   const perLbl = r.months === 12 ? 'pr. år' : `for ${r.months} md.`;
   GROUPS.forEach(g => {
@@ -634,7 +647,9 @@ function summaryText(r) {
     if (!ls.length) return;
     const total = r.sum(g.id);
     out.push('', g.name.toUpperCase());
-    if (g.id === 'moms') { out.push(`${vatLbl()}: ${ls[0].count} × ${kr(CONFIG.vatFee)} = ${kr(total)} ${perLbl}`); return; }
+    if (g.id === 'moms') { out.push(`${kr(CONFIG.vatFee)} pr. ${VAT_UNIT[radioVal('vatPeriod')]}, faktureres ${VAT_BILL[radioVal('vatPeriod')]} ved indberetning (${ls[0].count} × ${kr(CONFIG.vatFee)} = ${kr(total)} ${perLbl})`); return; }
+    if (g.id === 'yearly') out.push(`${kr(total)} pr. år, faktureres én gang årligt`);
+    if (g.id === 'once') out.push(`${kr(total)}, faktureres én gang`);
     if (g.id === 'lon') out.push(`${kr(total / r.months)} pr. måned (${kr(total)} ${perLbl})${ls[0].minApplied ? ' – minimumspris' : ''}`);
     if (g.id === 'loebende') out.push(`${kr(total / r.months)} pr. måned (${kr(total)} ${perLbl})${r.minActive ? ' – fast månedspris' : ''}`);
     if (g.id === 'lon') return;
