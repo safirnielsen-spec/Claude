@@ -86,6 +86,8 @@ input,select,button{font:inherit;color:inherit}
 .task-tag.fixed{background:rgba(74,98,72,.1);color:var(--bottle-green-d)}
 .task-opts{display:none;padding:0 16px 16px 48px;gap:14px;grid-template-columns:1fr 1fr}
 .task.on .task-opts{display:grid}
+.task-opts-full{grid-template-columns:minmax(0,1fr)}
+.task-opts .seg label{background:#fff}
 .task-opts .field input,.task-opts .field select{height:40px;background:#fff}
 .group-lbl{font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--amber);margin:18px 0 4px}
 .group-lbl:first-child{margin-top:0}
@@ -330,9 +332,15 @@ footer a:hover{color:rgba(245,240,230,.82)}
           <label class="task-main"><input type="checkbox" checked>
             <span class="task-txt"><span class="task-title">Momsindberetning</span><span class="task-desc">Opgørelse, afstemning og indberetning af moms til SKAT.</span></span>
             <span class="task-tag fixed" data-rate></span></label>
-          <div class="task-opts">
-            <div class="field"><label for="vatPeriod">Momsperiode</label>
-              <select id="vatPeriod"><option value="12">Månedlig</option><option value="4" selected>Kvartalsvis</option><option value="2">Halvårlig</option></select></div>
+          <div class="task-opts task-opts-full">
+            <div class="field">
+              <span class="lbl">Hvor ofte skal I indberette moms?</span>
+              <div class="seg" role="radiogroup" aria-label="Momsperiode">
+                <input type="radio" name="vatPeriod" id="vat12" value="12"><label for="vat12">Månedlig<small>12 indberetninger pr. år</small></label>
+                <input type="radio" name="vatPeriod" id="vat4" value="4" checked><label for="vat4">Kvartalsvis<small>4 indberetninger pr. år</small></label>
+                <input type="radio" name="vatPeriod" id="vat2" value="2"><label for="vat2">Halvårlig<small>2 indberetninger pr. år</small></label>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -403,7 +411,7 @@ footer a:hover{color:rgba(245,240,230,.82)}
       <button class="btn ghost" type="button" id="copyBtn">Kopiér opsummering</button>
       <button class="btn ghost" type="button" onclick="window.print()">Print / gem som PDF</button>
     </div>
-    <p class="note">Estimatet er vejledende og baseret på de oplyste parametre. Timepris 595–795 kr. ekskl. moms afhængigt af opgavetype. Momsindberetning afregnes til fast pris pr. indberetning. Endeligt tilbud gives efter en kort, uforpligtende gennemgang.</p>
+    <p class="note">Estimatet er vejledende og baseret på de oplyste parametre. Timepris 595–795 kr. ekskl. moms afhængigt af opgavetype. Momsindberetning afregnes til fast pris pr. indberetning. Løbende opgaver har en minimumspris på <span id="minNote"></span> pr. måned, og løn min. <span id="minPayNote"></span> pr. måned. Endeligt tilbud gives efter en kort, uforpligtende gennemgang.</p>
   </aside>
 </main>
 
@@ -436,7 +444,10 @@ const CONFIG = {
   system: { economic:1, dinero:0.9, billy:0.9, uniconta:1.05, bc:1.15, c5:1.2, visma:1.15, andet:1.15, intet:1.25 },
   // Grundtimer til årsregnskab pr. virksomhedsform
   yearBase: { enk:8, aps:14, holding:10, ejendom:18, forening:8 },
-  minPerPost: 2          // Minutter pr. postering ved bogføring
+  minPerPost: 2,         // Minutter pr. postering ved bogføring
+  // Minimumspriser (kr. ekskl. moms) – sæt til 0 for at slå fra
+  minPayrollMonthly: 1000, // Løn: minimum pr. måned
+  minMonthly: 2000         // Løbende opgaver i alt (inkl. moms-indberetning): minimum pr. måned
 };
 
 const NAMES = {
@@ -444,7 +455,7 @@ const NAMES = {
   betaling:'Betaling af fakturaer', fakturering:'Fakturering af kunder', rykker:'Debitoropfølgning & rykkere',
   lon:'Løn', moms:'Momsindberetning', rapport:'Periodeafslutning & rapportering',
   aarsregnskab:'Årsregnskab & årsafslutning', budget:'Budget & likviditetsprognose',
-  oprydning:'Oprydning / bagudrettet bogføring', opsaetning:'Opsætning / skift af regnskabsprogram'
+  minimum:'Tillæg til minimumspris', oprydning:'Oprydning / bagudrettet bogføring', opsaetning:'Opsætning / skift af regnskabsprogram'
 };
 const SYSTEM_NAMES = {}; document.querySelectorAll('#system option').forEach(o => SYSTEM_NAMES[o.value] = o.textContent);
 
@@ -453,12 +464,13 @@ const num = (id, min = 0) => Math.max(min, parseFloat($(id).value) || 0);
 const radio = n => parseFloat(document.querySelector(`input[name="${n}"]:checked`).value);
 const kr = v => Math.round(v).toLocaleString('da-DK') + ' kr.';
 const hrs = v => (Math.round(v * 4) / 4).toLocaleString('da-DK', { maximumFractionDigits: 2 }) + ' t';
+const radioVal = n => document.querySelector(`input[name="${n}"]:checked`).value;
 const isOn = t => document.querySelector(`[data-task="${t}"] input[type=checkbox]`).checked;
 
 // Vis timepris på hver opgave
 document.querySelectorAll('.task').forEach(el => {
   const t = el.dataset.task, tag = el.querySelector('[data-rate]');
-  tag.textContent = t === 'moms' ? kr(CONFIG.vatFee) + ' / stk.' : CONFIG.rates[t] + ' kr./t';
+  tag.textContent = t === 'moms' ? kr(CONFIG.vatFee) + ' / stk.' : CONFIG.rates[t] + ' kr./t' + (t === 'lon' && CONFIG.minPayrollMonthly ? ` · min. ${kr(CONFIG.minPayrollMonthly)}/md.` : '');
 });
 
 function calc() {
@@ -495,16 +507,24 @@ function calc() {
   const add = (cat, t, h, periodTxt) => {
     if (!isOn(t)) return;
     h = Math.round(h * 4) / 4;              // afrund til kvarter
-    lines.push({ cat, t, h, rate: CONFIG.rates[t], amount: h * CONFIG.rates[t], periodTxt });
+    let amount = h * CONFIG.rates[t], minApplied = false;
+    if (t === 'lon' && amount < CONFIG.minPayrollMonthly * months) { amount = CONFIG.minPayrollMonthly * months; minApplied = true; }
+    lines.push({ cat, t, h, rate: CONFIG.rates[t], amount, periodTxt, minApplied });
   };
   for (const t in monthly) add('monthly', t, monthly[t] * months, months === 12 ? 'pr. år' : `${months} md.`);
   for (const t in yearly)  add('yearly', t, yearly[t], 'pr. år');
   for (const t in once)    add('once', t, once[t], 'engang');
 
   if (isOn('moms')) {
-    const perYear = parseInt($('vatPeriod').value, 10);
+    const perYear = parseInt(radioVal('vatPeriod'), 10);
     const count = Math.max(1, Math.round(perYear * months / 12));
     lines.push({ cat: 'monthly', t: 'moms', h: 0, count, amount: count * CONFIG.vatFee, fixed: true });
+  }
+
+  // Minimumspris pr. måned for løbende opgaver
+  const monthlySum = lines.filter(l => l.cat === 'monthly').reduce((a, l) => a + l.amount, 0);
+  if (monthlySum > 0 && monthlySum < CONFIG.minMonthly * months) {
+    lines.push({ cat: 'monthly', t: 'minimum', h: 0, amount: CONFIG.minMonthly * months - monthlySum, minimum: true, fixed: true });
   }
 
   const sum = c => lines.filter(l => !c || l.cat === c).reduce((a, l) => a + l.amount, 0);
@@ -546,9 +566,11 @@ function render() {
     if (!ls.length) continue;
     tb += `<tr class="cat"><td colspan="3">${cats[c]}</td></tr>`;
     ls.forEach(l => {
-      tb += l.fixed
+      tb += l.minimum
+        ? `<tr><td>${NAMES[l.t]}<small>Min. ${kr(CONFIG.minMonthly)} pr. måned for løbende opgaver</small></td><td>–</td><td>${kr(l.amount)}</td></tr>`
+        : l.fixed
         ? `<tr><td>${NAMES[l.t]}<small>${l.count} × ${kr(CONFIG.vatFee)} (fast pris)</small></td><td>–</td><td>${kr(l.amount)}</td></tr>`
-        : `<tr><td>${NAMES[l.t]}<small>${l.rate} kr./t · ${l.periodTxt}</small></td><td>${hrs(l.h)}</td><td>${kr(l.amount)}</td></tr>`;
+        : `<tr><td>${NAMES[l.t]}<small>${l.minApplied ? `Minimumspris ${kr(CONFIG.minPayrollMonthly)} pr. måned` : `${l.rate} kr./t · ${l.periodTxt}`}</small></td><td>${hrs(l.h)}</td><td>${kr(l.amount)}</td></tr>`;
     });
   }
   $('tbl').innerHTML = tb || '<tr><td colspan="3" class="empty">–</td></tr>';
@@ -571,13 +593,16 @@ function summaryText(r) {
     'Regnskabsprogram: ' + SYSTEM_NAMES[$('system').value],
     'Posteringer pr. måned: ' + r.posts,
     'Bilagsstand: ' + docsLbl + ' · Kompleksitet: ' + cxLbl,
+    isOn('moms') ? 'Momsperiode: ' + document.querySelector('input[name="vatPeriod"]:checked + label').firstChild.textContent : null,
     'Periode: ' + $('startMonths').selectedOptions[0].textContent,
     '',
     'Valgte opgaver:'
   ].filter(x => x !== null);
-  r.lines.forEach(l => out.push(l.fixed
+  r.lines.forEach(l => out.push(l.minimum
+    ? `- ${NAMES[l.t]} (min. ${kr(CONFIG.minMonthly)}/md.): ${kr(l.amount)}`
+    : l.fixed
     ? `- ${NAMES[l.t]}: ${l.count} × ${kr(CONFIG.vatFee)} = ${kr(l.amount)}`
-    : `- ${NAMES[l.t]}: ${hrs(l.h)} à ${l.rate} kr. = ${kr(l.amount)}`));
+    : `- ${NAMES[l.t]}: ${hrs(l.h)} à ${l.rate} kr. = ${kr(l.amount)}${l.minApplied ? ' (minimumspris)' : ''}`));
   out.push('', `I alt: ${hrs(r.totalH)} · ${kr(r.total)} ekskl. moms (${kr(r.total * (1 + CONFIG.vat))} inkl. moms)`);
   out.push(`Gennemsnit pr. måned (løbende): ${kr(r.recurring / r.months)} ekskl. moms`);
   out.push('', 'Estimatet er vejledende.');
@@ -601,6 +626,7 @@ $('copyBtn').addEventListener('click', async () => {
 });
 window.addEventListener('beforeprint', () => $('breakdown').open = true);
 
+$('minNote').textContent = kr(CONFIG.minMonthly); $('minPayNote').textContent = kr(CONFIG.minPayrollMonthly);
 syncTasks(); render();
 </script>
 </body>
