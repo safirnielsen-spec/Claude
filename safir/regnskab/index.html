@@ -487,7 +487,7 @@ const CONFIG = {
   minPerPost: 2,         // Minutter pr. postering ved bogføring
   // Minimumspriser (kr. ekskl. moms) – sæt til 0 for at slå fra
   minPayrollMonthly: 750, // Løn: minimum pr. måned
-  cleanupFactor: 1.3,      // Oprydning = månedlig pris for løbende opgaver × denne faktor × antal måneder i efterslæb
+  cleanupFactor: 1.3,      // Oprydning = månedlig bogføringspris × denne faktor × antal måneder i efterslæb
   minMonthly: 1500         // Løbende opgaver (ekskl. løn og moms): minimum pr. måned
 };
 
@@ -583,11 +583,9 @@ function calc() {
     lines.push({ cat: 'loebende', t: 'minimum', h: 0, amount: CONFIG.minMonthly * months - monthlySum, minimum: true, fixed: true });
   }
 
-  // Oprydning: månedlig pris for løbende opgaver (inkl. minimumspris) × 1,3 × antal måneder i efterslæb
+  // Oprydning: månedlig bogføringspris × 1,3 × antal måneder i efterslæb (kun bogføringsdelen)
   if (isOn('oprydning')) {
-    const perMonth = monthlySum > 0 ? Math.max(monthlySum, CONFIG.minMonthly * months) / months
-                                    : bogMonthly * CONFIG.rates.bogforing;   // fallback hvis ingen løbende opgaver er valgt
-    const amount = Math.round(perMonth * CONFIG.cleanupFactor * num('backlog', 1));
+    const amount = Math.round(bogMonthly * CONFIG.rates.bogforing * CONFIG.cleanupFactor * num('backlog', 1));
     lines.push({ cat: 'once', t: 'oprydning', h: amount / CONFIG.rates.oprydning, rate: CONFIG.rates.oprydning, amount, periodTxt: 'engang' });
   }
 
