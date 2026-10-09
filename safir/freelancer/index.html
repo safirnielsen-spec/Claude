@@ -223,7 +223,7 @@ footer a:hover{color:rgba(245,240,230,.82)}
   <div class="hero">
     <div class="eyebrow">Fakturering for freelancere</div>
     <h1>Fokuser på opgaven. <em>Vi klarer faktureringen.</em></h1>
-    <p>Du leverer arbejdet, og vi sørger for fakturering og udbetaling.<br>Beregn herunder, hvad du får udbetalt, når servicegebyret er trukket fra.</p>
+    <p>Du leverer arbejdet, og vi sørger for fakturering og udbetaling.<br>Beregn herunder, hvad du får udbetalt efter gebyrer, AM-bidrag og skat.</p>
   </div>
 </header>
 
@@ -245,6 +245,10 @@ footer a:hover{color:rgba(245,240,230,.82)}
           <label for="count">Fakturaer pr. måned</label>
           <input type="number" id="count" min="1" max="100" value="1">
         </div>
+        <div class="field">
+          <label for="taxPct">Din trækprocent</label>
+          <input type="number" id="taxPct" min="0" max="60" step="0.5" value="38">
+        </div>
       </div>
     </section>
 
@@ -258,19 +262,20 @@ footer a:hover{color:rgba(245,240,230,.82)}
 
     <section class="section">
       <div class="section-head"><span class="step">03</span><h2>Sådan fungerer det</h2></div>
+      <p class="hint" style="margin:-6px 0 16px">Beløbet udbetales som løn. Vi indeholder AM-bidrag og A-skat, og feriepengene (12,5 %) indbetales til din feriekonto.</p>
       <div class="steps">
         <div class="stepbox"><div class="n">1</div><b>Tilmeld dig</b><span>Fortæl os om dig og din opgave.</span></div>
         <div class="stepbox"><div class="n">2</div><b>Vi fakturerer</b><span>Vi sender fakturaen til din kunde og følger op på betalingen.</span></div>
-        <div class="stepbox"><div class="n">3</div><b>Du får udbetalt</b><span>Når kunden har betalt, udbetaler vi dit beløb.</span></div>
+        <div class="stepbox"><div class="n">3</div><b>Du får udbetalt</b><span>Når kunden har betalt, udbetaler vi din løn og indberetter skat.</span></div>
       </div>
     </section>
   </form>
 
   <aside class="panel summary" aria-live="polite">
     <div class="sum-head">
-      <div class="eyebrow">Du får udbetalt · før skat</div>
+      <div class="eyebrow">Direkte til dig · efter skat</div>
       <div class="sum-big" id="sumBig">0 kr.</div>
-      <div class="sum-sub" id="sumSub">pr. faktura</div>
+      <div class="sum-sub" id="sumSub"></div>
     </div>
     <div class="sum-body" id="sumRows"></div>
     <div class="actions">
@@ -295,7 +300,7 @@ footer a:hover{color:rgba(245,240,230,.82)}
       <button class="btn-submit" type="button" id="submitLead">Send besked</button>
       <div class="fmsg" id="formMsg" role="status"></div>
     </form>
-    <p class="note">Beregningen er vejledende. Moms (25 %) lægges oven i fakturaen til din kunde og indgår ikke i din udbetaling. Udbetalingen er før skat. Endelige vilkår aftales, før vi går i gang.</p>
+    <p class="note">Beregningen er vejledende. Moms (25 %) lægges oven i fakturaen til din kunde og indgår ikke i din udbetaling. Skat er beregnet med flad trækprocent uden fradrag, så din faktiske skat kan afvige. Endelige vilkår aftales, før vi går i gang.</p>
   </aside>
 </main>
 
@@ -317,6 +322,10 @@ footer a:hover{color:rgba(245,240,230,.82)}
    ═══════════════════════════════════════════════════════════════ */
 const CONFIG = {
   feePct: 6,          // Servicegebyr i % af fakturabeløb ekskl. moms
+  socialPct: 1.5,     // Lovpligtige sociale bidrag i % af fakturabeløb
+  holidayPct: 12.5,   // Feriepenge i % af lønnen (AM-indkomst)
+  amPct: 8,           // AM-bidrag
+  taxPct: 38,         // Standard trækprocent (kan ændres på siden)
   fastPct: 1.95,      // Hurtig udbetaling: gebyr i % af fakturabeløb (op til)
   vat: 25             // Moms i %, lægges oven i fakturaen til kunden
 };
@@ -329,26 +338,48 @@ const row = (k, v, cls = '') => `<div class="kv ${cls}"><span>${k}</span><b>${v}
 
 $('fastTxt').textContent = `Få pengene, før din kunde har betalt. Koster op til ${pct(CONFIG.fastPct)} af fakturabeløbet.`;
 
+// Beløb afrundes ned til hele kroner for AM-bidrag og skat, ligesom i en lønberegning
+const fl = v => Math.floor(v + 1e-9);
+
 function calc() {
   const amt = num('amtNum'), n = Math.max(1, Math.round(num('count')) || 1), fast = $('fast').checked;
+  const taxRate = Math.min(100, num('taxPct')) / 100;
   const fee = amt * CONFIG.feePct / 100;
+  const social = amt * CONFIG.socialPct / 100;
   const fastFee = fast ? amt * CONFIG.fastPct / 100 : 0;
-  const net = amt - fee - fastFee;
-  return { amt, n, fast, fee, fastFee, net, vatAmt: amt * CONFIG.vat / 100 };
+  const base = Math.max(0, amt - fee - social - fastFee);        // til løn inkl. feriepenge
+  const amIncome = base / (1 + CONFIG.holidayPct / 100);         // løn før AM-bidrag
+  const holiday = base - amIncome;                               // feriepenge
+  const am = fl(amIncome * CONFIG.amPct / 100);
+  const taxBasis = amIncome - am;
+  const tax = fl(taxBasis * taxRate);
+  const direct = amIncome - am - tax;                            // udbetales direkte
+  const hAm = fl(holiday * CONFIG.amPct / 100);                  // feriepenge: AM-bidrag og skat
+  const hTax = fl((holiday - hAm) * taxRate);
+  const vacation = holiday - hAm - hTax;                         // til feriekonto
+  return { amt, n, fast, fee, social, fastFee, holiday, amIncome, am, taxBasis, tax, direct, vacation,
+           total: direct + vacation, vatAmt: amt * CONFIG.vat / 100 };
 }
 
 function render() {
   const r = calc();
-  $('sumBig').textContent = kr(r.net);
-  $('sumSub').textContent = 'pr. faktura' + (r.n > 1 ? ` · ${kr(r.net * r.n)} pr. måned` : '');
+  $('sumBig').textContent = kr(r.direct);
+  $('sumSub').textContent = `pr. faktura · plus ${kr(r.vacation)} til feriekonto` + (r.n > 1 ? ` · ${kr(r.direct * r.n)} pr. måned` : '');
   let h = '';
   h += row('Fakturabeløb ekskl. moms', kr(r.amt));
   h += row(`Servicegebyr (${pct(CONFIG.feePct)})`, '− ' + kr(r.fee));
+  h += row(`Lovpligtige bidrag (${pct(CONFIG.socialPct)})`, '− ' + kr(r.social));
   if (r.fast) h += row(`Hurtig udbetaling (op til ${pct(CONFIG.fastPct)})`, '− ' + kr(r.fastFee));
-  h += row('Du får udbetalt', kr(r.net), 'total');
-  if (r.n > 1) h += row(`Pr. måned (${r.n} fakturaer)`, kr(r.net * r.n));
+  h += row(`Feriepenge (${pct(CONFIG.holidayPct)})`, kr(r.holiday));
+  h += row('AM-indkomst', kr(r.amIncome));
+  h += row(`AM-bidrag (${pct(CONFIG.amPct)})`, '− ' + kr(r.am));
+  h += row('Skattegrundlag', kr(r.taxBasis));
+  h += row(`A-skat (${pct(num('taxPct'))})`, '− ' + kr(r.tax));
+  h += row('Samlet udbetaling', kr(r.total), 'total');
+  h += row('Til feriekonto', kr(r.vacation));
+  h += row('Direkte til dig', kr(r.direct));
+  if (r.n > 1) h += row(`Direkte pr. måned (${r.n} fakturaer)`, kr(r.direct * r.n));
   h += row(`Moms (${CONFIG.vat} %) betales af din kunde`, kr(r.vatAmt));
-  h += row('Din kunde betaler i alt', kr(r.amt + r.vatAmt));
   $('sumRows').innerHTML = h;
 }
 
@@ -356,11 +387,22 @@ function summaryText(r) {
   const out = [
     'FAKTURERING FOR FREELANCERE – BEREGNING', '',
     'Fakturabeløb ekskl. moms: ' + kr(r.amt),
-    `Servicegebyr (${pct(CONFIG.feePct)}): ${kr(r.fee)}`
+    `Servicegebyr (${pct(CONFIG.feePct)}): ${kr(r.fee)}`,
+    `Lovpligtige bidrag (${pct(CONFIG.socialPct)}): ${kr(r.social)}`
   ];
   if (r.fast) out.push(`Hurtig udbetaling (op til ${pct(CONFIG.fastPct)}): ${kr(r.fastFee)}`);
-  out.push(`Udbetaling før skat: ${kr(r.net)} pr. faktura`);
-  if (r.n > 1) out.push(`Fakturaer pr. måned: ${r.n} (${kr(r.net * r.n)} pr. måned)`);
+  out.push(
+    `Feriepenge (${pct(CONFIG.holidayPct)}): ${kr(r.holiday)}`,
+    `AM-indkomst: ${kr(r.amIncome)}`,
+    `AM-bidrag (${pct(CONFIG.amPct)}): ${kr(r.am)}`,
+    `Skattegrundlag: ${kr(r.taxBasis)}`,
+    `A-skat (${pct(num('taxPct'))}): ${kr(r.tax)}`,
+    '',
+    `Samlet udbetaling: ${kr(r.total)}`,
+    `Til feriekonto: ${kr(r.vacation)}`,
+    `Direkte til dig: ${kr(r.direct)} pr. faktura`
+  );
+  if (r.n > 1) out.push(`Fakturaer pr. måned: ${r.n} (${kr(r.direct * r.n)} pr. måned direkte)`);
   out.push('', 'Beregningen er vejledende.');
   return out.join('\n');
 }
