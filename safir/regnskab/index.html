@@ -482,7 +482,8 @@ const CONFIG = {
   // Tidsfaktor pr. regnskabsprogram (1 = normal)
   system: { economic:1, dinero:0.9, billy:0.9, uniconta:1.05, bc:1.15, c5:1.2, visma:1.15, andet:1.15, intet:1.25 },
   // Grundtimer til årsregnskab pr. virksomhedsform
-  yearBase: { enk:8, aps:14, holding:10, ejendom:18, forening:8 },
+  yearBase: { enk:5, aps:8, holding:6, ejendom:10, forening:5 },
+  yearPerPostMin: 0.15,  // Ekstra minutter pr. postering pr. år til årsafslutning
   minPerPost: 2,         // Minutter pr. postering ved bogføring
   // Minimumspriser (kr. ekskl. moms) – sæt til 0 for at slå fra
   minPayrollMonthly: 750, // Løn: minimum pr. måned
@@ -549,7 +550,7 @@ function calc() {
   };
   // Timer pr. år for årlige opgaver
   const yearly = {
-    aarsregnskab: (CONFIG.yearBase[$('form').value] + posts * 12 * 0.3 / 60) * f,
+    aarsregnskab: (CONFIG.yearBase[$('form').value] + posts * 12 * CONFIG.yearPerPostMin / 60) * f,
     budget:       6 * cx
   };
   // Engangsopgaver
