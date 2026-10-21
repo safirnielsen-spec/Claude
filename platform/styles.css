@@ -135,6 +135,8 @@ code{background:rgba(0,0,0,.08);padding:1px 5px;border-radius:2px;font-size:12px
 .btn-block{width:100%;padding:14px}
 .btn-sm{padding:6px 12px;font-size:10px;letter-spacing:1.1px}
 .btn-link{background:none;border:none;color:var(--slate);text-decoration:underline;cursor:pointer;padding:8px 0;margin-top:8px;font-size:12px}
+.btn-link:hover{background:none;color:var(--terracotta);transform:none}
+.login-card form .btn-link{display:flex;margin-top:6px;padding:6px 0}
 select.btn{text-transform:none;letter-spacing:.2px;font-size:12.5px;font-weight:400;background:var(--card)}
 select.btn:hover{background:var(--bg-warm);color:var(--text)}
 .icon-btn{background:none;border:none;cursor:pointer;width:30px;height:30px;border-radius:50%;color:var(--muted)}
