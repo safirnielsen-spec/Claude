@@ -118,6 +118,7 @@
       db.orgs.push(org); db.rows[org.id] = Object.fromEntries(ORG_TABLES.map(t => [t, []])); this._save(db); return org.id;
     }
     async updateOrg(org) { const db = this._db(); const i = db.orgs.findIndex(o => o.id === org.id); db.orgs[i] = { ...db.orgs[i], ...org }; this._save(db); }
+    async updatePlan(orgId, f) { const db = this._db(); const i = db.orgs.findIndex(o => o.id === orgId); db.orgs[i] = { ...db.orgs[i], ...f }; this._save(db); }
     async loadOrg(orgId) {
       const rows = JSON.parse(JSON.stringify(this._db().rows[orgId] || {}));
       rows.members = [{ user_id: 'demo-user', email: 'demo@kunde.dk', role: 'owner' }];
@@ -209,6 +210,7 @@
       if ('org_type' in org) patch.org_type = org.org_type;
       this._chk(await this.sb.from('organizations').update(patch).eq('id', org.id));
     }
+    async updatePlan(orgId, f) { this._chk(await this.sb.from('organizations').update(f).eq('id', orgId)); }
     async _fetch(table, orgId) {
       const all = []; const size = 1000;
       for (let from = 0; ; from += size) {

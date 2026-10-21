@@ -347,9 +347,9 @@
     const maxCat = Math.max(1, ...byCat.map(x => x.s));
     const cons = C.consolidation(D);
 
-    if (!D.agreements.length) return pageHead('Jeres <em>aftaleoverblik</em>', 'Følg trinnene for at få udfyldt jeres stamdata.') + guideCard(true);
+    if (!D.agreements.length) return pageHead('Jeres <em>aftaleoverblik</em>', 'Følg trinnene for at få udfyldt jeres stamdata.') + planBanner() + guideCard(true);
 
-    return pageHead('Jeres <em>aftaleoverblik</em>', 'Driftsaftaler, frister og besparelsespotentiale samlet ét sted.', canEdit() ? '<button class="btn btn-primary" data-action="newAgreement"><i class="fa-solid fa-plus"></i> Ny aftale</button>' : '') + guideCard() + `
+    return pageHead('Jeres <em>aftaleoverblik</em>', 'Driftsaftaler, frister og besparelsespotentiale samlet ét sted.', canEdit() ? '<button class="btn btn-primary" data-action="newAgreement"><i class="fa-solid fa-plus"></i> Ny aftale</button>' : '') + planBanner() + guideCard() + `
     <div class="grid g4" style="margin-bottom:16px">
       <div class="kpi"><div class="lbl">Årlige driftsudgifter</div><div class="val">${krShort(spend)}</div><div class="sub">${open.length} aktive aftaler · ${D.properties.length} ejendomme</div></div>
       <div class="kpi accent"><div class="lbl">Besparelsespotentiale</div><div class="val">${krShort(potential)}</div><div class="sub">estimeret pr. år ved genudbud</div></div>
@@ -1052,9 +1052,59 @@
   // ======================================================================
   // Indstillinger
   // ======================================================================
+  // ======================================================================
+  // Abonnement
+  // ======================================================================
+  const PLANS = [
+    { key: 'start', label: 'Start', max: 10, month: 295 },
+    { key: 'vaekst', label: 'Vækst', max: 50, month: 695 },
+    { key: 'portefolje', label: 'Portefølje', max: Infinity, month: 1295 }
+  ];
+  const planFor = n => PLANS.find(p => n <= p.max);
+  const yearPrice = p => p.month * 10; // 2 måneder gratis ved årlig betaling
+  const PLAN_STATUS = { trial: 'Prøveperiode', active: 'Aktivt', past_due: 'Betaling mangler', cancelled: 'Opsagt', exempt: 'Gratis (aftale)' };
+  const activeAgreementCount = D => D.agreements.filter(a => !C.isClosed(a)).length;
+  function trialInfo(org) {
+    const start = org.created_at ? new Date(org.created_at) : new Date();
+    const end = new Date(start.getTime() + 30 * 86400000);
+    return { end, days: Math.ceil((end - Date.now()) / 86400000) };
+  }
+  function planBanner() {
+    if (S.store.mode === 'demo' || !S.org) return '';
+    const st = S.org.plan_status || 'trial';
+    const t = trialInfo(S.org);
+    if (st === 'past_due') return `<div class="suggest" style="border-left-color:var(--danger);margin-bottom:16px"><strong>Betaling mangler.</strong> Kontakt Core Partners, eller opdatér jeres betaling under <a href="#/indstillinger">Indstillinger</a>.</div>`;
+    if (st !== 'trial') return '';
+    const chosen = S.org.plan_requested_at ? ' Jeres valg er modtaget, og Core Partners vender tilbage med faktura eller betalingslink.' : '';
+    return t.days > 0
+      ? `<div class="suggest" style="margin-bottom:16px"><strong>Gratis prøveperiode: ${t.days} dage tilbage.</strong> Derefter fra 295 kr. om måneden.${chosen} <a href="#/indstillinger">Vælg abonnement</a></div>`
+      : `<div class="suggest" style="border-left-color:var(--danger);margin-bottom:16px"><strong>Prøveperioden er udløbet.</strong>${chosen || ' Vælg et abonnement for at fortsætte.'} <a href="#/indstillinger">Vælg abonnement</a></div>`;
+  }
+  function planCard() {
+    const o = S.org, own = isOwner(), n = activeAgreementCount(S.D), cur = planFor(n), st = o.plan_status || 'trial', t = trialInfo(o);
+    const stTag = st === 'trial' ? `<span class="tag ${t.days > 0 ? 'info' : 'danger'}">${t.days > 0 ? 'Prøveperiode · ' + t.days + ' dage tilbage' : 'Prøveperioden er udløbet'}</span>`
+      : `<span class="tag ${st === 'active' || st === 'exempt' ? 'ok' : st === 'past_due' ? 'danger' : ''}">${PLAN_STATUS[st] || st}</span>`;
+    const chosen = o.plan_requested_at ? `<p class="small muted" style="margin-top:10px">Valgt ${fmtDate(o.plan_requested_at)}: ${o.billing_interval === 'year' ? 'årlig' : 'månedlig'} betaling med ${o.payment_method === 'card' ? 'kreditkort' : 'faktura'}.</p>` : '';
+    return `<div class="card" style="grid-column:1/-1"><div class="card-head"><h2>Abonnement</h2>${stTag}</div>
+      <p class="muted small" style="margin-bottom:14px">30 dages gratis prøveperiode. Prisen følger antal aktive aftaler, og alle trin har ubegrænset antal brugere. Betales årligt, får I to måneder gratis.</p>
+      <div class="grid g3" style="margin-bottom:12px">${PLANS.map(pl => `<div class="kpi${pl === cur ? ' accent' : ''}"><div class="lbl">${pl.label} · ${pl.max === Infinity ? 'over 50' : 'op til ' + pl.max} aftaler</div>
+        <div class="val">${kr(pl.month)}<span style="font-size:14px"> /md.</span></div><div class="sub">${kr(yearPrice(pl))} /år ved årlig betaling${pl === cur ? ' · jeres trin' : ''}</div></div>`).join('')}</div>
+      <p class="small muted">I har <strong>${n}</strong> aktive aftaler, så jeres trin er <strong>${cur.label}</strong>. Trinnet følger antallet af aktive aftaler og kan skifte ved næste fornyelse.</p>${chosen}
+      ${own ? `<form data-form="plan" class="form-grid" style="margin-top:16px">
+        <label class="field"><span>Betaling</span><select name="billing_interval">${opt('month', 'Månedlig', o.billing_interval)}${opt('year', 'Årlig (2 måneder gratis)', o.billing_interval)}</select></label>
+        <label class="field"><span>Betalingsmåde</span><select name="payment_method">${opt('invoice', 'Faktura', o.payment_method)}${opt('card', 'Kreditkort', o.payment_method)}</select></label>
+        <label class="field"><span>Faktureres til (navn)</span><input name="billing_name" value="${esc(o.billing_name || o.name)}" required></label>
+        <label class="field"><span>Faktura-e-mail</span><input type="email" name="billing_email" value="${esc(o.billing_email || S.user.email || '')}" required></label>
+        <label class="field full"><span>Adresse</span><input name="billing_address" value="${esc(o.billing_address || '')}" placeholder="Vej, postnr. og by"></label>
+        <label class="field"><span>EAN (valgfri)</span><input name="billing_ean" value="${esc(o.billing_ean || '')}" inputmode="numeric"></label>
+        <p class="small muted full">Abonnementet fornyes automatisk hver måned eller hvert år, indtil det opsiges. Månedligt kan opsiges til udgangen af måneden, og årligt senest 30 dage før fornyelsen. Priser er ekskl. moms.</p>
+        <div class="full"><button class="btn btn-primary" type="submit">${o.plan_requested_at ? 'Opdatér valg' : 'Vælg abonnement'}</button></div></form>` : '<p class="small muted" style="margin-top:10px">Kun ejere kan vælge abonnement.</p>'}</div>`;
+  }
+
   function viewSettings() {
     const o = S.org, cloud = S.store.mode === 'cloud', own = isOwner();
     return pageHead('Indstillinger', esc(o.name)) + `<div class="grid g2">
+      ${S.store.mode === 'demo' ? '' : planCard()}
       <div class="card"><h2>Organisation</h2><form data-form="org">
         <label class="field"><span>Navn</span><input name="name" value="${esc(o.name)}" ${own ? '' : 'disabled'} required></label>
         <label class="field"><span>CVR</span><input name="cvr" value="${esc(o.cvr || '')}" ${own ? '' : 'disabled'}></label>
@@ -1114,8 +1164,9 @@
     <div class="card" style="margin-bottom:16px"><h2>Pipeline: frister de næste 9 måneder</h2>${pipeline.length ? `<div style="overflow-x:auto"><table><thead><tr><th>Frist</th><th>Kunde</th><th>Aftale</th><th class="num">Årlig pris</th><th class="num">Potentiale</th><th class="num">Honorar (40 % eller 20 % × 3)</th></tr></thead><tbody>
       ${pipeline.map(({ c, p }) => `<tr class="link" data-org-open="${c.org.id}" data-href="#/aftaler/${p.a.id}"><td class="nowrap">${fmtDate(p.dates.noticeDeadline)}<div class="sub">${esc(daysText(p.dates.daysToNotice))}</div></td><td>${esc(c.org.name)}</td><td>${esc(p.a.title)}<div class="sub">${esc(cat(p.a.category).label)}</div></td>
       <td class="num">${kr(p.cost)}</td><td class="num">${kr(p.est)}</td><td class="num">${kr(p.est * 0.4)}<div class="sub">eller ${kr(p.est * 0.2)} × 3</div></td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">Ingen frister i perioden.</p>'}</div>
-    <div class="card"><div class="card-head"><h2>Kunder</h2><input type="search" id="custSearch" class="btn" style="text-transform:none;letter-spacing:0;font-weight:400;min-width:240px;text-align:left" placeholder="Søg kunde eller CVR …" aria-label="Søg kunde"></div><div style="overflow-x:auto"><table><thead><tr><th>Kunde</th><th class="num">Aftaler</th><th class="num">Driftsudgift/år</th><th class="num">Potentiale/år</th><th class="num">Frister ≤ 9 mdr.</th><th></th></tr></thead><tbody>
+    <div class="card"><div class="card-head"><h2>Kunder</h2><input type="search" id="custSearch" class="btn" style="text-transform:none;letter-spacing:0;font-weight:400;min-width:240px;text-align:left" placeholder="Søg kunde eller CVR …" aria-label="Søg kunde"></div><div style="overflow-x:auto"><table><thead><tr><th>Kunde</th><th class="num">Aftaler</th><th class="num">Driftsudgift/år</th><th class="num">Potentiale/år</th><th class="num">Frister ≤ 9 mdr.</th><th>Abonnement</th><th></th></tr></thead><tbody>
       ${customers.map(c => `<tr data-cust="${esc((c.org.name + ' ' + (c.org.cvr || '')).toLowerCase())}"><td>${esc(c.org.name)}<div class="sub">${esc(c.org.cvr || '')}</div></td><td class="num">${c.D.agreements.length}</td><td class="num">${kr(c.spend)}</td><td class="num">${kr(c.pot)}</td><td class="num">${c.soon.length}</td>
+      <td><select data-planstatus="${c.org.id}" aria-label="Abonnement">${Object.entries(PLAN_STATUS).map(([k, l]) => opt(k, l, c.org.plan_status || 'trial')).join('')}</select><div class="sub">${planFor(activeAgreementCount(c.D)).label} · ${activeAgreementCount(c.D)} aftaler${(c.org.plan_status || 'trial') === 'trial' ? ' · ' + Math.max(0, trialInfo(c.org).days) + ' dage af prøven' : ''}${c.org.plan_requested_at ? ' · ' + (c.org.billing_interval === 'year' ? 'årlig' : 'månedlig') + ', ' + (c.org.payment_method === 'card' ? 'kort' : 'faktura') : ''}</div></td>
       <td><button class="btn btn-sm" data-action="openOrg" data-id="${c.org.id}">Åbn</button></td></tr>`).join('')}</tbody></table></div></div>`;
   }
 
@@ -1286,6 +1337,10 @@
     if (ds.change === 'tlMonths') { S.tlMonths = Number(t.value); route(false); return; }
     if (ds.change === 'prioPf') { S.prioPf = t.value; route(false); return; }
     if (ds.change === 'demoAdmin') { S.store.setDemoAdmin(t.checked); S.profile.is_cp_admin = t.checked; renderChrome(); return; }
+    if (t.dataset.planstatus) return guard(async () => {
+      await S.store.updatePlan(t.dataset.planstatus, { plan_status: t.value, subscribed_at: t.value === 'active' ? new Date().toISOString() : null });
+      toast('Abonnement opdateret');
+    });
     if (t.id === 'orgSelect') return guard(() => switchOrg(t.value, '#/overblik'));
     if (t.id === 'orgSearch') {
       const o = S.orgs.find(x => x.name === t.value.trim());
@@ -1346,6 +1401,18 @@
       if (location.search) history.replaceState(null, '', location.pathname + location.hash);
       await start();
       toast('Adgangskode gemt');
+    });
+    if (form.dataset.form === 'plan') return guard(async () => {
+      const f = { billing_interval: o.billing_interval, payment_method: o.payment_method, billing_name: o.billing_name, billing_email: o.billing_email,
+        billing_address: o.billing_address || null, billing_ean: o.billing_ean || null, plan_requested_at: new Date().toISOString() };
+      await S.store.updatePlan(S.org.id, f); Object.assign(S.org, f);
+      const links = CFG.stripeLinks || {}, link = links[planFor(activeAgreementCount(S.D)).key + '_' + f.billing_interval];
+      if (f.payment_method === 'card' && link) {
+        const u = new URL(link); u.searchParams.set('client_reference_id', S.org.id); u.searchParams.set('prefilled_email', f.billing_email);
+        window.open(u.toString(), '_blank', 'noopener');
+        toast('Valg gemt. Fortsæt betalingen i det nye vindue.');
+      } else toast(f.payment_method === 'card' ? 'Tak! Core Partners sender et betalingslink på mail.' : 'Tak! Core Partners sender en faktura.');
+      route(false);
     });
     if (form.id === 'orgForm') return guard(async () => { const id = await S.store.createOrg(o.name, o.cvr, o.org_type); lsSet('cp_org', id); await start(); });
     if (form.dataset.form === 'org') return guard(async () => {
