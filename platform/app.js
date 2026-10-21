@@ -168,9 +168,11 @@
   async function reload() { await loadOrg(); route(false); }
 
   function renderChrome() {
-    $('#orgSwitch').innerHTML = S.orgs.length > 1
-      ? `<select id="orgSelect" aria-label="Vælg organisation">${S.orgs.map(o => opt(o.id, o.name, S.org.id)).join('')}</select>`
-      : `<div class="org-name">${esc(S.org.name)}</div>`;
+    $('#orgSwitch').innerHTML = S.orgs.length > 8
+      ? `<input id="orgSearch" class="org-search" list="orgList" value="${esc(S.org.name)}" data-current="${esc(S.org.name)}" placeholder="Søg organisation …" aria-label="Søg og vælg organisation" autocomplete="off"><datalist id="orgList">${S.orgs.map(o => `<option value="${esc(o.name)}"></option>`).join('')}</datalist>`
+      : S.orgs.length > 1
+        ? `<select id="orgSelect" aria-label="Vælg organisation">${S.orgs.map(o => opt(o.id, o.name, S.org.id)).join('')}</select>`
+        : `<div class="org-name">${esc(S.org.name)}</div>`;
     $('#adminLink').hidden = !(S.profile && S.profile.is_cp_admin);
     const who = `<span class="who">${esc(S.user.email)}</span>`;
     const out = S.store.mode === 'cloud' ? '<button data-action="logout">Log ud</button>' : '';
@@ -1016,8 +1018,8 @@
     <div class="card" style="margin-bottom:16px"><h2>Pipeline: frister de næste 9 måneder</h2>${pipeline.length ? `<div style="overflow-x:auto"><table><thead><tr><th>Frist</th><th>Kunde</th><th>Aftale</th><th class="num">Årlig pris</th><th class="num">Potentiale</th><th class="num">Honorar (40 % eller 20 % × 3)</th></tr></thead><tbody>
       ${pipeline.map(({ c, p }) => `<tr class="link" data-org-open="${c.org.id}" data-href="#/aftaler/${p.a.id}"><td class="nowrap">${fmtDate(p.dates.noticeDeadline)}<div class="sub">${esc(daysText(p.dates.daysToNotice))}</div></td><td>${esc(c.org.name)}</td><td>${esc(p.a.title)}<div class="sub">${esc(cat(p.a.category).label)}</div></td>
       <td class="num">${kr(p.cost)}</td><td class="num">${kr(p.est)}</td><td class="num">${kr(p.est * 0.4)}<div class="sub">eller ${kr(p.est * 0.2)} × 3</div></td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">Ingen frister i perioden.</p>'}</div>
-    <div class="card"><h2>Kunder</h2><div style="overflow-x:auto"><table><thead><tr><th>Kunde</th><th class="num">Aftaler</th><th class="num">Driftsudgift/år</th><th class="num">Potentiale/år</th><th class="num">Frister ≤ 9 mdr.</th><th></th></tr></thead><tbody>
-      ${customers.map(c => `<tr><td>${esc(c.org.name)}<div class="sub">${esc(c.org.cvr || '')}</div></td><td class="num">${c.D.agreements.length}</td><td class="num">${kr(c.spend)}</td><td class="num">${kr(c.pot)}</td><td class="num">${c.soon.length}</td>
+    <div class="card"><div class="card-head"><h2>Kunder</h2><input type="search" id="custSearch" class="btn" style="text-transform:none;letter-spacing:0;font-weight:400;min-width:240px;text-align:left" placeholder="Søg kunde eller CVR …" aria-label="Søg kunde"></div><div style="overflow-x:auto"><table><thead><tr><th>Kunde</th><th class="num">Aftaler</th><th class="num">Driftsudgift/år</th><th class="num">Potentiale/år</th><th class="num">Frister ≤ 9 mdr.</th><th></th></tr></thead><tbody>
+      ${customers.map(c => `<tr data-cust="${esc((c.org.name + ' ' + (c.org.cvr || '')).toLowerCase())}"><td>${esc(c.org.name)}<div class="sub">${esc(c.org.cvr || '')}</div></td><td class="num">${c.D.agreements.length}</td><td class="num">${kr(c.spend)}</td><td class="num">${kr(c.pot)}</td><td class="num">${c.soon.length}</td>
       <td><button class="btn btn-sm" data-action="openOrg" data-id="${c.org.id}">Åbn</button></td></tr>`).join('')}</tbody></table></div></div>`;
   }
 
@@ -1159,12 +1161,19 @@
 
   let qTimer;
   document.addEventListener('input', e => {
+    if (e.target.id === 'custSearch') {
+      const q = e.target.value.trim().toLowerCase();
+      document.querySelectorAll('tr[data-cust]').forEach(tr => { tr.hidden = !!q && !tr.dataset.cust.includes(q); });
+      return;
+    }
     const f = e.target.dataset && e.target.dataset.filter;
     if (f === 'q') {
       S.f.q = e.target.value; clearTimeout(qTimer);
       qTimer = setTimeout(() => { const pos = e.target.selectionStart; route(false).then(() => { const i = $('[data-filter="q"]'); if (i) { i.focus(); i.setSelectionRange(pos, pos); } }); }, 180);
     }
   });
+  document.addEventListener('focusin', e => { if (e.target.id === 'orgSearch') e.target.select(); });
+  document.addEventListener('focusout', e => { if (e.target.id === 'orgSearch' && !S.orgs.some(x => x.name === e.target.value.trim())) e.target.value = e.target.dataset.current; });
   document.addEventListener('change', e => {
     const t = e.target, ds = t.dataset || {};
     if (ds.filter && ds.filter !== 'q') { S.f[ds.filter] = t.value; route(false); return; }
@@ -1174,6 +1183,11 @@
     if (ds.change === 'prioPf') { S.prioPf = t.value; route(false); return; }
     if (ds.change === 'demoAdmin') { S.store.setDemoAdmin(t.checked); S.profile.is_cp_admin = t.checked; renderChrome(); return; }
     if (t.id === 'orgSelect') return guard(() => switchOrg(t.value, '#/overblik'));
+    if (t.id === 'orgSearch') {
+      const o = S.orgs.find(x => x.name === t.value.trim());
+      if (!o) { t.value = t.dataset.current; return; }
+      return guard(() => switchOrg(o.id, '#/overblik'));
+    }
     if (ds.check) return guard(async () => {
       const x = S.D.tenders.find(y => y.id === ds.tender);
       await S.store.upsert('tenders', { ...x, checklist: { ...x.checklist, [ds.check]: t.checked } });

@@ -315,3 +315,10 @@ td .sub{font-size:12px;color:var(--muted);font-weight:300}
 .cta-band h2{color:var(--cream);font-weight:300}
 .cta-band h2 em{font-style:italic;color:var(--gold-l)}
 .cta-band p{color:rgba(244,237,224,.6)!important}
+
+/* søgbar organisationsvælger (mange kunder) og skjulte tabelrækker ved søgning */
+.org-switch .org-search{width:220px;background:transparent;border:1px solid var(--border2);border-radius:20px;padding:6px 12px;font-size:12px;color:var(--text)}
+.org-switch .org-search:focus{outline:none;border-color:var(--slate)}
+@media(max-width:1020px){.org-switch .org-search{width:170px}}
+@media(max-width:420px){.org-switch .org-search{width:130px}}
+tr[hidden]{display:none}
