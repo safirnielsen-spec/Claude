@@ -289,7 +289,7 @@
       </div>
     </div>
     <div class="card cta-band" style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:32px">
-      <div><span class="eyebrow" style="color:rgba(244,237,224,.5)">No Cure · No Pay</span><h2 style="margin-bottom:4px">Lad Core Partners <em>gennemgå aftalerne</em></h2><p>I betaler kun 20 % af første års dokumenterede besparelse.</p></div>
+      <div><span class="eyebrow" style="color:rgba(244,237,224,.5)">No Cure · No Pay</span><h2 style="margin-bottom:4px">Lad Core Partners <em>gennemgå aftalerne</em></h2><p>Ingen besparelse, ingen regning. Vælg selv: 40 % af første års besparelse én gang, eller 20 % om året i 3 år, hvor betalingen dækkes af besparelsen, så I er i plus fra første dag.</p></div>
       <button class="btn btn-accent" data-action="requestReview"><i class="fa-solid fa-handshake"></i> Bed om gennemgang</button>
     </div>`;
   }
@@ -432,7 +432,7 @@
         </dl></div>
         <div class="card"><h2>Besparelsespotentiale</h2>
           <div class="grid g2"><div class="kpi"><div class="lbl">Estimeret pr. år</div><div class="val">${kr(p.est)}</div><div class="sub">${p.pct} % af ${kr(p.cost)}</div></div>
-          <div class="kpi"><div class="lbl">Core Partners honorar</div><div class="val">${kr(p.est * 0.2)}</div><div class="sub">20 % af første års besparelse</div></div></div>
+          <div class="kpi"><div class="lbl">Core Partners honorar</div><div class="val">${kr(p.est * 0.4)}</div><div class="sub">40 % af første års besparelse, én gang</div><div class="sub" style="margin-top:6px">eller ${kr(p.est * 0.2)} om året i 3 år (20 %) – dækket af besparelsen, så I er i plus fra første dag</div></div></div>
           <div class="reasons" style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">${p.reasons.map(r => `<span class="tag">${esc(r)}</span>`).join('')}</div>
         </div>
       </div>
@@ -1005,15 +1005,15 @@
     <div class="grid g4" style="margin-bottom:16px">
       <div class="kpi"><div class="lbl">Kunder</div><div class="val">${customers.length}</div></div>
       <div class="kpi"><div class="lbl">Driftsudgifter i alt</div><div class="val">${krShort(sum(customers, c => c.spend))}</div></div>
-      <div class="kpi accent"><div class="lbl">Potentiale i pipeline (9 mdr.)</div><div class="val">${krShort(sum(pipeline, x => x.p.est))}</div><div class="sub">honorar ca. ${krShort(sum(pipeline, x => x.p.est) * 0.2)}</div></div>
+      <div class="kpi accent"><div class="lbl">Potentiale i pipeline (9 mdr.)</div><div class="val">${krShort(sum(pipeline, x => x.p.est))}</div><div class="sub">honorar ca. ${krShort(sum(pipeline, x => x.p.est) * 0.4)} (40 %) eller ${krShort(sum(pipeline, x => x.p.est) * 0.2)} × 3 år</div></div>
       <div class="kpi"><div class="lbl">Åbne henvendelser</div><div class="val">${sum(customers, c => c.reqs.length)}</div></div>
     </div>
     <div class="card" style="margin-bottom:16px"><h2>Henvendelser</h2>${reqs.length ? `<div style="overflow-x:auto"><table><thead><tr><th>Kunde</th><th>Aftale</th><th>Besked</th><th>Modtaget</th><th>Status</th></tr></thead><tbody>
       ${reqs.map(({ c, r }) => { const a = c.D.agreements.find(x => x.id === r.agreement_id); return `<tr><td>${esc(c.org.name)}</td><td>${a ? esc(a.title) : '<span class="muted">Generel gennemgang</span>'}</td><td>${esc(r.message || '')}</td><td class="nowrap">${fmtDate(r.created_at)}</td>
       <td><select data-req="${r.id}" data-org="${c.org.id}" aria-label="Status">${['new', 'in_progress', 'done'].map(s => opt(s, reqStatus(s), r.status)).join('')}</select></td></tr>`; }).join('')}</tbody></table></div>` : '<p class="muted">Ingen henvendelser.</p>'}</div>
-    <div class="card" style="margin-bottom:16px"><h2>Pipeline: frister de næste 9 måneder</h2>${pipeline.length ? `<div style="overflow-x:auto"><table><thead><tr><th>Frist</th><th>Kunde</th><th>Aftale</th><th class="num">Årlig pris</th><th class="num">Potentiale</th><th class="num">Honorar (20 %)</th></tr></thead><tbody>
+    <div class="card" style="margin-bottom:16px"><h2>Pipeline: frister de næste 9 måneder</h2>${pipeline.length ? `<div style="overflow-x:auto"><table><thead><tr><th>Frist</th><th>Kunde</th><th>Aftale</th><th class="num">Årlig pris</th><th class="num">Potentiale</th><th class="num">Honorar (40 % eller 20 % × 3)</th></tr></thead><tbody>
       ${pipeline.map(({ c, p }) => `<tr class="link" data-org-open="${c.org.id}" data-href="#/aftaler/${p.a.id}"><td class="nowrap">${fmtDate(p.dates.noticeDeadline)}<div class="sub">${esc(daysText(p.dates.daysToNotice))}</div></td><td>${esc(c.org.name)}</td><td>${esc(p.a.title)}<div class="sub">${esc(cat(p.a.category).label)}</div></td>
-      <td class="num">${kr(p.cost)}</td><td class="num">${kr(p.est)}</td><td class="num">${kr(p.est * 0.2)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">Ingen frister i perioden.</p>'}</div>
+      <td class="num">${kr(p.cost)}</td><td class="num">${kr(p.est)}</td><td class="num">${kr(p.est * 0.4)}<div class="sub">eller ${kr(p.est * 0.2)} × 3</div></td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">Ingen frister i perioden.</p>'}</div>
     <div class="card"><h2>Kunder</h2><div style="overflow-x:auto"><table><thead><tr><th>Kunde</th><th class="num">Aftaler</th><th class="num">Driftsudgift/år</th><th class="num">Potentiale/år</th><th class="num">Frister ≤ 9 mdr.</th><th></th></tr></thead><tbody>
       ${customers.map(c => `<tr><td>${esc(c.org.name)}<div class="sub">${esc(c.org.cvr || '')}</div></td><td class="num">${c.D.agreements.length}</td><td class="num">${kr(c.spend)}</td><td class="num">${kr(c.pot)}</td><td class="num">${c.soon.length}</td>
       <td><button class="btn btn-sm" data-action="openOrg" data-id="${c.org.id}">Åbn</button></td></tr>`).join('')}</tbody></table></div></div>`;
@@ -1030,7 +1030,7 @@
   function requestForm(agreementId) {
     const a = agreementId && agr(agreementId);
     openModal('Bed Core Partners om en vurdering', `<form id="mform">
-      <p class="small muted" style="margin-bottom:12px">${a ? `Vi kigger på „${esc(a.title)}“ og vender tilbage med en vurdering af besparelsespotentialet.` : 'Vi gennemgår jeres aftaleportefølje og vender tilbage med de største besparelsesmuligheder.'} No Cure No Pay: I betaler kun 20 % af første års dokumenterede besparelse.</p>
+      <p class="small muted" style="margin-bottom:12px">${a ? `Vi kigger på „${esc(a.title)}“ og vender tilbage med en vurdering af besparelsespotentialet.` : 'Vi gennemgår jeres aftaleportefølje og vender tilbage med de største besparelsesmuligheder.'} Ingen besparelse, ingen regning: I vælger selv at betale 40 % af første års dokumenterede besparelse én gang, eller 20 % om året i 3 år, hvor betalingen dækkes af besparelsen, så I er i plus fra første dag.</p>
       <label class="field"><span>Besked (valgfri)</span><textarea name="message" placeholder="F.eks. ønsket tidspunkt, kontaktperson eller særlige forhold"></textarea></label>
       <div class="form-actions"><div class="right"><button type="button" class="btn" data-action="closeModal">Annullér</button><button class="btn btn-accent" type="submit">Send</button></div></div>
     </form>`, async o => {
