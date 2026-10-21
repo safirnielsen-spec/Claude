@@ -113,8 +113,8 @@
     setDemoAdmin(on) { try { localStorage.setItem('cp_demo_admin', on ? '1' : '0'); } catch (e) { /* ignore */ } }
     reset() { try { localStorage.removeItem(LS_KEY); } catch (e) { /* ignore */ } this._mem = null; }
     async listOrgs() { return this._db().orgs.map(o => ({ ...o, role: 'owner' })); }
-    async createOrg(name, cvr) {
-      const db = this._db(); const org = { id: uuid(), name, cvr, tender_lead_months: 6, created_at: new Date().toISOString() };
+    async createOrg(name, cvr, orgType) {
+      const db = this._db(); const org = { id: uuid(), name, cvr, org_type: orgType || 'property', tender_lead_months: 6, created_at: new Date().toISOString() };
       db.orgs.push(org); db.rows[org.id] = Object.fromEntries(ORG_TABLES.map(t => [t, []])); this._save(db); return org.id;
     }
     async updateOrg(org) { const db = this._db(); const i = db.orgs.findIndex(o => o.id === org.id); db.orgs[i] = { ...db.orgs[i], ...org }; this._save(db); }
@@ -198,8 +198,17 @@
       const mem = this._chk(await this.sb.from('memberships').select('org_id, role').eq('user_id', this.user.id));
       return orgs.map(o => ({ ...o, role: (mem.find(m => m.org_id === o.id) || {}).role || 'admin' }));
     }
-    async createOrg(name, cvr) { return this._chk(await this.sb.rpc('create_organization', { p_name: name, p_cvr: cvr || null })); }
-    async updateOrg(org) { this._chk(await this.sb.from('organizations').update({ name: org.name, cvr: org.cvr, tender_lead_months: org.tender_lead_months }).eq('id', org.id)); }
+    async createOrg(name, cvr, orgType) {
+      const id = this._chk(await this.sb.rpc('create_organization', { p_name: name, p_cvr: cvr || null }));
+      // org_type kræver kolonnen fra supabase/org_type.sql; mangler den, forbliver organisationen et ejendomsselskab.
+      if (orgType && orgType !== 'property') await this.sb.from('organizations').update({ org_type: orgType }).eq('id', id);
+      return id;
+    }
+    async updateOrg(org) {
+      const patch = { name: org.name, cvr: org.cvr, tender_lead_months: org.tender_lead_months };
+      if ('org_type' in org) patch.org_type = org.org_type;
+      this._chk(await this.sb.from('organizations').update(patch).eq('id', org.id));
+    }
     async _fetch(table, orgId) {
       const all = []; const size = 1000;
       for (let from = 0; ; from += size) {

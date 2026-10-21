@@ -99,9 +99,70 @@
   const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } };
 
   const opt = (v, label, sel) => `<option value="${esc(v)}"${String(sel) === String(v) ? ' selected' : ''}>${esc(label)}</option>`;
-  const catOptions = sel => C.CATEGORIES.map(c => opt(c.key, c.label, sel)).join('');
+  const orgType = () => (S.org && S.org.org_type) || 'property';
+  const orgTypeOptions = sel => Object.entries(C.ORG_TYPES).map(([k, t]) => opt(k, t.label, sel || 'property')).join('');
+  const catOptions = sel => C.CATEGORIES.filter(c => !c.only || c.only === orgType() || c.key === sel).map(c => opt(c.key, c.label, sel)).join('');
   const regionOptions = (sel, blank) => (blank ? opt('', blank, sel) : '') + C.REGIONS.map(r => opt(r, r, sel)).join('');
   const pfOptions = (sel, blank) => (blank != null ? opt('', blank, sel) : '') + S.D.portfolios.map(p => opt(p.id, p.name, sel)).join('');
+
+  // ======================================================================
+  // Sprog pr. organisationstype: virksomheder ser "lokationer" og "grupper" i stedet for ejendomme og porteføljer
+  // ======================================================================
+  const L_ = '(?<![A-Za-zÆØÅæøå])', R_ = '(?![A-Za-zÆØÅæøå])';
+  const TERM_MAP = {
+    Porteføljeaftale: 'Gruppeaftale', porteføljeaftale: 'gruppeaftale', Porteføljerne: 'Grupperne', porteføljerne: 'grupperne',
+    Porteføljer: 'Grupper', porteføljer: 'grupper', Porteføljens: 'Gruppens', porteføljens: 'gruppens', Porteføljen: 'Gruppen', porteføljen: 'gruppen',
+    Portefølje: 'Gruppe', portefølje: 'gruppe', Ejendommene: 'Lokationerne', ejendommene: 'lokationerne', Ejendomme: 'Lokationer', ejendomme: 'lokationer',
+    Ejendommens: 'Lokationens', ejendommens: 'lokationens', Ejendommen: 'Lokationen', ejendommen: 'lokationen', Ejendom: 'Lokation', ejendom: 'lokation',
+    Lejemål: 'Enheder', lejemål: 'enheder'
+  };
+  const TERM_RE = new RegExp(L_ + '(' + Object.keys(TERM_MAP).sort((a, b) => b.length - a.length).join('|') + ')' + R_, 'g');
+  const termize = t => t.replace(TERM_RE, m => TERM_MAP[m]);
+  const origText = new WeakMap();
+  const TERM_ATTRS = ['placeholder', 'aria-label', 'title'];
+  let termObs = null;
+
+  function termsOn() { return S.org && S.org.org_type === 'company'; }
+  function termNode(n, on) {
+    if (n.nodeType === 3) {
+      const rec = origText.get(n);
+      const base = rec && rec.out === n.nodeValue ? rec.orig : n.nodeValue;
+      const out = on ? termize(base) : base;
+      if (out !== n.nodeValue) n.nodeValue = out;
+      if (out !== base) origText.set(n, { orig: base, out }); else origText.delete(n);
+    } else if (n.nodeType === 1) {
+      TERM_ATTRS.forEach(a => {
+        if (!n.hasAttribute(a)) return;
+        const k = 'term' + a.replace(/-/g, '');
+        const rec = n[k]; const cur = n.getAttribute(a);
+        const base = rec && rec.out === cur ? rec.orig : cur;
+        const out = on ? termize(base) : base;
+        if (out !== cur) n.setAttribute(a, out);
+        n[k] = out !== base ? { orig: base, out } : null;
+      });
+    }
+  }
+  function termWalk(root, on) {
+    if (root.nodeType === 3) return termNode(root, on);
+    if (root.nodeType !== 1 || /^(SCRIPT|STYLE|TEXTAREA)$/.test(root.tagName)) return;
+    termNode(root, on);
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, { acceptNode: n => n.nodeType === 1 && /^(SCRIPT|STYLE|TEXTAREA)$/.test(n.tagName) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+    let n; while ((n = w.nextNode())) termNode(n, on);
+  }
+  function observeTerms() { termObs.observe(document.body, { childList: true, subtree: true, characterData: true }); }
+  function refreshTerms() {
+    if (!termObs) {
+      termObs = new MutationObserver(recs => {
+        if (!termsOn()) return;
+        termObs.disconnect();
+        recs.forEach(r => { if (r.type === 'characterData') termWalk(r.target, true); else r.addedNodes.forEach(n => termWalk(n, true)); });
+        observeTerms();
+      });
+    }
+    termObs.disconnect();
+    termWalk(document.body, termsOn());
+    observeTerms();
+  }
 
   // ======================================================================
   // Opstart og login
@@ -178,6 +239,7 @@
     const out = S.store.mode === 'cloud' ? '<button data-action="logout">Log ud</button>' : '';
     $('#userBox').innerHTML = who + out;
     $('#userBoxMobile').innerHTML = who + out;
+    refreshTerms();
     const b = $('#demoBanner');
     if (S.store.mode === 'demo') {
       b.hidden = false;
@@ -964,6 +1026,7 @@
       <div class="card"><h2>Organisation</h2><form data-form="org">
         <label class="field"><span>Navn</span><input name="name" value="${esc(o.name)}" ${own ? '' : 'disabled'} required></label>
         <label class="field"><span>CVR</span><input name="cvr" value="${esc(o.cvr || '')}" ${own ? '' : 'disabled'}></label>
+        <label class="field"><span>Type</span><select name="org_type" ${own ? '' : 'disabled'}>${orgTypeOptions(o.org_type)}</select><span class="hint">Ejendomsselskab bruger ejendomme og porteføljer. Virksomhed bruger lokationer og grupper samt kategorier som telefoni, leasing og software.</span></label>
         <label class="field"><span>Start udbud (mdr. før frist)</span><input type="number" min="1" max="24" name="tender_lead_months" value="${esc(o.tender_lead_months || 6)}" ${own ? '' : 'disabled'}><span class="hint">Bruges til "anbefalet udbudsstart" og påmindelser.</span></label>
         ${own ? '<button class="btn btn-primary" type="submit">Gem</button>' : ''}
       </form></div>
@@ -982,7 +1045,7 @@
         <label class="check"><input type="checkbox" data-change="demoAdmin" ${S.profile.is_cp_admin ? 'checked' : ''}> Vis Core Partners-adminvisning</label>
         <button class="btn btn-danger" data-action="resetDemo">Nulstil demodata</button></div>`}
       ${cloud ? `<div class="card"><h2>Ny organisation</h2><p class="small muted" style="margin-bottom:10px">F.eks. et andet selskab eller en forening, I administrerer.</p><form data-form="newOrg">
-        <label class="field"><span>Navn</span><input name="name" required></label><label class="field"><span>CVR</span><input name="cvr"></label>
+        <label class="field"><span>Navn</span><input name="name" required></label><label class="field"><span>CVR</span><input name="cvr"></label><label class="field"><span>Type</span><select name="org_type">${orgTypeOptions('property')}</select></label>
         <button class="btn" type="submit">Opret</button></form></div>` : ''}
     </div>`;
   }
@@ -1243,13 +1306,13 @@
       await start();
       toast('Adgangskode gemt');
     });
-    if (form.id === 'orgForm') return guard(async () => { const id = await S.store.createOrg(o.name, o.cvr); lsSet('cp_org', id); await start(); });
+    if (form.id === 'orgForm') return guard(async () => { const id = await S.store.createOrg(o.name, o.cvr, o.org_type); lsSet('cp_org', id); await start(); });
     if (form.dataset.form === 'org') return guard(async () => {
-      const upd = { ...S.org, name: o.name, cvr: o.cvr || null, tender_lead_months: Math.min(24, Math.max(1, parseInt(o.tender_lead_months, 10) || 6)) };
+      const upd = { ...S.org, name: o.name, cvr: o.cvr || null, org_type: o.org_type || S.org.org_type || 'property', tender_lead_months: Math.min(24, Math.max(1, parseInt(o.tender_lead_months, 10) || 6)) };
       await S.store.updateOrg(upd); Object.assign(S.org, upd); renderChrome(); toast('Gemt'); route(false);
     });
     if (form.dataset.form === 'invite') return guard(async () => { await S.store.invite(S.org.id, o.email, o.role); toast('Invitation sendt til ' + o.email); await reload(); });
-    if (form.dataset.form === 'newOrg') return guard(async () => { const id = await S.store.createOrg(o.name, o.cvr); S.orgs = await S.store.listOrgs(); await switchOrg(id, '#/overblik'); });
+    if (form.dataset.form === 'newOrg') return guard(async () => { const id = await S.store.createOrg(o.name, o.cvr, o.org_type); S.orgs = await S.store.listOrgs(); await switchOrg(id, '#/overblik'); });
   });
 
   boot();

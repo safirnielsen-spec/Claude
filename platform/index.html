@@ -25,7 +25,7 @@
         </div>
         <div class="pill">Kundeportal · Aftaleoverblik</div>
         <h1>Hold styr på <em>driftsaftalerne</em></h1>
-        <p>Opsigelsesfrister, udbud og besparelsespotentiale på tværs af ejendomme og porteføljer.</p>
+        <p>Opsigelsesfrister, udbud og besparelsespotentiale på tværs af virksomheder, lokationer og ejendomme.</p>
       </div>
       <div class="login-card">
         <span class="eyebrow">Log ind</span>
@@ -73,6 +73,7 @@
         <form id="orgForm">
           <label class="field"><span>Navn</span><input name="name" required placeholder="F.eks. Ejendomsselskabet A/S"></label>
           <label class="field"><span>CVR (valgfrit)</span><input name="cvr" inputmode="numeric"></label>
+          <label class="field"><span>Type</span><select name="org_type"><option value="property">Ejendomsselskab</option><option value="company">Virksomhed</option></select></label>
           <button class="btn btn-primary btn-block" type="submit">Opret</button>
         </form>
         <button class="btn btn-link" data-action="logout" type="button">Log ud</button>

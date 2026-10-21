@@ -7,19 +7,33 @@
   const CATEGORIES = [
     { key: 'insurance',   label: 'Forsikring',             icon: 'fa-shield-halved',   potential: 15 },
     { key: 'cleaning',    label: 'Rengøring',              icon: 'fa-broom',           potential: 15 },
-    { key: 'caretaker',   label: 'Ejendomsservice',        icon: 'fa-screwdriver-wrench', potential: 12 },
-    { key: 'elevator',    label: 'Elevatorservice',        icon: 'fa-elevator',        potential: 20 },
-    { key: 'ventilation', label: 'Ventilation/CTS',        icon: 'fa-fan',             potential: 12 },
+    { key: 'caretaker',   label: 'Ejendomsservice',        icon: 'fa-screwdriver-wrench', potential: 12, only: 'property' },
+    { key: 'elevator',    label: 'Elevatorservice',        icon: 'fa-elevator',        potential: 20, only: 'property' },
+    { key: 'ventilation', label: 'Ventilation/CTS',        icon: 'fa-fan',             potential: 12, only: 'property' },
     { key: 'fire',        label: 'Brand/ADK/sikring',      icon: 'fa-fire-extinguisher', potential: 12 },
     { key: 'waste',       label: 'Affald',                 icon: 'fa-recycle',         potential: 10 },
-    { key: 'winter',      label: 'Vintertjeneste',         icon: 'fa-snowflake',       potential: 10 },
-    { key: 'green',       label: 'Grønne områder',         icon: 'fa-seedling',        potential: 10 },
+    { key: 'winter',      label: 'Vintertjeneste',         icon: 'fa-snowflake',       potential: 10, only: 'property' },
+    { key: 'green',       label: 'Grønne områder',         icon: 'fa-seedling',        potential: 10, only: 'property' },
+    // kategorier for almindelige virksomheder
+    { key: 'telecom',     label: 'Telefoni/mobil',         icon: 'fa-mobile-screen',   potential: 20, only: 'company' },
+    { key: 'software',    label: 'Software/abonnementer',  icon: 'fa-laptop-code',     potential: 15, only: 'company' },
+    { key: 'leasing',     label: 'Leasing/biler',          icon: 'fa-car',             potential: 10, only: 'company' },
+    { key: 'payments',    label: 'Bank/betalingsgebyrer',  icon: 'fa-credit-card',     potential: 15, only: 'company' },
+    { key: 'office',      label: 'Kontor/kantine',         icon: 'fa-mug-hot',         potential: 10, only: 'company' },
+    { key: 'travel',      label: 'Rejser',                 icon: 'fa-plane',           potential: 10, only: 'company' },
+    { key: 'freight',     label: 'Fragt/transport',        icon: 'fa-truck',           potential: 12, only: 'company' },
+    { key: 'rent',        label: 'Husleje/lokaler',        icon: 'fa-building',        potential: 8,  only: 'company' },
     { key: 'energy',      label: 'Energi',                 icon: 'fa-bolt',            potential: 6 },
     { key: 'it',          label: 'IT/tele/internet',       icon: 'fa-wifi',            potential: 15 },
     { key: 'admin',       label: 'Administration',         icon: 'fa-briefcase',       potential: 10 },
     { key: 'other',       label: 'Andet',                  icon: 'fa-file',            potential: 8 }
   ];
   const CAT = Object.fromEntries(CATEGORIES.map(c => [c.key, c]));
+
+  const ORG_TYPES = {
+    property: { label: 'Ejendomsselskab' },
+    company:  { label: 'Virksomhed' }
+  };
 
   const SCOPES = {
     property:  { label: 'Ejendomsspecifik', short: 'Ejendom' },
@@ -335,7 +349,7 @@
   }
 
   global.CPCore = {
-    CATEGORIES, CAT, SCOPES, STATUSES, REGIONS, TENDER_STATUSES, CHECKLIST, CHECKLIST_COUNT,
+    CATEGORIES, CAT, ORG_TYPES, SCOPES, STATUSES, REGIONS, TENDER_STATUSES, CHECKLIST, CHECKLIST_COUNT,
     parseDate, isoDate, todayDate, addMonths, daysBetween, isClosed,
     agreementDates, nextIndexation, urgencyOf, ageOf, hasChildren, countedCost, potentialPct,
     coveredPropertyIds, allocation, regionsOf, priority, priorities, consolidation, timelineEvents, tenderScore,
