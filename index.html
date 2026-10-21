@@ -349,6 +349,7 @@ footer a:hover{color:var(--gold)}
     <a href="#faq" data-i18n="nav.faq">FAQ</a>
     <a href="#beregner" data-i18n="nav.calc">Beregner</a>
     <a href="#contact" data-i18n="nav.contact">Kontakt</a>
+    <a href="platform/" data-i18n="nav.portal">Kundeportal</a>
     <a href="#contact" class="mobile-menu-cta" data-i18n="nav.cta">Gratis screening</a>
   </div>
   <div class="nav-right">
@@ -417,8 +418,8 @@ footer a:hover{color:var(--gold)}
       <div class="stat-lbl" data-i18n="stats.l2">I betaling hvis ingen besparelse findes</div>
     </div>
     <div class="stat">
-      <div class="stat-num" id="s3">20%</div>
-      <div class="stat-lbl" data-i18n="stats.l3">Honorar af første års dokumenterede besparelse</div>
+      <div class="stat-num" id="s3">40%</div>
+      <div class="stat-lbl" data-i18n="stats.l3">Honorar af første års besparelse – eller 20% × 3 årlige betalinger</div>
     </div>
     <div class="stat">
       <div class="stat-num" id="s4">100%</div>
@@ -632,7 +633,7 @@ footer a:hover{color:var(--gold)}
     <div class="faq-wrap" data-motion="fade-up" data-delay="2">
       <details open>
         <summary data-i18n="faq.q1.q">Hvad betyder No Cure No Pay?</summary>
-        <p data-i18n="faq.q1.a">I betaler kun, hvis Core Partners finder og dokumenterer konkrete besparelser. Honoraret er 20% af første års dokumenterede besparelse. Finder vi intet, koster det jer ingenting.</p>
+        <p data-i18n="faq.q1.a">I betaler kun, hvis Core Partners finder og dokumenterer konkrete besparelser. I vælger selv, om honoraret er 40% af første års dokumenterede besparelse (betales én gang), eller 20% af første års dokumenterede besparelse betalt årligt i 3 år (3 × 20%). Finder vi intet, koster det jer ingenting.</p>
       </details>
       <details>
         <summary data-i18n="faq.q2.q">Hvilke aftaler gennemgår I?</summary>
@@ -689,6 +690,13 @@ footer a:hover{color:var(--gold)}
             <option value="-0.02" data-i18n="calc.buying.yes">Ja, vi har en indkøbsfunktion</option>
           </select>
         </div>
+        <div class="field" style="margin-bottom:20px">
+          <label for="feeModel" data-i18n="calc.feeLabel">Honorarmodel</label>
+          <select id="feeModel">
+            <option value="once" selected data-i18n="calc.fee.once">40% af første års besparelse (betales én gang)</option>
+            <option value="three" data-i18n="calc.fee.three">20% af første års besparelse × 3 (årlig betaling i 3 år)</option>
+          </select>
+        </div>
         <div class="range-line"><span data-i18n="calc.f.insurance">Forsikringer</span><input id="insurance" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
         <div class="range-line"><span data-i18n="calc.f.service">Serviceaftaler</span><input id="service" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
         <div class="range-line"><span data-i18n="calc.f.facility">Facility og vicevært</span><input id="facility" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
@@ -718,10 +726,11 @@ footer a:hover{color:var(--gold)}
           <div class="result-line"><span data-i18n="calc.r.total">Samlede relevante omkostninger</span><b id="totalCost">0 kr.</b></div>
           <div class="result-line"><span data-i18n="calc.r.range">Forventet interval</span><b id="savingPct">0%</b></div>
           <div class="result-line hl-row" id="propValueLine" style="display:none"><span data-i18n="calc.r.propValue">Stigning i ejendomsværdi</span><b id="propValue">0 kr.</b></div>
-          <div class="result-line"><span data-i18n="calc.r.fee">Core Partners honorar</span><b id="fee">0 kr.</b></div>
+          <div class="result-line"><span id="feeLabel">Core Partners honorar (40%)</span><b id="fee">0 kr.</b></div>
+          <div class="result-line" id="feeTotalLine" style="display:none"><span data-i18n="calc.r.feeTotal">Samlet honorar over 3 år</span><b id="feeTotal">0 kr.</b></div>
           <div class="result-line"><span data-i18n="calc.r.net">Netto første år</span><b id="net">0 kr.</b></div>
           <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
-          <p class="note" data-i18n="calc.note">Honorar beregnes som 20% af første års dokumenterede besparelse.</p>
+          <p class="note" id="feeNote" data-i18n="calc.note">Honorar beregnes som 40% af første års dokumenterede besparelse (betales én gang) eller som 20% af første års dokumenterede besparelse betalt årligt i 3 år.</p>
           <div class="result-download" id="resultDownload" style="display:none">
             <button class="btn-download" id="downloadBtn" type="button">
               <svg viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -927,7 +936,7 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
         animated=true;
         animCount(document.getElementById('s1'),1,8,'',2800);
         animCount(document.getElementById('s2'),1000,0,' kr.',4000);
-        animCount(document.getElementById('s3'),0,20,'%',2800);
+        animCount(document.getElementById('s3'),0,40,'%',2800);
         animCount(document.getElementById('s4'),0,100,'%',4000);
         obs.disconnect();
       }
@@ -966,19 +975,25 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
     var low=Math.round(total*Math.max(.03,rf-.04));
     var high=Math.round(total*rf);
     var mid=Math.round((low+high)/2);
-    var fee=Math.round(mid*.2);
+    var feeModel=$c("feeModel")?$c("feeModel").value:"once";
+    var three=feeModel==="three";
+    var fee=Math.round(mid*(three?.2:.4));
+    var feeTotal=three?fee*3:fee;
     var net=mid-fee;
     var showPropValue=calcState.showPropValue;
     var YIELD_RATE=.045;
     var propValueLow=Math.round(low/YIELD_RATE);
     var propValueHigh=Math.round(high/YIELD_RATE);
-    calcState.results={total:total,low:low,high:high,fee:fee,net:net,rf:rf,org:org,showPropValue:showPropValue,propValueLow:propValueLow,propValueHigh:propValueHigh};
+    calcState.results={total:total,low:low,high:high,fee:fee,feeTotal:feeTotal,three:three,net:net,rf:rf,org:org,showPropValue:showPropValue,propValueLow:propValueLow,propValueHigh:propValueHigh};
     var toWord=window.CP_T('to');
     $c("savingAmount").textContent=fmt(low)+" "+toWord+" "+fmt(high);
     $c("savingCopy").textContent=window.CP_T('basedOn')+" "+org.toLowerCase()+(buying>0?window.CP_T('noBuying'):window.CP_T('hasBuying'))+window.CP_T('andReview');
     $c("totalCost").textContent=fmt(total);
     $c("savingPct").textContent=Math.round(low/total*100)+" "+toWord+" "+Math.round(high/total*100)+"%";
     $c("fee").textContent=fmt(fee);
+    $c("feeLabel").textContent=window.CP_T(three?'feeYearly':'feeOnce');
+    $c("feeTotal").textContent=fmt(feeTotal);
+    $c("feeTotalLine").style.display=three?"flex":"none";
     $c("net").textContent=fmt(net);
     $c("propValueLine").style.display=showPropValue?"flex":"none";
     if(showPropValue)$c("propValue").textContent=fmt(propValueLow)+" "+toWord+" "+fmt(propValueHigh);
@@ -998,6 +1013,8 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
       setTimeout(function(){clearInterval(iv);calculate();btn.classList.remove("btn-calculating");txt.textContent=window.CP_T('updateBtn');},2700);
     });
     // Live opdatering ved dropdown-skift (kun efter første beregning)
+    var feeSel=$c("feeModel");
+    if(feeSel)feeSel.addEventListener("change",function(){if(calcState.results)calculate();});
 
   }
 
@@ -1081,7 +1098,8 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
       row(window.CP_T('reportTotal'),fmt(r.total));
       row(window.CP_T('reportSavings'),fmt(r.low)+' '+window.CP_T('to')+' '+fmt(r.high),true);
       if(r.showPropValue)row(window.CP_T('reportPropValue'),fmt(r.propValueLow)+' '+window.CP_T('to')+' '+fmt(r.propValueHigh),true);
-      row(window.CP_T('reportFee'),fmt(r.fee));
+      row(window.CP_T(r.three?'reportFeeYearly':'reportFee'),fmt(r.fee));
+      if(r.three)row(window.CP_T('reportFeeTotal'),fmt(r.feeTotal));
       row(window.CP_T('reportNet'),fmt(r.net));
 
       y+=14;
@@ -1131,10 +1149,10 @@ if(burger&&navLinks){
 // ============ LANGUAGE TOGGLE (DA / EN) ============
 (function(){
   var EN = {
-    'nav.aria':'Primary navigation','nav.services':'Services','nav.approach':'Who we help','nav.how':'Process','nav.faq':'FAQ','nav.calc':'Calculator','nav.contact':'Contact','nav.cta':'Free screening','nav.badge':'No Cure · No Pay','nav.openMenu':'Open menu',
+    'nav.aria':'Primary navigation','nav.services':'Services','nav.approach':'Who we help','nav.how':'Process','nav.faq':'FAQ','nav.calc':'Calculator','nav.contact':'Contact','nav.portal':'Client portal','nav.cta':'Free screening','nav.badge':'No Cure · No Pay','nav.openMenu':'Open menu',
     'hero.aria':'Core Partners introduction','hero.pill':'Cost optimization · No Cure No Pay','hero.tagline':'Documented savings. No risk.','hero.sub':'We find, document and negotiate savings on insurance, service agreements, facility management and property operations. You only pay when we create a real, documented saving.','hero.btn1':'See what we do','hero.btn2':'Book a free screening',
     'marquee.companies':'Companies','marquee.propowners':'Property owners','marquee.assetmgr':'Asset managers','marquee.assoc':'Owner & housing associations','marquee.investprop':'Investment properties','marquee.tenants':'Commercial tenants','marquee.housing':'Housing associations','marquee.portfolios':'Portfolios',
-    'stats.aria':'Key figures','stats.l1':'To 20% typical savings potential','stats.l2':'In fees if no savings are found','stats.l3':"Fee of first year's documented savings",'stats.l4':'Confidentiality and discretion, always',
+    'stats.aria':'Key figures','stats.l1':'To 20% typical savings potential','stats.l2':'In fees if no savings are found','stats.l3':"Fee of first year's savings – or 20% × 3 annual payments",'stats.l4':'Confidentiality and discretion, always',
     'statement1.aria':'Our approach',
     'services.eyebrow':'What we review','services.sub':'From insurance to facility management. Documented and prioritized by impact.',
     'services.c1.tag':'Insurance','services.c1.h':'Insurance','services.c1.p':'Premiums, coverage, deductibles and duplicate policies are systematically reviewed and benchmarked against the market.',
@@ -1159,7 +1177,7 @@ if(burger&&navLinks){
     'pb2.eyebrow':'No Cure No Pay',
     'statement2.aria':'Our model',
     'faq.eyebrow':'Questions & answers',
-    'faq.q1.q':'What does No Cure No Pay mean?','faq.q1.a':"You only pay if Core Partners finds and documents concrete savings. The fee is 20% of the first year's documented savings. If we find nothing, it costs you nothing.",
+    'faq.q1.q':'What does No Cure No Pay mean?','faq.q1.a':"You only pay if Core Partners finds and documents concrete savings. You choose the fee model: either 40% of the first year's documented savings (paid once), or 20% of the first year's documented savings paid annually for 3 years (3 × 20%). If we find nothing, it costs you nothing.",
     'faq.q2.q':'Which agreements do you review?','faq.q2.a':"Typically insurance, service agreements, facility management, caretaking, cleaning, gardening, energy, utilities and property administration. We're flexible and tailor the review to your situation.",
     'faq.q3.q':'Is switching suppliers always necessary?','faq.q3.a':'No. Better prices, terms or coverage can often be negotiated with your current supplier. Switching is only recommended when it makes real sense and is to your advantage.',
     'faq.q4.q':'Who is this service best suited for?','faq.q4.a':"Organizations with recurring operating costs and agreements that haven't been systematically tested in the last two to four years. Especially relevant for owner associations, housing cooperatives, companies and property owners.",
@@ -1173,7 +1191,7 @@ if(burger&&navLinks){
     'calc.btnCalc':'Calculate potential','calc.btnExample':'Insert example',
     'calc.resultLabel':'Estimated annual savings','calc.resultDefault':'Fill in the fields on the left to see your potential.',
     'calc.r.total':'Total relevant costs','calc.r.range':'Expected range','calc.r.propValue':'Increase in property value','calc.r.fee':'Core Partners fee','calc.r.net':'Net first year',
-    'calc.note':"Fee is calculated as 20% of the first year's documented savings.",'calc.btnDownload':'Download report',
+    'calc.note':"Fee is calculated as 40% of the first year's documented savings (paid once), or as 20% of the first year's documented savings paid annually for 3 years.",'calc.feeLabel':'Fee model','calc.fee.once':"40% of first year's savings (paid once)",'calc.fee.three':"20% of first year's savings × 3 (annual payment for 3 years)",'calc.r.feeTotal':'Total fee over 3 years','calc.btnDownload':'Download report',
     'contact.eyebrow':'Contact','contact.title':'Book a free screening','contact.sub':"Tell us briefly about your situation. We'll get back to you within one business day with an assessment.",
     'contact.calBtn':'Book a meeting directly in the calendar','contact.name':'Name','contact.phone':'Phone','contact.email':'Email','contact.orgType':'Organization type','contact.chooseType':'Select type...','contact.landlordInvestor':'Property owner / Investor','contact.other':'Other','contact.msgLabel':'Briefly about your situation','contact.submit':'Send inquiry',
     'footer.brand':'A brand of Safir Consulting',
@@ -1199,8 +1217,8 @@ if(burger&&navLinks){
     'contact.msgPh':'E.g. number of units, which agreements you want assessed, or when they were last renegotiated.'
   };
   var JS_STR = {
-    da:{sending:'Sender...',sent:'Besked sendt',tryAgain:'Prøv igen',to:'til',basedOn:'Baseret på',noBuying:', ingen indkøbsfunktion',hasBuying:', intern indkøbsfunktion',andReview:' og seneste genforhandling.',analyzing:'Analyserer...',benchmarking:'Benchmarker...',calculating:'Beregner...',updateBtn:'Opdater beregning',reportTitle:'Core Partners Besparelsesrapport',reportH1:'Besparelsesestimeret',reportOrg:'Organisation',reportTotal:'Samlede relevante omkostninger',reportSavings:'Estimeret besparelse',reportPropValue:'Stigning i ejendomsværdi (4,5% afkastgrad)',reportFee:'Core Partners honorar (20%)',reportNet:'Netto første år',reportNote:'Dette estimat er vejledende og erstatter ikke en konkret screening.',reportFilename:'corepartners-besparelse.pdf'},
-    en:{sending:'Sending...',sent:'Message sent',tryAgain:'Try again',to:'to',basedOn:'Based on',noBuying:', no internal buying function',hasBuying:', internal buying function',andReview:' and latest renegotiation.',analyzing:'Analyzing...',benchmarking:'Benchmarking...',calculating:'Calculating...',updateBtn:'Update calculation',reportTitle:'Core Partners Savings Report',reportH1:'Savings estimate',reportOrg:'Organization',reportTotal:'Total relevant costs',reportSavings:'Estimated savings',reportPropValue:'Increase in property value (4.5% yield)',reportFee:'Core Partners fee (20%)',reportNet:'Net first year',reportNote:'This estimate is indicative and does not replace a concrete screening.',reportFilename:'corepartners-savings.pdf'}
+    da:{sending:'Sender...',sent:'Besked sendt',tryAgain:'Prøv igen',to:'til',basedOn:'Baseret på',noBuying:', ingen indkøbsfunktion',hasBuying:', intern indkøbsfunktion',andReview:' og seneste genforhandling.',analyzing:'Analyserer...',benchmarking:'Benchmarker...',calculating:'Beregner...',updateBtn:'Opdater beregning',reportTitle:'Core Partners Besparelsesrapport',reportH1:'Besparelsesestimeret',reportOrg:'Organisation',reportTotal:'Samlede relevante omkostninger',reportSavings:'Estimeret besparelse',reportPropValue:'Stigning i ejendomsværdi (4,5% afkastgrad)',reportFee:'Core Partners honorar (40%, engangsbetaling)',reportFeeYearly:'Core Partners honorar pr. år (20%)',reportFeeTotal:'Samlet honorar over 3 år (3 × 20%)',feeOnce:'Core Partners honorar (40%)',feeYearly:'Core Partners honorar pr. år (20%)',reportNet:'Netto første år',reportNote:'Dette estimat er vejledende og erstatter ikke en konkret screening.',reportFilename:'corepartners-besparelse.pdf'},
+    en:{sending:'Sending...',sent:'Message sent',tryAgain:'Try again',to:'to',basedOn:'Based on',noBuying:', no internal buying function',hasBuying:', internal buying function',andReview:' and latest renegotiation.',analyzing:'Analyzing...',benchmarking:'Benchmarking...',calculating:'Calculating...',updateBtn:'Update calculation',reportTitle:'Core Partners Savings Report',reportH1:'Savings estimate',reportOrg:'Organization',reportTotal:'Total relevant costs',reportSavings:'Estimated savings',reportPropValue:'Increase in property value (4.5% yield)',reportFee:'Core Partners fee (40%, one-off payment)',reportFeeYearly:'Core Partners fee per year (20%)',reportFeeTotal:'Total fee over 3 years (3 × 20%)',feeOnce:'Core Partners fee (40%)',feeYearly:'Core Partners fee per year (20%)',reportNet:'Net first year',reportNote:'This estimate is indicative and does not replace a concrete screening.',reportFilename:'corepartners-savings.pdf'}
   };
 
   window.CP_LANG = localStorage.getItem('cp_lang') || 'da';
