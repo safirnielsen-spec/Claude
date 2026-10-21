@@ -547,7 +547,7 @@
           <div>${esc(pp.name)}<div class="sub">${esc([pp.city, pfById(pp.portfolio_id) && pfById(pp.portfolio_id).name].filter(Boolean).join(' · '))}${pp.area_m2 ? ' · ' + nf.format(pp.area_m2) + ' m²' : ''}</div></div>
           <input type="number" name="ls_${pp.id}" min="0" step="1" placeholder="kr./år (valgfri)" value="${l && l.cost_share != null ? esc(l.cost_share) : ''}" aria-label="Andel for ${esc(pp.name)}">
         </div>`; }).join('')}</div>` : '<p class="small muted">Opret ejendomme først for at knytte dem til aftalen.</p>'}
-        <span class="hint">Ved porteføljeaftaler er alle porteføljens ejendomme automatisk omfattet. Uden faste andele fordeles prisen efter m².</span></div>
+        <span class="hint">Sæt kryds ved de ejendomme, aftalen gælder for (eller skriv et beløb, så afkrydses de selv). Uden beløb fordeles prisen efter m², og med én ejendom får den hele udgiften. Ved porteføljeaftaler er alle porteføljens ejendomme automatisk omfattet.</span></div>
 
       <div class="form-section">Økonomi</div>
       <label class="field"><span>Årlig pris (kr. ekskl. moms)</span><input name="annual_cost" inputmode="decimal" value="${v('annual_cost')}"></label>
@@ -580,7 +580,7 @@
         renewal_months: parseInt(o.renewal_months, 10) || 0, last_tendered: o.last_tendered || null, notes: o.notes || null
       };
       if (row.scope === 'portfolio' && !row.portfolio_id) throw new Error('Vælg den portefølje, aftalen gælder for.');
-      const newLinks = S.D.properties.filter(pp => form['lp_' + pp.id] && form['lp_' + pp.id].checked)
+      const newLinks = S.D.properties.filter(pp => form['lp_' + pp.id] && (form['lp_' + pp.id].checked || num(form['ls_' + pp.id].value) > 0))
         .map(pp => ({ agreement_id: row.id, property_id: pp.id, org_id: S.org.id, cost_share: num(form['ls_' + pp.id].value) }));
       // En ejendomsspecifik aftale skal høre til en ejendom, ellers tæller prisen ikke med i ejendomme og porteføljer.
       if (row.scope === 'property' && !newLinks.length && S.D.properties.length) {
@@ -1229,6 +1229,12 @@
 
   let qTimer;
   document.addEventListener('input', e => {
+    // Skriver man en fordeling ved en ejendom, afkrydses ejendommen automatisk
+    if (e.target.name && e.target.name.startsWith('ls_')) {
+      const cb = e.target.form && e.target.form['lp_' + e.target.name.slice(3)];
+      if (cb && e.target.value.trim()) cb.checked = true;
+      return;
+    }
     if (e.target.id === 'custSearch') {
       const q = e.target.value.trim().toLowerCase();
       document.querySelectorAll('tr[data-cust]').forEach(tr => { tr.hidden = !!q && !tr.dataset.cust.includes(q); });
