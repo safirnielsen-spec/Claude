@@ -543,7 +543,7 @@
       <label class="field" data-scope="property portfolio"><span>Under rammeaftale</span><select name="parent_agreement_id">${opt('', '— ingen —', a.parent_agreement_id)}${frameworks.map(x => opt(x.id, x.title, a.parent_agreement_id)).join('')}</select></label>
       <div class="field full"><span>Ejendomme og fordeling af pris</span>
         ${S.D.properties.length ? `<div class="link-list">${S.D.properties.map(pp => { const l = links.get(pp.id); return `<div class="link-row">
-          <input type="checkbox" name="lp_${pp.id}" ${l ? 'checked' : ''} aria-label="${esc(pp.name)}">
+          <input type="checkbox" name="lp_${pp.id}" ${l || (!a.id && !links.size && S.D.properties.length === 1) ? 'checked' : ''} aria-label="${esc(pp.name)}">
           <div>${esc(pp.name)}<div class="sub">${esc([pp.city, pfById(pp.portfolio_id) && pfById(pp.portfolio_id).name].filter(Boolean).join(' · '))}${pp.area_m2 ? ' · ' + nf.format(pp.area_m2) + ' m²' : ''}</div></div>
           <input type="number" name="ls_${pp.id}" min="0" step="1" placeholder="kr./år (valgfri)" value="${l && l.cost_share != null ? esc(l.cost_share) : ''}" aria-label="Andel for ${esc(pp.name)}">
         </div>`; }).join('')}</div>` : '<p class="small muted">Opret ejendomme først for at knytte dem til aftalen.</p>'}
@@ -582,6 +582,11 @@
       if (row.scope === 'portfolio' && !row.portfolio_id) throw new Error('Vælg den portefølje, aftalen gælder for.');
       const newLinks = S.D.properties.filter(pp => form['lp_' + pp.id] && form['lp_' + pp.id].checked)
         .map(pp => ({ agreement_id: row.id, property_id: pp.id, org_id: S.org.id, cost_share: num(form['ls_' + pp.id].value) }));
+      // En ejendomsspecifik aftale skal høre til en ejendom, ellers tæller prisen ikke med i ejendomme og porteføljer.
+      if (row.scope === 'property' && !newLinks.length && S.D.properties.length) {
+        if (S.D.properties.length > 1) throw new Error('Vælg den ejendom, aftalen gælder for (sæt kryds under Ejendomme).');
+        newLinks.push({ agreement_id: row.id, property_id: S.D.properties[0].id, org_id: S.org.id, cost_share: null });
+      }
       await S.store.upsert('agreements', row);
       await S.store.replaceLinks(S.org.id, row.id, newLinks);
       closeModal(); toast('Aftalen er gemt');
