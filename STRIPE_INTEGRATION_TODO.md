@@ -28,10 +28,10 @@ Disse parametre kommer fra Checkout Studio og er sat i kaldet.
 
 | Parameter | Value |
 |-----------|-------|
+| Stripe-Version (header) | 2026-09-30.endive |
 | ui_mode | hosted_page |
-| billing_address_collection | auto |
-| phone_number_collection | enabled: false |
-| automatic_tax | enabled: false |
+| billing_address_collection | required |
+| phone_number_collection | enabled: true |
 | allow_promotion_codes | false |
 | payment_method_collection | always |
 | submit_type | auto |
@@ -39,9 +39,9 @@ Disse parametre kommer fra Checkout Studio og er sat i kaldet.
 | origin_context | web |
 
 ### Bemærkninger
-- **`ui_mode`**: Koden kalder Stripes REST API direkte (ingen SDK), så SDK-versionen kan ikke aflæses. `hosted_page` er valgt som standard. Afviser Stripe værdien med en fejl om ugyldig `ui_mode`, så skift til `hosted`. API-versionen er ikke fastlagt i koden.
+- **`ui_mode`**: Checkout Studio viser API-versionen `2026-09-30.endive` og `ui_mode: hosted_page`. Versionen sendes som `Stripe-Version`-header på kaldet til `checkout/sessions`.
 - **Parametre uden for Checkout Studio er bevaret**, fordi de er forretningslogik: `client_reference_id`, `metadata.org_id` og `subscription_data` (kobler betalingen til organisationen og styrer 30 dages prøve) samt `customer_email` og `locale: 'da'`. Uden dem kan webhooken ikke opdatere den rigtige organisation.
-- **Moms:** `automatic_tax` er slået fra i Checkout, så Stripe lægger ikke moms oveni. Priserne er ekskl. moms. Faktura-sporet (`send_invoice`) bruger stadig `STRIPE_AUTOMATIC_TAX`; lad den stå tom, så kort og faktura opfører sig ens.
+- **Moms:** `automatic_tax` indgår ikke i Checkout Studio, så Stripe lægger ikke moms oveni. Priserne er ekskl. moms. Faktura-sporet (`send_invoice`) bruger stadig `STRIPE_AUTOMATIC_TAX`; lad den stå tom, så kort og faktura opfører sig ens.
 - **Kontrolleret syntaks, ikke kørt:** Funktionen er ikke kørt mod Stripe endnu.
 
 ## Setup

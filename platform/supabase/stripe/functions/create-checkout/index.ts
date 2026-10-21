@@ -18,9 +18,9 @@ function form(obj) {
   Object.entries(obj).forEach(([k, v]) => add(k, v));
   return p;
 }
-async function stripe(path, method = 'GET', body) {
+async function stripe(path, method = 'GET', body, extraHeaders = {}) {
   const r = await fetch(STRIPE + path + (method === 'GET' && body ? '?' + form(body) : ''), {
-    method, headers: { Authorization: 'Bearer ' + SK, 'Content-Type': 'application/x-www-form-urlencoded' },
+    method, headers: { Authorization: 'Bearer ' + SK, 'Content-Type': 'application/x-www-form-urlencoded', ...extraHeaders },
     body: method === 'POST' ? form(body) : undefined
   });
   const j = await r.json();
@@ -66,8 +66,8 @@ Deno.serve(async req => {
     if (method === 'card') {
       const session = await stripe('/checkout/sessions', 'POST', {
         // Fastsat i Checkout Studio
-        ui_mode: 'hosted_page', billing_address_collection: 'auto', phone_number_collection: { enabled: false },
-        automatic_tax: { enabled: false }, allow_promotion_codes: false, payment_method_collection: 'always', submit_type: 'auto',
+        ui_mode: 'hosted_page', billing_address_collection: 'required', phone_number_collection: { enabled: true },
+        allow_promotion_codes: false, payment_method_collection: 'always', submit_type: 'auto',
         integration_identifier: 'hosted_web_0001', origin_context: 'web',
         // Egen logik: abonnement, kobling til organisationen og prøveperiode
         mode: 'subscription', client_reference_id: org_id, customer_email: email,
@@ -75,7 +75,7 @@ Deno.serve(async req => {
         subscription_data: { metadata: { org_id }, ...(trialDays > 0 ? { trial_period_days: Math.max(1, trialDays) } : {}) },
         metadata: { org_id }, locale: 'da',
         success_url: `${SITE}/platform/#/indstillinger`, cancel_url: `${SITE}/platform/#/indstillinger`
-      });
+      }, { 'Stripe-Version': '2026-09-30.endive' });
       return json({ url: session.url });
     }
 
