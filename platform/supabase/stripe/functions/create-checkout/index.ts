@@ -55,7 +55,7 @@ Deno.serve(async req => {
     const plan = n <= 10 ? 'start' : n <= 50 ? 'vaekst' : 'portefolje';
     const prices = await stripe('/prices', 'GET', { 'lookup_keys[0]': `platform_${plan}_${interval}`, active: 'true' });
     const price = prices.data[0];
-    if (!price) return json({ error: `Prisen platform_${plan}_${interval} findes ikke i Stripe. Kør setup-prices.mjs.` }, 500);
+    if (!price) return json({ error: `Prisen platform_${plan}_${interval} findes ikke i Stripe. Opret prisen med denne lookup key.` }, 500);
 
     // 4. Resterende prøveperiode (30 dage fra oprettelse)
     const trialEnd = new Date(org.created_at).getTime() + 30 * 86400000;
