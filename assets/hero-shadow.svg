@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PLACEHOLDER — lang skygge til hero-figuren, lagt bagved hero-mark-side.svg og forskudt
+  med parallax i script.js. Erstat evt. med skygge fra det rigtige foto (udtrukket i Photoshop).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" fill="none">
+  <path d="M0 900 L520 900 L900 560 L900 500 L470 860 L60 860 Z" fill="#090909" opacity="0.28"/>
+  <path d="M0 900 L360 900 L900 380 L900 340 L320 860 L0 860 Z" fill="#090909" opacity="0.14"/>
+</svg>

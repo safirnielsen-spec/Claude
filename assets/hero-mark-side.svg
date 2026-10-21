@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PLACEHOLDER ART DIRECTION — erstat med redigeret 4K editorial-foto af Mark i sideprofil
+  (85mm, lav dybdeskarphed, betonvæg) inden lancering. Se brief for fuld art direction.
+  Indtil da: en flad, ikonografisk silhuet i profil, gående mod højre — bevidst minimalistisk
+  brutalist-grafik der matcher paletten, ikke et forsøg på fotorealisme.
+  Transparent baggrund: lægges oven på sektionens orange/turkis diagonal.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" fill="none">
+  <g fill="#090909">
+    <!-- hoved, profil mod højre -->
+    <path d="M300 40c26 0 47 21 47 48 0 15-7 25-13 34 8 4 13 12 13 21 0 14-11 25-25 25h-8l-4 18h-20l-2-18h-8c-14 0-25-11-25-25 0-17 10-27 18-33-8-9-13-20-13-33 0-27 21-47 47-47 4 0 8 1 12 1-3-3-6-6-9-11h20z" />
+    <!-- hals -->
+    <rect x="288" y="184" width="30" height="34" rx="4"/>
+    <!-- krop / lang frakke -->
+    <path d="M262 210h76c34 4 58 30 62 66l14 150c2 22-6 34-22 40l6 210h-34l-10-196c-6 2-12 3-18 3s-12-1-18-3l-4 196h-34l2-214c-14-8-20-22-18-42l14-146c5-34 26-60 -20 -64z"/>
+    <!-- bagerste arm, svinger let bagud -->
+    <path d="M266 224c-20 8-34 26-38 50l-14 84c-2 12 4 20 15 22l10-2 14-90c2-14 7-27 13-36z"/>
+    <!-- forreste ben, skridt frem -->
+    <path d="M336 470l30 168c3 18-2 30-16 36l-40 18-8-18 32-16-24-150c8-14 17-26 26-38z"/>
+    <!-- bagerste ben -->
+    <path d="M270 468l-8 160-38 24 8 18 46-22c10-6 14-16 13-28l-1-152z"/>
+    <!-- sko antydning -->
+    <path d="M300 686l40 18 4 12-52 4z"/>
+    <path d="M224 668l38 24 2 12-52-2z"/>
+  </g>
+</svg>

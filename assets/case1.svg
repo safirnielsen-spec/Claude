@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Case 1 — abstrakt arkitektonisk baggrund, forsikringstema (turkis). Parallax-lag i cases-sektionen. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" fill="none">
+  <rect width="1200" height="900" fill="#090909"/>
+  <path d="M0 900 L0 500 L520 900 Z" fill="#10D0C7" opacity="0.9"/>
+  <path d="M1200 0 L1200 620 L640 0 Z" fill="#10D0C7" opacity="0.14"/>
+  <rect x="700" y="120" width="2" height="680" fill="#F6F2EB" opacity="0.08"/>
+  <rect x="860" y="60" width="2" height="740" fill="#F6F2EB" opacity="0.08"/>
+</svg>

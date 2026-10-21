@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Case 2 — abstrakt arkitektonisk baggrund, facility/ejendomsdrift-tema (orange). Parallax-lag i cases-sektionen. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" fill="none">
+  <rect width="1200" height="900" fill="#090909"/>
+  <path d="M1200 900 L1200 460 L640 900 Z" fill="#B6501B" opacity="0.9"/>
+  <path d="M0 0 L0 560 L560 0 Z" fill="#B6501B" opacity="0.14"/>
+  <circle cx="300" cy="260" r="140" stroke="#F6F2EB" stroke-width="1" opacity="0.08"/>
+  <circle cx="300" cy="260" r="220" stroke="#F6F2EB" stroke-width="1" opacity="0.06"/>
+</svg>

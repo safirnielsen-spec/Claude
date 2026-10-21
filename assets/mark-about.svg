@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PLACEHOLDER ART DIRECTION — erstat med "Hero 6" fra briefen (Mark siddende på betonblok,
+  arkitektonisk miljø, editorial close-up). Indtil da: duotone bust-silhuet i sand/sort
+  til magasin-opsætningen i "Om Mark"-sektionen.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 860" fill="none">
+  <rect width="700" height="860" fill="#F6F2EB"/>
+  <rect width="700" height="860" fill="#10D0C7" opacity="0.06"/>
+  <g fill="#090909">
+    <!-- skuldre / overkrop -->
+    <path d="M120 860c8-140 90-220 230-220s222 80 230 220z"/>
+    <!-- hals -->
+    <rect x="318" y="560" width="64" height="70" rx="8"/>
+    <!-- hoved, let drejet -->
+    <path d="M350 300c62 0 106 48 106 108 0 34-14 60-32 78-6 26-30 44-74 44s-68-18-74-44c-18-18-32-44-32-78 0-60 44-108 106-108z"/>
+    <!-- hårlinje -->
+    <path d="M256 372c8-46 46-78 94-78s86 32 94 78c-4-30-40-52-94-52s-90 22-94 52z"/>
+  </g>
+  <rect x="40" y="40" width="1" height="1" fill="none"/>
+</svg>

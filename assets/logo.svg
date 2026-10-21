@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CORE PARTNERS — logo.
+  Genbruger virksomhedens oprindelige mærke (bølgelinjen i en afrundet
+  badge, fundet i den tidligere version af sitet), gentegnet i den nye
+  farvepalet: sort badge, turkis streg. Formen er uændret, kun farverne
+  er opdateret så mærket matcher det nye brand.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="6" fill="#090909"/>
+  <path d="M7 21C10 12 14 10 16 15C18 20 22 18 25 11" stroke="#10D0C7" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+</svg>
