@@ -119,6 +119,8 @@
         // Løbende aftale: kan opsiges når som helst med X måneders varsel.
         res.kind = 'running';
         res.termEnd = addMonths(today, notice);
+        // Ingen udløbsdato: aftalen får automatisk en frist (tidligste ophør hvis opsagt i dag), så den kommer med i pipeline og tidslinje.
+        res.noticeDeadline = res.termEnd;
       }
     } else {
       let termEnd = end;
@@ -140,7 +142,7 @@
       // Uden automatisk forlængelse er fristen selve udløbet: ny aftale skal være på plads.
       res.noticeDeadline = res.kind === 'fixed' ? termEnd : addMonths(termEnd, -notice);
     }
-    res.deadlineLabel = res.kind === 'fixed' ? 'Aftalen udløber' : 'Sidste opsigelsesdag';
+    res.deadlineLabel = res.kind === 'fixed' ? 'Aftalen udløber' : res.kind === 'running' ? 'Tidligste ophør (opsagt i dag)' : 'Sidste opsigelsesdag';
     if (res.noticeDeadline) {
       res.daysToNotice = daysBetween(today, res.noticeDeadline);
       res.tenderStart = addMonths(res.noticeDeadline, -leadMonths);
@@ -264,7 +266,7 @@
       if (d.tenderStart && a.status !== 'in_tender') push(d.tenderStart, 'tender', 'Anbefalet udbudsstart');
       if (d.kind === 'fixed') push(d.termEnd, 'notice', 'Aftalen udløber – ny aftale skal være på plads');
       else {
-        push(d.noticeDeadline, 'notice', 'Sidste opsigelsesdag');
+        push(d.noticeDeadline, 'notice', d.kind === 'running' ? 'Løbende aftale – kan opsiges nu' : 'Sidste opsigelsesdag');
         if (d.kind !== 'running') push(d.termEnd, 'end', d.kind === 'renewing' ? 'Periode slutter (forlænges ellers)' : 'Binding udløber');
       }
       push(nextIndexation(a, today), 'index', 'Indeksregulering');

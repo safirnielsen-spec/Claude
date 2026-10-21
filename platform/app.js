@@ -460,6 +460,7 @@
 
   function agreementForm(a, parentId) {
     a = a || { scope: 'property', category: 'other', auto_renew: true, renewal_months: 12, notice_months: 3, status: 'active' };
+    if (!a.id && !a.end_date) a.end_date = C.isoDate(C.addMonths(today(), 12));
     if (parentId && !a.id) { const par = agr(parentId); a.parent_agreement_id = parentId; a.category = par.category; a.supplier = par.supplier; a.end_date = par.end_date; a.notice_months = par.notice_months; a.auto_renew = par.auto_renew; a.renewal_months = par.renewal_months; }
     const links = new Map(S.D.links.filter(l => l.agreement_id === a.id).map(l => [l.property_id, l]));
     const frameworks = S.D.agreements.filter(x => x.scope === 'framework' && x.id !== a.id);
@@ -492,7 +493,7 @@
 
       <div class="form-section">Datoer og opsigelse</div>
       <label class="field"><span>Startdato</span><input type="date" name="start_date" value="${v('start_date')}"></label>
-      <label class="field"><span>Udløb / periodens slut</span><input type="date" name="end_date" value="${v('end_date')}"><span class="hint">Tom = løbende aftale</span></label>
+      <label class="field"><span>Udløb / periodens slut</span><input type="date" name="end_date" value="${v('end_date')}"><span class="hint">Forudfyldt med 12 måneder. Tom = løbende aftale, der tæller med i pipeline som kan opsiges nu.</span></label>
       <label class="field"><span>Opsigelsesvarsel (mdr.)</span><input type="number" min="0" name="notice_months" value="${v('notice_months')}"></label>
       <label class="field"><span>Bindingsperiode til</span><input type="date" name="binding_until" value="${v('binding_until')}"></label>
       <label class="check"><input type="checkbox" name="auto_renew" ${a.auto_renew ? 'checked' : ''}> Forlænges automatisk</label>
