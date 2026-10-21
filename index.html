@@ -491,7 +491,7 @@ footer a:hover{color:var(--gold)}
         <div class="seg-arr">↗&#xFE0E;</div>
         <div class="seg-icon" data-i18n="services.c7.tag">Husleje</div>
         <h3 data-i18n="services.c7.h">Husleje</h3>
-        <p data-i18n="services.c7.p">I visse tilfælde kan lejeaftaler og huslejevilkår forhandles eller vurderes mod markedet — vi ser på, om der er potentiale.</p>
+        <p data-i18n="services.c7.p">I visse tilfælde kan huslejen sættes ned, jf. erhvervslejelovens § 13. Vi vurderer, om der er potentiale i jeres lejeaftale.</p>
       </div>
     </div>
   </div>
@@ -731,7 +731,6 @@ footer a:hover{color:var(--gold)}
         <div class="range-line"><span data-i18n="calc.f.service">Serviceaftaler</span><input id="service" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
         <div class="range-line"><span data-i18n="calc.f.facility">Facility og vicevært</span><input id="facility" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
         <div class="range-line"><span data-i18n="calc.f.energy">Energi og forsyning</span><input id="energy" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
-        <div class="range-line"><span data-i18n="calc.f.rent">Husleje (hvis relevant)</span><input id="rent" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
         <div class="range-line"><span data-i18n="calc.f.admin">Administration</span><input id="admin" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
         <label class="field-check" style="margin-top:18px">
           <input type="checkbox" id="showPropertyValue">
@@ -981,7 +980,7 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
 (function(){
   function fmt(n){return new Intl.NumberFormat(window.CP_LANG==='en'?"en-GB":"da-DK",{style:"currency",currency:"DKK",maximumFractionDigits:0}).format(n);}
   function $c(id){return document.getElementById(id);}
-  var calcState={org:"Virksomhed",rate:0.09,buying:0.04,ins:0,svc:0,fac:0,nrg:0,adm:0,rnt:0,results:null};
+  var calcState={org:"Virksomhed",rate:0.09,buying:0.04,ins:0,svc:0,fac:0,nrg:0,adm:0,results:null};
 
   function getVals(){
     function parseNum(v){return Math.max(0,Number((v||"0").replace(/\./g,"").replace(/[^\d]/g,""))||0);}
@@ -990,7 +989,6 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
     calcState.fac=parseNum($c("facility").value);
     calcState.nrg=parseNum($c("energy").value);
     calcState.adm=parseNum($c("admin").value);
-    calcState.rnt=parseNum($c("rent").value);
     calcState.org=$c("orgType").value;
     calcState.rate=parseFloat($c("lastReview").value);
     calcState.buying=parseFloat($c("hasBuying").value);
@@ -999,10 +997,10 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
 
   function calculate(){
     getVals();
-    var ins=calcState.ins,svc=calcState.svc,fac=calcState.fac,nrg=calcState.nrg,adm=calcState.adm,rnt=calcState.rnt,rate=calcState.rate,buying=calcState.buying,org=calcState.org;
-    var total=ins+svc+fac+nrg+adm+rnt;
+    var ins=calcState.ins,svc=calcState.svc,fac=calcState.fac,nrg=calcState.nrg,adm=calcState.adm,rate=calcState.rate,buying=calcState.buying,org=calcState.org;
+    var total=ins+svc+fac+nrg+adm;
     if(!total)return;
-    var cw=((ins*.018)+(svc*.012)+(fac*.01)+(nrg*.004)+(adm*.008)+(rnt*.006))/total;
+    var cw=((ins*.018)+(svc*.012)+(fac*.01)+(nrg*.004)+(adm*.008))/total;
     var rf=Math.min(.22,Math.max(.04,rate+cw+buying));
     var low=Math.round(total*Math.max(.03,rf-.04));
     var high=Math.round(total*rf);
@@ -1193,7 +1191,7 @@ if(burger&&navLinks){
     'services.c3.tag':'Facility & property services','services.c3.h':'Facility & property services','services.c3.p':'Common areas, caretaking services and property operations are benchmarked against comparable providers.',
     'services.c4.tag':'Energy & utilities','services.c4.h':'Energy & utilities','services.c4.p':'Electricity, heating, water and waste management are reviewed for optimizations prioritized by impact and effort.',
     'services.c5.tag':'Administration','services.c5.h':'Administration','services.c5.p':'Property administration, bookkeeping and other administration are assessed on price and delivery.',
-    'services.c7.tag':'Rent','services.c7.h':'Rent','services.c7.p':'In some cases, leases and rent terms can be renegotiated or benchmarked against the market — we assess whether there is potential.','services.c6.tag':'Other agreements','services.c6.h':'Other agreements','services.c6.p':'From IT subscriptions to transport agreements — we map all fixed costs and prioritize the potential.',
+    'services.c7.tag':'Rent','services.c7.h':'Rent','services.c7.p':'In some cases the rent can be reduced under section 13 of the Danish Commercial Lease Act (erhvervslejeloven). We assess whether there is potential in your lease.','services.c6.tag':'Other agreements','services.c6.h':'Other agreements','services.c6.p':'From IT subscriptions to transport agreements — we map all fixed costs and prioritize the potential.',
     'pb1.eyebrow':'Grounded in practice',
     'approach.eyebrow':'Who we help','approach.sub':"We work with organizations whose fixed agreements haven't been systematically tested in recent years.",
     'approach.c1.tag':'Business','approach.c1.h':'Companies','approach.c1.p':'Commercial leases and operating sites with recurring costs for insurance, facility management and service agreements.',
@@ -1219,7 +1217,7 @@ if(burger&&navLinks){
     'calc.orgLabel':'Organization','calc.org.company':'Company','calc.org.owner':'Owner association','calc.org.coop':'Housing cooperative','calc.org.landlord':'Property owner',
     'calc.reviewLabel':'Last renegotiated','calc.review.r1':'Less than 1 year ago','calc.review.r2':'1 to 2 years ago','calc.review.r3':'2 to 4 years ago','calc.review.r4':'Over 4 years ago',
     'calc.buyingLabel':'Internal buying function','calc.buying.no':'No, no buying function','calc.buying.yes':'Yes, we have a buying function',
-    'calc.f.insurance':'Insurance','calc.f.service':'Service agreements','calc.f.facility':'Facility & caretaking','calc.f.energy':'Energy & utilities','calc.f.rent':'Rent (if relevant)','calc.f.admin':'Administration',
+    'calc.f.insurance':'Insurance','calc.f.service':'Service agreements','calc.f.facility':'Facility & caretaking','calc.f.energy':'Energy & utilities','calc.f.admin':'Administration',
     'calc.propCheck':'Show impact on property value','calc.propCheckHint':'Calculated using a 4.5% required yield.',
     'calc.btnCalc':'Calculate potential','calc.btnExample':'Insert example',
     'calc.resultLabel':'Estimated annual savings','calc.resultDefault':'Fill in the fields on the left to see your potential.',
