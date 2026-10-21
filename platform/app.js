@@ -1002,9 +1002,10 @@
     const pipeline = customers.flatMap(c => c.soon.map(p => ({ c, p }))).sort((x, y) => x.p.dates.noticeDeadline - y.p.dates.noticeDeadline);
     const reqs = customers.flatMap(c => c.D.requests.map(r => ({ c, r }))).sort((x, y) => String(y.r.created_at).localeCompare(String(x.r.created_at)));
     return pageHead('Kunder og <em>pipeline</em>', 'Kundeoverblik, pipeline af kommende frister og henvendelser på tværs af alle kunder.') + `
-    <div class="grid g4" style="margin-bottom:16px">
+    <div class="grid" style="margin-bottom:16px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))">
       <div class="kpi"><div class="lbl">Kunder</div><div class="val">${customers.length}</div></div>
       <div class="kpi"><div class="lbl">Driftsudgifter i alt</div><div class="val">${krShort(sum(customers, c => c.spend))}</div></div>
+      <div class="kpi"><div class="lbl">Potentiale i alt (pr. år)</div><div class="val">${krShort(sum(customers, c => c.pot))}</div><div class="sub">på tværs af alle aftaler</div></div>
       <div class="kpi accent"><div class="lbl">Potentiale i pipeline (9 mdr.)</div><div class="val">${krShort(sum(pipeline, x => x.p.est))}</div><div class="sub">honorar ca. ${krShort(sum(pipeline, x => x.p.est) * 0.4)} (40 %) eller ${krShort(sum(pipeline, x => x.p.est) * 0.2)} × 3 år</div></div>
       <div class="kpi"><div class="lbl">Åbne henvendelser</div><div class="val">${sum(customers, c => c.reqs.length)}</div></div>
     </div>
