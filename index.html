@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="pageTitle">Core Partners | No Cure No Pay · Dokumenterede besparelser på faste omkostninger</title>
-  <meta name="description" id="metaDesc" content="Core Partners finder, dokumenterer og forhandler besparelser på forsikringer, serviceaftaler, facility og ejendomsdrift. I betaler kun ved dokumenteret besparelse.">
+  <meta name="description" id="metaDesc" content="Core Partners finder, dokumenterer og forhandler besparelser på forsikringer, serviceaftaler, facility, ejendomsdrift og i visse tilfælde husleje. I betaler kun ved dokumenteret besparelse.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://www.corepartners.dk/">
   <meta property="og:type" content="website">
@@ -372,7 +372,7 @@ footer a:hover{color:var(--gold)}
     <h1 class="hero-h1" data-i18n-html="hero.h1">
       Lavere faste omkostninger<br><em>uden at skifte fokus</em><br>fra jeres kerneforretning
     </h1>
-    <p class="hero-sub" data-i18n="hero.sub">Vi finder, dokumenterer og forhandler besparelser på forsikringer, serviceaftaler, facility og ejendomsdrift. I betaler kun, når vi skaber en reel og dokumenteret besparelse.</p>
+    <p class="hero-sub" data-i18n="hero.sub">Vi finder, dokumenterer og forhandler besparelser på forsikringer, serviceaftaler, facility, ejendomsdrift og i visse tilfælde husleje. I betaler kun, når vi skaber en reel og dokumenteret besparelse.</p>
     <div class="hero-btns">
       <a href="#services" class="btn-primary" data-i18n="hero.btn1">Se hvad vi gør</a>
       <a href="#contact" class="btn-ghost" data-i18n="hero.btn2">Book gratis screening</a>
@@ -486,6 +486,12 @@ footer a:hover{color:var(--gold)}
         <div class="seg-icon" data-i18n="services.c6.tag">Øvrige Aftaler</div>
         <h3 data-i18n="services.c6.h">Øvrige Aftaler</h3>
         <p data-i18n="services.c6.p">Alt fra IT-abonnementer til transportaftaler — vi kortlægger alle faste udgifter og prioriterer potentialet.</p>
+      </div>
+      <div class="seg-card" data-motion="fade-up" data-delay="1">
+        <div class="seg-arr">↗&#xFE0E;</div>
+        <div class="seg-icon" data-i18n="services.c7.tag">Husleje</div>
+        <h3 data-i18n="services.c7.h">Husleje</h3>
+        <p data-i18n="services.c7.p">I visse tilfælde kan lejeaftaler og huslejevilkår forhandles eller vurderes mod markedet — vi ser på, om der er potentiale.</p>
       </div>
     </div>
   </div>
@@ -661,7 +667,7 @@ footer a:hover{color:var(--gold)}
       </details>
       <details>
         <summary data-i18n="faq.q2.q">Hvilke aftaler gennemgår I?</summary>
-        <p data-i18n="faq.q2.a">Typisk forsikringer, serviceaftaler, facility, vicevært, rengøring, gartner, energi, forsyning og ejendomsadministration. Vi er fleksible og tilpasser gennemgangen til jeres situation.</p>
+        <p data-i18n="faq.q2.a">Typisk forsikringer, serviceaftaler, facility, vicevært, rengøring, gartner, energi, forsyning og ejendomsadministration og i visse tilfælde husleje. Vi er fleksible og tilpasser gennemgangen til jeres situation.</p>
       </details>
       <details>
         <summary data-i18n="faq.q3.q">Er leverandørskifte altid nødvendigt?</summary>
@@ -725,6 +731,7 @@ footer a:hover{color:var(--gold)}
         <div class="range-line"><span data-i18n="calc.f.service">Serviceaftaler</span><input id="service" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
         <div class="range-line"><span data-i18n="calc.f.facility">Facility og vicevært</span><input id="facility" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
         <div class="range-line"><span data-i18n="calc.f.energy">Energi og forsyning</span><input id="energy" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
+        <div class="range-line"><span data-i18n="calc.f.rent">Husleje (hvis relevant)</span><input id="rent" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
         <div class="range-line"><span data-i18n="calc.f.admin">Administration</span><input id="admin" type="text" inputmode="numeric" placeholder="0 kr." class="num-input" autocomplete="off"></div>
         <label class="field-check" style="margin-top:18px">
           <input type="checkbox" id="showPropertyValue">
@@ -974,7 +981,7 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
 (function(){
   function fmt(n){return new Intl.NumberFormat(window.CP_LANG==='en'?"en-GB":"da-DK",{style:"currency",currency:"DKK",maximumFractionDigits:0}).format(n);}
   function $c(id){return document.getElementById(id);}
-  var calcState={org:"Virksomhed",rate:0.09,buying:0.04,ins:0,svc:0,fac:0,nrg:0,adm:0,results:null};
+  var calcState={org:"Virksomhed",rate:0.09,buying:0.04,ins:0,svc:0,fac:0,nrg:0,adm:0,rnt:0,results:null};
 
   function getVals(){
     function parseNum(v){return Math.max(0,Number((v||"0").replace(/\./g,"").replace(/[^\d]/g,""))||0);}
@@ -983,6 +990,7 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
     calcState.fac=parseNum($c("facility").value);
     calcState.nrg=parseNum($c("energy").value);
     calcState.adm=parseNum($c("admin").value);
+    calcState.rnt=parseNum($c("rent").value);
     calcState.org=$c("orgType").value;
     calcState.rate=parseFloat($c("lastReview").value);
     calcState.buying=parseFloat($c("hasBuying").value);
@@ -991,10 +999,10 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
 
   function calculate(){
     getVals();
-    var ins=calcState.ins,svc=calcState.svc,fac=calcState.fac,nrg=calcState.nrg,adm=calcState.adm,rate=calcState.rate,buying=calcState.buying,org=calcState.org;
-    var total=ins+svc+fac+nrg+adm;
+    var ins=calcState.ins,svc=calcState.svc,fac=calcState.fac,nrg=calcState.nrg,adm=calcState.adm,rnt=calcState.rnt,rate=calcState.rate,buying=calcState.buying,org=calcState.org;
+    var total=ins+svc+fac+nrg+adm+rnt;
     if(!total)return;
-    var cw=((ins*.018)+(svc*.012)+(fac*.01)+(nrg*.004)+(adm*.008))/total;
+    var cw=((ins*.018)+(svc*.012)+(fac*.01)+(nrg*.004)+(adm*.008)+(rnt*.006))/total;
     var rf=Math.min(.22,Math.max(.04,rate+cw+buying));
     var low=Math.round(total*Math.max(.03,rf-.04));
     var high=Math.round(total*rf);
@@ -1175,7 +1183,7 @@ if(burger&&navLinks){
 (function(){
   var EN = {
     'nav.aria':'Primary navigation','nav.services':'Services','nav.approach':'Who we help','nav.how':'Process','nav.faq':'FAQ','nav.calc':'Calculator','nav.contact':'Contact','nav.portal':'Client portal','nav.cta':'Free screening','nav.badge':'No Cure · No Pay','nav.openMenu':'Open menu',
-    'hero.aria':'Core Partners introduction','hero.pill':'Cost optimization · No Cure No Pay','hero.tagline':'Documented savings. No risk.','hero.sub':'We find, document and negotiate savings on insurance, service agreements, facility management and property operations. You only pay when we create a real, documented saving.','hero.btn1':'See what we do','hero.btn2':'Book a free screening',
+    'hero.aria':'Core Partners introduction','hero.pill':'Cost optimization · No Cure No Pay','hero.tagline':'Documented savings. No risk.','hero.sub':'We find, document and negotiate savings on insurance, service agreements, facility management, property operations and, in some cases, rent. You only pay when we create a real, documented saving.','hero.btn1':'See what we do','hero.btn2':'Book a free screening',
     'marquee.companies':'Companies','marquee.propowners':'Property owners','marquee.assetmgr':'Asset managers','marquee.assoc':'Owner & housing associations','marquee.investprop':'Investment properties','marquee.tenants':'Commercial tenants','marquee.housing':'Housing associations','marquee.portfolios':'Portfolios',
     'price.aria':'Pricing model','price.eyebrow':'Pricing model','price.title':'No savings, <em>no invoice</em>','price.sub':'You choose how to pay.','price.a.tag':'One-off payment','price.a.h':"40% of the first year's savings",'price.a.p':'Invoiced once the new agreements are in place.','price.b.tag':'Spread over 3 years','price.b.h':"20% of the first year's savings per year for 3 years",'price.b.p':'The payment is covered by the savings as you go, so you are in the black from day one.','price.foot':"The fee is calculated once from the first year's documented savings and does not change afterwards.",'stats.aria':'Key figures','stats.l1':'To 20% typical savings potential','stats.l2':'In fees if no savings are found','stats.l3':"Per year for 3 years of the first year's savings – or 40% as a one-off payment",'stats.l4':'Confidentiality and discretion, always',
     'statement1.aria':'Our approach',
@@ -1185,7 +1193,7 @@ if(burger&&navLinks){
     'services.c3.tag':'Facility & property services','services.c3.h':'Facility & property services','services.c3.p':'Common areas, caretaking services and property operations are benchmarked against comparable providers.',
     'services.c4.tag':'Energy & utilities','services.c4.h':'Energy & utilities','services.c4.p':'Electricity, heating, water and waste management are reviewed for optimizations prioritized by impact and effort.',
     'services.c5.tag':'Administration','services.c5.h':'Administration','services.c5.p':'Property administration, bookkeeping and other administration are assessed on price and delivery.',
-    'services.c6.tag':'Other agreements','services.c6.h':'Other agreements','services.c6.p':'From IT subscriptions to transport agreements — we map all fixed costs and prioritize the potential.',
+    'services.c7.tag':'Rent','services.c7.h':'Rent','services.c7.p':'In some cases, leases and rent terms can be renegotiated or benchmarked against the market — we assess whether there is potential.','services.c6.tag':'Other agreements','services.c6.h':'Other agreements','services.c6.p':'From IT subscriptions to transport agreements — we map all fixed costs and prioritize the potential.',
     'pb1.eyebrow':'Grounded in practice',
     'approach.eyebrow':'Who we help','approach.sub':"We work with organizations whose fixed agreements haven't been systematically tested in recent years.",
     'approach.c1.tag':'Business','approach.c1.h':'Companies','approach.c1.p':'Commercial leases and operating sites with recurring costs for insurance, facility management and service agreements.',
@@ -1203,7 +1211,7 @@ if(burger&&navLinks){
     'statement2.aria':'Our model',
     'faq.eyebrow':'Questions & answers',
     'faq.q1.q':'What does No Cure No Pay mean?','faq.q1.a':"You only pay if Core Partners finds and documents concrete savings. No savings, no invoice. If we document a saving, you choose how to pay: 40% of the first year's savings as a one-off payment, or 20% of the first year's savings per year for 3 years, where the payment is covered by the savings as you go, so you are in the black from day one. The fee is calculated once from the first year's documented savings and does not change afterwards.",
-    'faq.q2.q':'Which agreements do you review?','faq.q2.a':"Typically insurance, service agreements, facility management, caretaking, cleaning, gardening, energy, utilities and property administration. We're flexible and tailor the review to your situation.",
+    'faq.q2.q':'Which agreements do you review?','faq.q2.a':"Typically insurance, service agreements, facility management, caretaking, cleaning, gardening, energy, utilities, property administration and, in some cases, rent. We're flexible and tailor the review to your situation.",
     'faq.q3.q':'Is switching suppliers always necessary?','faq.q3.a':'No. Better prices, terms or coverage can often be negotiated with your current supplier. Switching is only recommended when it makes real sense and is to your advantage.',
     'faq.q4.q':'Who is this service best suited for?','faq.q4.a':"Organizations with recurring operating costs and agreements that haven't been systematically tested in the last two to four years. Especially relevant for owner associations, housing cooperatives, companies and property owners.",
     'faq.q5.q':"What's required of us?",'faq.q5.a':'A short initial conversation and access to the relevant agreements. We drive the process and dialogue while you retain full control over the final decision.',
@@ -1211,7 +1219,7 @@ if(burger&&navLinks){
     'calc.orgLabel':'Organization','calc.org.company':'Company','calc.org.owner':'Owner association','calc.org.coop':'Housing cooperative','calc.org.landlord':'Property owner',
     'calc.reviewLabel':'Last renegotiated','calc.review.r1':'Less than 1 year ago','calc.review.r2':'1 to 2 years ago','calc.review.r3':'2 to 4 years ago','calc.review.r4':'Over 4 years ago',
     'calc.buyingLabel':'Internal buying function','calc.buying.no':'No, no buying function','calc.buying.yes':'Yes, we have a buying function',
-    'calc.f.insurance':'Insurance','calc.f.service':'Service agreements','calc.f.facility':'Facility & caretaking','calc.f.energy':'Energy & utilities','calc.f.admin':'Administration',
+    'calc.f.insurance':'Insurance','calc.f.service':'Service agreements','calc.f.facility':'Facility & caretaking','calc.f.energy':'Energy & utilities','calc.f.rent':'Rent (if relevant)','calc.f.admin':'Administration',
     'calc.propCheck':'Show impact on property value','calc.propCheckHint':'Calculated using a 4.5% required yield.',
     'calc.btnCalc':'Calculate potential','calc.btnExample':'Insert example',
     'calc.resultLabel':'Estimated annual savings','calc.resultDefault':'Fill in the fields on the left to see your potential.',
@@ -1223,7 +1231,7 @@ if(burger&&navLinks){
     'cookie.aria':'Cookie notice','cookie.accept':'Accept','cookie.decline':'Decline',
     'skip':'Skip to content',
     'meta.title':'Core Partners | No Cure No Pay · Documented Savings on Fixed Costs',
-    'meta.desc':'Core Partners finds, documents and negotiates savings on insurance, service agreements, facility management and property operations. You only pay for documented savings.'
+    'meta.desc':'Core Partners finds, documents and negotiates savings on insurance, service agreements, facility management, property operations and, in some cases, rent. You only pay for documented savings.'
   };
   var EN_HTML = {
     'hero.h1':'Lower fixed costs<br><em>without shifting focus</em><br>from your core business',
