@@ -297,6 +297,39 @@
   // ======================================================================
   // Overblik
   // ======================================================================
+  // ======================================================================
+  // Startguide: trin for trin til udfyldte stamdata
+  // ======================================================================
+  const guideKey = () => 'cp_guide_hide_' + (S.org && S.org.id);
+  function guideSteps() {
+    const D = S.D;
+    return [
+      { title: 'Organisation oprettet', text: 'Kontrollér navn, CVR og type (ejendomsselskab eller virksomhed) under Indstillinger.', done: true, href: '#/indstillinger', label: 'Indstillinger' },
+      { title: 'Tilføj jeres første ejendom', text: 'Navn, adresse og areal er nok til at starte. Har I mange, kan de importeres fra Excel under Import/eksport.', done: D.properties.length > 0, action: 'newProperty', label: 'Tilføj ejendom' },
+      { title: 'Gruppér ejendomme (valgfrit)', text: 'Opret en portefølje, hvis I vil se tal samlet for flere ejendomme. Ellers kan I springe over.', done: D.portfolios.length > 0, optional: true, action: 'newPortfolio', label: 'Opret portefølje' },
+      { title: 'Registrér jeres driftsaftaler', text: 'Forsikring, rengøring, service, energi og andre faste aftaler. Leverandør og årlig pris er det vigtigste.', done: D.agreements.length > 0, action: 'newAgreement', label: 'Tilføj aftale' },
+      { title: 'Udfyld frister og opsigelse', text: 'Udløbsdato og opsigelsesvarsel gør, at portalen kan beregne sidste opsigelsesdag og anbefalet udbudsstart.', done: D.agreements.some(a => (a.end_date || a.binding_until) && Number(a.notice_months) > 0), href: '#/aftaler', label: 'Se aftaler' },
+      { title: 'Se potentialet og bed om en gennemgang', text: 'Under Prioritering ser I, hvad der bedst kan betale sig at se på først. Core Partners kan gennemgå aftalerne for jer.', done: D.requests.length > 0, action: 'requestReview', label: 'Bed om gennemgang' }
+    ];
+  }
+  function guideCard(force) {
+    const steps = guideSteps();
+    const need = steps.filter(x => !x.optional);
+    const doneN = need.filter(x => x.done).length;
+    if (!force && (lsGet(guideKey()) === 'hide' || doneN === need.length)) return '';
+    const next = steps.find(x => !x.done && !x.optional);
+    const pct = Math.round(doneN / need.length * 100);
+    return `<div class="card" style="margin-bottom:16px"><div class="card-head"><h2>Kom i gang</h2><span class="small muted">${doneN} af ${need.length} trin</span></div>
+      <div class="progress" style="margin-bottom:14px"><div style="width:${pct}%"></div></div>
+      ${steps.map((x, i) => `<div class="doc-row" style="align-items:flex-start;gap:14px">
+        <div style="display:flex;gap:12px;align-items:flex-start;min-width:0"><span class="tag ${x.done ? 'ok' : x === next ? 'dark' : ''}" style="min-width:26px;justify-content:center">${x.done ? '✓' : i + 1}</span>
+          <div><strong${x.done ? ' class="muted"' : ''}>${esc(x.title)}</strong><div class="small muted">${esc(x.text)}</div></div></div>
+        ${x.done ? '' : (x.action ? `<button class="btn btn-sm${x === next ? ' btn-primary' : ''}" data-action="${x.action}">${esc(x.label)}</button>` : `<a class="btn btn-sm${x === next ? ' btn-primary' : ''}" href="${x.href}">${esc(x.label)}</a>`)}
+      </div>`).join('')}
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-sm" href="#/data"><i class="fa-solid fa-file-import"></i> Importér fra Excel/CSV</a>
+        <button class="btn btn-sm" data-action="hideGuide">Skjul guiden</button></div></div>`;
+  }
+
   function viewDashboard() {
     const D = S.D, t = today();
     const open = D.agreements.filter(a => !C.isClosed(a));
@@ -314,15 +347,9 @@
     const maxCat = Math.max(1, ...byCat.map(x => x.s));
     const cons = C.consolidation(D);
 
-    if (!D.agreements.length) {
-      return pageHead('Jeres <em>aftaleoverblik</em>') + `<div class="card"><h2>Kom i gang</h2>
-        <p class="muted" style="margin-bottom:14px">Registrér jeres ejendomme og driftsaftaler. Platformen beregner selv opsigelsesfrister, anbefalet udbudsstart og hvilke aftaler der bedst kan betale sig at se på først.</p>
-        <div class="actions"><button class="btn btn-primary" data-action="newProperty"><i class="fa-solid fa-building"></i> Tilføj ejendom</button>
-        <button class="btn" data-action="newAgreement"><i class="fa-solid fa-file-contract"></i> Tilføj aftale</button>
-        <a class="btn" href="#/data"><i class="fa-solid fa-file-import"></i> Importér fra Excel/CSV</a></div></div>`;
-    }
+    if (!D.agreements.length) return pageHead('Jeres <em>aftaleoverblik</em>', 'Følg trinnene for at få udfyldt jeres stamdata.') + guideCard(true);
 
-    return pageHead('Jeres <em>aftaleoverblik</em>', 'Driftsaftaler, frister og besparelsespotentiale samlet ét sted.', canEdit() ? '<button class="btn btn-primary" data-action="newAgreement"><i class="fa-solid fa-plus"></i> Ny aftale</button>' : '') + `
+    return pageHead('Jeres <em>aftaleoverblik</em>', 'Driftsaftaler, frister og besparelsespotentiale samlet ét sted.', canEdit() ? '<button class="btn btn-primary" data-action="newAgreement"><i class="fa-solid fa-plus"></i> Ny aftale</button>' : '') + guideCard() + `
     <div class="grid g4" style="margin-bottom:16px">
       <div class="kpi"><div class="lbl">Årlige driftsudgifter</div><div class="val">${krShort(spend)}</div><div class="sub">${open.length} aktive aftaler · ${D.properties.length} ejendomme</div></div>
       <div class="kpi accent"><div class="lbl">Besparelsespotentiale</div><div class="val">${krShort(potential)}</div><div class="sub">estimeret pr. år ved genudbud</div></div>
@@ -1034,6 +1061,7 @@
         <label class="field"><span>Type</span><select name="org_type" ${own ? '' : 'disabled'}>${orgTypeOptions(o.org_type)}</select><span class="hint">Ejendomsselskab bruger ejendomme og porteføljer. Virksomhed bruger lokationer og grupper samt kategorier som telefoni, leasing og software.</span></label>
         <label class="field"><span>Start udbud (mdr. før frist)</span><input type="number" min="1" max="24" name="tender_lead_months" value="${esc(o.tender_lead_months || 6)}" ${own ? '' : 'disabled'}><span class="hint">Bruges til "anbefalet udbudsstart" og påmindelser.</span></label>
         ${own ? '<button class="btn btn-primary" type="submit">Gem</button>' : ''}
+        <button class="btn" type="button" data-action="showGuide" style="margin-left:8px">Vis startguide</button>
       </form></div>
       <div class="card"><h2>Brugere</h2>
         ${S.D.members.map(m => `<div class="doc-row"><span>${esc(m.email)}</span><span class="actions">${own && cloud && m.user_id !== S.user.id
@@ -1123,6 +1151,8 @@
 
   const ACT = {
     closeModal,
+    hideGuide: () => { lsSet(guideKey(), 'hide'); route(false); toast('Guiden er skjult. Du kan vise den igen under Indstillinger.'); },
+    showGuide: () => { lsSet(guideKey(), ''); location.hash = '#/overblik'; route(false); },
     logout: async () => { await S.store.signOut(); location.reload(); },
     forgotPw: async () => {
       const email = $('#loginForm [name=email]').value.trim(); const msg = $('#loginMsg');
