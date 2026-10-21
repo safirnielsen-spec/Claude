@@ -1098,7 +1098,7 @@
         <label class="field full"><span>Adresse</span><input name="billing_address" value="${esc(o.billing_address || '')}" placeholder="Vej, postnr. og by"></label>
         <label class="field"><span>EAN (valgfri)</span><input name="billing_ean" value="${esc(o.billing_ean || '')}" inputmode="numeric"></label>
         <p class="small muted full">Abonnementet fornyes automatisk hver måned eller hvert år, indtil det opsiges. Månedligt kan opsiges til udgangen af måneden, og årligt senest 30 dage før fornyelsen. Priser er ekskl. moms.</p>
-        <div class="full"><button class="btn btn-primary" type="submit">${o.plan_requested_at ? 'Opdatér valg' : 'Vælg abonnement'}</button></div></form>` : '<p class="small muted" style="margin-top:10px">Kun ejere kan vælge abonnement.</p>'}</div>`;
+        <div class="full"><button class="btn btn-primary" type="submit">${o.plan_requested_at ? 'Opdatér valg' : 'Vælg abonnement'}</button>${o.stripe_customer_id && CFG.stripeCheckout ? ' <button class="btn" type="button" data-action="billingPortal">Administrér betaling og fakturaer</button>' : ''}</div></form>` : '<p class="small muted" style="margin-top:10px">Kun ejere kan vælge abonnement.</p>'}</div>`;
   }
 
   function viewSettings() {
@@ -1202,6 +1202,11 @@
 
   const ACT = {
     closeModal,
+    billingPortal: async () => {
+      const { data, error } = await S.store.sb.functions.invoke('billing-portal', { body: { org_id: S.org.id } });
+      if (error) { let m = error.message; try { m = (await error.context.json()).error || m; } catch (e) { /* ignore */ } throw new Error(m); }
+      if (data && data.url) location.href = data.url;
+    },
     hideGuide: () => { lsSet(guideKey(), 'hide'); route(false); toast('Guiden er skjult. Du kan vise den igen under Indstillinger.'); },
     showGuide: () => { lsSet(guideKey(), ''); location.hash = '#/overblik'; route(false); },
     logout: async () => { await S.store.signOut(); location.reload(); },
@@ -1406,6 +1411,14 @@
       const f = { billing_interval: o.billing_interval, payment_method: o.payment_method, billing_name: o.billing_name, billing_email: o.billing_email,
         billing_address: o.billing_address || null, billing_ean: o.billing_ean || null, plan_requested_at: new Date().toISOString() };
       await S.store.updatePlan(S.org.id, f); Object.assign(S.org, f);
+      // Stripe: kort via Checkout, faktura via Stripe Billing. Faktura med EAN (offentlige kunder) håndteres manuelt.
+      if (CFG.stripeCheckout && S.store.mode === 'cloud' && !(f.payment_method === 'invoice' && f.billing_ean)) {
+        const { data, error } = await S.store.sb.functions.invoke('create-checkout', { body: { org_id: S.org.id, interval: f.billing_interval, method: f.payment_method } });
+        if (error) { let m = error.message; try { m = (await error.context.json()).error || m; } catch (e) { /* ignore */ } throw new Error(m); }
+        if (data && data.error) throw new Error(data.error);
+        if (data && data.url) { location.href = data.url; return; }
+        toast((data && data.message) || 'Tak! Valget er gemt.'); route(false); return;
+      }
       const links = CFG.stripeLinks || {}, link = links[planFor(activeAgreementCount(S.D)).key + '_' + f.billing_interval];
       if (f.payment_method === 'card' && link) {
         const u = new URL(link); u.searchParams.set('client_reference_id', S.org.id); u.searchParams.set('prefilled_email', f.billing_email);
