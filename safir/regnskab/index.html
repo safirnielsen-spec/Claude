@@ -180,6 +180,7 @@ footer a:hover{color:rgba(245,240,230,.82)}
 .block .eyebrow{color:var(--amber)}
 .block h2.title{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(28px,3.6vw,38px);line-height:1.15;max-width:700px}
 .block h2.title em{font-style:italic;color:var(--bottle-green)}
+.block .lede+.lede{margin-top:8px}
 .block .lede{margin-top:12px;max-width:640px;color:var(--muted);font-size:14.5px}
 .svc-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:30px}
 .svc{background:#fff;border:1px solid var(--border);border-radius:6px;padding:24px 22px}
@@ -187,11 +188,20 @@ footer a:hover{color:rgba(245,240,230,.82)}
 .svc ul{list-style:none}
 .svc li{position:relative;padding:5px 0 5px 18px;font-size:13px;line-height:1.5;color:var(--muted)}
 .svc li::before{content:'';position:absolute;left:0;top:1.05em;width:10px;height:1px;background:var(--amber)}
+.offers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:30px}
+.offer{background:#fff;border:1px solid var(--border);border-top:3px solid var(--bottle-green);border-radius:6px;padding:24px 22px}
+.offer:nth-child(2){border-top-color:var(--amber)}
+.offer:nth-child(3){border-top-color:var(--warm-brown)}
+.offer-big{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:400;line-height:1;color:var(--bottle-green-d)}
+.offer h3{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:21px;line-height:1.2;margin:10px 0 6px}
+.offer p{font-size:13px;color:var(--muted)}
+.offers-note{margin-top:14px;font-size:13px;color:var(--muted)}
+.offers-note a{color:var(--bottle-green);text-decoration:underline}
 .limit{margin-top:14px;padding:22px 26px;border:1px solid var(--border2);border-left:3px solid var(--amber);border-radius:6px;background:var(--bg-warm);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
 .limit h3{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:20px;margin-bottom:6px}
 .limit p{font-size:13.5px;color:var(--muted)}
 .wrap{margin-top:28px}
-@media (max-width:1000px){.partners{grid-template-columns:minmax(0,1fr)}.svc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1000px){.offers{grid-template-columns:minmax(0,1fr)}.partners{grid-template-columns:minmax(0,1fr)}.svc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:960px){
   .wrap{grid-template-columns:minmax(0,1fr)}
   .summary{position:static}
@@ -264,7 +274,8 @@ footer a:hover{color:rgba(245,240,230,.82)}
 <section class="block" aria-labelledby="ydelser-h">
   <div class="eyebrow">Hvad vi hjælper med</div>
   <h2 class="title" id="ydelser-h">Hele regnskabet, <em>fra bilag til årsafslutning</em></h2>
-  <p class="lede">Du kan vælge enkelte opgaver eller lade os tage hele bogholderiet. Vi arbejder i Dinero og Billy, men også i e-conomic, Uniconta, Business Central, Visma og andre programmer.</p>
+  <p class="lede">Du kan vælge enkelte opgaver eller lade os tage hele bogholderiet.</p>
+  <p class="lede">Vi arbejder i Dinero og Billy, men også i e-conomic, Uniconta, Business Central, Visma og andre programmer.</p>
   <div class="svc-grid">
     <div class="svc">
       <h3>Løbende bogholderi</h3>
@@ -313,6 +324,30 @@ footer a:hover{color:rgba(245,240,230,.82)}
       <p>At vi er godkendt som samarbejdspartner af Dinero og Shine Regnskab (Billy). Det er en partnerstatus hos programmerne, ikke en revisorgodkendelse.</p>
     </div>
   </div>
+</section>
+
+<section class="block" aria-labelledby="tilbud-h">
+  <div class="eyebrow">Partnertilbud</div>
+  <h2 class="title" id="tilbud-h">Fordele, når du <em>vælger dit regnskabsprogram</em> gennem os</h2>
+  <p class="lede">Som partner kan vi tilbyde særlige vilkår på programmerne, når du bliver kunde hos os.</p>
+  <div class="offers">
+    <div class="offer">
+      <div class="offer-big">50 %</div>
+      <h3>Billy by Shine</h3>
+      <p>50 % rabat det første år.</p>
+    </div>
+    <div class="offer">
+      <div class="offer-big">50 %</div>
+      <h3>Dinero Pro</h3>
+      <p>50 % rabat det første år.</p>
+    </div>
+    <div class="offer">
+      <div class="offer-big">Gratis</div>
+      <h3>Dinero til holdingselskaber</h3>
+      <p>Holdingselskaber kan få Dinero uden beregning.</p>
+    </div>
+  </div>
+  <p class="offers-note">Vil du høre mere om tilbuddene? <a href="mailto:kontakt@safirconsulting.dk">Skriv til os</a> eller <a href="#beregner">beregn din pris</a> herunder.</p>
 </section>
 
 <div class="block" id="beregner" style="padding-bottom:0">
