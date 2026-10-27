@@ -917,7 +917,7 @@ $('submitLead').addEventListener('click', () => {
 
   btn.disabled = true; btn.textContent = 'Sender…';
   fetch(FORMSPREE_URL, { method: 'POST', headers: { 'Accept': 'application/json' }, body: data })
-    .then(res => { if (!res.ok) throw new Error(); show('ok', 'Tak, ' + navn + '! Vi vender tilbage inden for én hverdag.'); btn.textContent = 'Sendt'; })
+    .then(res => { if (!res.ok) throw new Error(); if (window.fbq) fbq('track', 'Lead'); show('ok', 'Tak, ' + navn + '! Vi vender tilbage inden for én hverdag.'); btn.textContent = 'Sendt'; })
     .catch(() => { show('err', 'Noget gik galt. Prøv igen eller skriv til kontakt@safirconsulting.dk.'); btn.disabled = false; btn.textContent = 'Send besked'; });
 });
 
