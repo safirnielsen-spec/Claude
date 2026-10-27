@@ -164,20 +164,51 @@ footer a{text-decoration:none;transition:color .15s}
 footer a:hover{color:rgba(245,240,230,.82)}
 
 
-/* COOKIE-SAMTYKKE */
-#cookieBanner{position:fixed;left:0;right:0;bottom:0;z-index:500;display:none;flex-wrap:wrap;align-items:center;gap:14px 24px;padding:16px 28px;background:rgba(250,248,243,.98);backdrop-filter:blur(12px);border-top:1px solid var(--border2);box-shadow:0 -4px 24px rgba(35,30,22,.08)}
+/* COOKIE-SAMTYKKE (popup) */
+#cookieBanner{position:fixed;inset:0;z-index:600;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(26,23,16,.55);backdrop-filter:blur(3px)}
 #cookieBanner.visible{display:flex}
-.cb-text{flex:1;min-width:260px;font-size:12.5px;color:var(--muted);line-height:1.55}
-.cb-text strong{color:var(--text)}
+.cb-card{width:100%;max-width:500px;background:#fff;border-radius:8px;padding:30px 30px 26px;box-shadow:0 24px 80px rgba(26,23,16,.35);border-top:4px solid var(--bottle-green)}
+.cb-card strong{display:block;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:26px;line-height:1.2;margin-bottom:10px}
+.cb-text{font-size:13.5px;color:var(--muted);line-height:1.6}
 .cb-text a{color:var(--bottle-green);text-decoration:underline;text-underline-offset:3px}
-.cb-btns{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap}
-.cb-btns button{padding:11px 20px;border-radius:var(--r);cursor:pointer;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase}
+.cb-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+.cb-btns button{padding:14px 16px;border-radius:var(--r);cursor:pointer;font-size:11.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase}
 .cb-accept{background:var(--bottle-green);border:1px solid var(--bottle-green);color:var(--cream)}
 .cb-accept:hover{background:var(--bottle-green-d)}
-.cb-reject{background:transparent;border:1px solid var(--border2);color:var(--muted)}
-.cb-reject:hover{border-color:var(--bottle-green);color:var(--bottle-green)}
-@media (max-width:620px){#cookieBanner{padding:14px 16px;flex-direction:column;align-items:flex-start}.cb-btns{width:100%;justify-content:flex-end}}
-@media print{#cookieBanner{display:none!important}}
+.cb-reject{background:#fff;border:1px solid var(--bottle-green);color:var(--bottle-green)}
+.cb-reject:hover{background:rgba(74,98,72,.07)}
+@media (max-width:480px){.cb-card{padding:24px 20px}.cb-btns{grid-template-columns:1fr}}
+@media print{#cookieBanner,.fab{display:none!important}}
+
+/* TILBUDSFORMULAR (øverst) */
+.offer-form{background:var(--bottle-green-d);color:var(--cream);border-radius:8px;padding:40px 44px;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:44px;align-items:start;box-shadow:0 12px 48px rgba(35,30,22,.18)}
+.offer-form .eyebrow{color:var(--amber-l)}
+.offer-form h2{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(30px,3.6vw,42px);line-height:1.1}
+.offer-form h2 em{font-style:italic;color:var(--amber-l)}
+.offer-form .pitch{margin-top:14px;font-size:14.5px;color:rgba(245,240,230,.72);max-width:420px}
+.offer-form ul{list-style:none;margin-top:22px}
+.offer-form li{position:relative;padding:5px 0 5px 22px;font-size:13.5px;color:rgba(245,240,230,.85)}
+.offer-form li::before{content:'';position:absolute;left:0;top:.95em;width:12px;height:1px;background:var(--amber-l)}
+.of-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.of-grid .full{grid-column:1/-1}
+.offer-form label.flabel{color:rgba(245,240,230,.65)}
+.offer-form .finput{background:#fff;color:var(--text);height:48px}
+.offer-form select.finput{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23231e16' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:34px}
+.offer-form .chk{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;line-height:1.5;color:rgba(245,240,230,.8);margin-top:12px}
+.offer-form .chk input{margin-top:3px;width:16px;height:16px;flex:none;accent-color:var(--amber)}
+.offer-form .chk a{text-decoration:underline;text-underline-offset:3px}
+.offer-form .chk .opt{color:rgba(245,240,230,.5)}
+.of-btn{width:100%;margin-top:18px;padding:17px;border:none;border-radius:var(--r);cursor:pointer;background:var(--amber);color:var(--bg-dark);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:background .2s}
+.of-btn:hover{background:var(--amber-l)}
+.of-btn:disabled{opacity:.7;cursor:default}
+.of-note{margin-top:10px;font-size:11.5px;color:rgba(245,240,230,.5);text-align:center}
+.offer-form .fmsg.err{background:rgba(255,255,255,.95)}
+.offer-form .fmsg.ok{background:rgba(255,255,255,.95)}
+.fab{position:fixed;right:20px;bottom:20px;z-index:450;padding:14px 22px;border-radius:30px;background:var(--amber);color:var(--bg-dark);font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;box-shadow:0 8px 28px rgba(35,30,22,.3);transition:transform .2s,opacity .25s}
+.fab:hover{transform:translateY(-2px)}
+.fab.hide{opacity:0;pointer-events:none}
+@media (max-width:900px){.offer-form{grid-template-columns:minmax(0,1fr);padding:30px 22px;gap:26px}}
+@media (max-width:520px){.of-grid{grid-template-columns:minmax(0,1fr)}.fab{right:12px;bottom:12px;padding:13px 18px}}
 
 /* PARTNERE & YDELSER */
 .hero-btn{display:inline-block;margin-top:26px;padding:13px 26px;border:1px solid rgba(245,240,230,.4);border-radius:var(--r);font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;color:var(--cream);transition:background .2s}
@@ -285,6 +316,48 @@ footer a:hover{color:rgba(245,240,230,.82)}
       <div class="partner-txt"><b>Shine Regnskab</b><span>Revisorpartner<br>(Billy by Shine)</span></div>
     </div>
   </div>
+</section>
+
+<section class="block" id="tilbud" aria-labelledby="tilbud-h2" style="padding-top:40px">
+  <form class="offer-form" id="topLead" onsubmit="return false" novalidate>
+    <div>
+      <div class="eyebrow">Uforpligtende tilbud</div>
+      <h2 id="tilbud-h2">Få et tilbud på <em>dit regnskab</em></h2>
+      <p class="pitch">Fortæl kort, hvad du har brug for, så vender vi tilbage inden for én hverdag med et konkret bud.</p>
+      <ul>
+        <li>Svar inden for én hverdag</li>
+        <li>Intet krav om binding</li>
+        <li>Fast pris på moms, vejledende pris på resten</li>
+      </ul>
+    </div>
+    <div>
+      <div class="of-grid">
+        <div class="full"><label class="flabel" for="tName">Navn</label>
+          <input class="finput" type="text" id="tName" autocomplete="name" placeholder="Dit fulde navn"></div>
+        <div><label class="flabel" for="tEmail">E-mail</label>
+          <input class="finput" type="email" id="tEmail" autocomplete="email" placeholder="din@email.dk"></div>
+        <div><label class="flabel" for="tTlf">Telefon</label>
+          <input class="finput" type="tel" id="tTlf" autocomplete="tel" placeholder="+45 00 00 00 00"></div>
+        <div class="full"><label class="flabel" for="tNeed">Hvad har du brug for hjælp til?</label>
+          <select class="finput" id="tNeed">
+            <option value="Hele bogholderiet">Hele bogholderiet</option>
+            <option value="Løbende bogføring">Løbende bogføring</option>
+            <option value="Løn og moms">Løn og moms</option>
+            <option value="Årsregnskab og årsafslutning">Årsregnskab og årsafslutning</option>
+            <option value="Opsætning eller skift af regnskabsprogram">Opsætning eller skift af regnskabsprogram</option>
+            <option value="Oprydning og bagudrettet bogføring">Oprydning og bagudrettet bogføring</option>
+            <option value="Andet">Andet</option>
+          </select></div>
+        <div class="full"><label class="flabel" for="tNote">Besked (valgfrit)</label>
+          <input class="finput" type="text" id="tNote" placeholder="Fx virksomhedsform, program og antal bilag"></div>
+      </div>
+      <label class="chk"><input type="checkbox" id="tPriv"><span>Jeg accepterer, at Safir Consulting må kontakte mig om denne henvendelse. <a href="/#privatlivspolitik">Privatlivspolitik</a> <span class="opt">(påkrævet)</span></span></label>
+      <label class="chk"><input type="checkbox" id="tMkt"><span>Jeg accepterer marketingcookies (Meta Pixel), så Safir Consulting kan måle sine annoncer. <span class="opt">(valgfrit, ikke et krav for at sende)</span></span></label>
+      <button class="of-btn" type="button" id="tSubmit">Få et uforpligtende tilbud</button>
+      <div class="fmsg" id="tMsg" role="status"></div>
+      <div class="of-note">Eller ring på <a href="tel:+4530729393" style="text-decoration:underline">+45 30 72 93 93</a></div>
+    </div>
+  </form>
 </section>
 
 <section class="block" aria-labelledby="ydelser-h">
@@ -609,12 +682,18 @@ footer a:hover{color:rgba(245,240,230,.82)}
         <input type="checkbox" id="priv">
         <label for="priv">Jeg accepterer at Safir Consulting må kontakte mig vedr. denne henvendelse.</label>
       </div>
+      <div class="privacy-check">
+        <input type="checkbox" id="privMkt">
+        <label for="privMkt">Jeg accepterer marketingcookies (Meta Pixel). <span style="opacity:.6">Valgfrit, ikke et krav for at sende.</span></label>
+      </div>
       <button class="btn-submit" type="button" id="submitLead">Send besked</button>
       <div class="fmsg" id="formMsg" role="status"></div>
     </form>
     <p class="note">Estimatet er vejledende og baseret på de oplyste parametre. Alle priser er ekskl. moms. Momsindberetning afregnes til fast pris pr. indberetning. Løbende opgaver har en minimumspris på <span id="minNote"></span> pr. måned, og løn min. <span id="minPayNote"></span> pr. måned. Endeligt tilbud gives efter en kort, uforpligtende gennemgang.</p>
   </aside>
 </main>
+
+<a class="fab" id="fab" href="#tilbud">Få et tilbud</a>
 
 <footer>
   <div class="f-logo">Safir Consulting</div>
@@ -908,6 +987,7 @@ $('submitLead').addEventListener('click', () => {
   if (!navn || !email || !tlf) return show('err', 'Udfyld venligst navn, e-mail og telefon.');
   if (!/^\S+@\S+\.\S+$/.test(email)) return show('err', 'Tjek venligst e-mailadressen.');
   if (!$('priv').checked) return show('err', 'Du skal acceptere, at vi må kontakte dig.');
+  if ($('privMkt').checked && window.scConsent) scConsent(true);
 
   const data = new FormData();
   data.append('name', navn);
@@ -923,16 +1003,51 @@ $('submitLead').addEventListener('click', () => {
     .catch(() => { show('err', 'Noget gik galt. Prøv igen eller skriv til kontakt@safirconsulting.dk.'); btn.disabled = false; btn.textContent = 'Send besked'; });
 });
 
+// ── Tilbudsformular øverst ──
+$('tSubmit').addEventListener('click', () => {
+  const navn = $('tName').value.trim(), email = $('tEmail').value.trim(), tlf = $('tTlf').value.trim();
+  const msg = $('tMsg'), btn = $('tSubmit');
+  const show = (cls, txt) => { msg.className = 'fmsg ' + cls; msg.textContent = txt; };
+  if (!navn || !email || !tlf) return show('err', 'Udfyld venligst navn, e-mail og telefon.');
+  if (!/^\S+@\S+\.\S+$/.test(email)) return show('err', 'Tjek venligst e-mailadressen.');
+  if (!$('tPriv').checked) return show('err', 'Du skal acceptere, at vi må kontakte dig, for at vi kan svare.');
+  if ($('tMkt').checked && window.scConsent) scConsent(true);
+
+  const data = new FormData();
+  data.append('name', navn);
+  data.append('email', email);
+  data.append('telefon', tlf);
+  data.append('emne', 'Regnskab & bogholderi – tilbudsforespørgsel');
+  data.append('besked', 'Behov: ' + $('tNeed').value + ($('tNote').value.trim() ? '\n\n' + $('tNote').value.trim() : ''));
+  data.append('tidspunkt', new Date().toLocaleString('da-DK'));
+
+  btn.disabled = true; btn.textContent = 'Sender…';
+  fetch(FORMSPREE_URL, { method: 'POST', headers: { 'Accept': 'application/json' }, body: data })
+    .then(res => { if (!res.ok) throw new Error(); if (window.fbq) fbq('track', 'Lead'); show('ok', 'Tak, ' + navn + '! Vi vender tilbage inden for én hverdag.'); btn.textContent = 'Sendt'; })
+    .catch(() => { show('err', 'Noget gik galt. Prøv igen eller skriv til kontakt@safirconsulting.dk.'); btn.disabled = false; btn.textContent = 'Få et uforpligtende tilbud'; });
+});
+// Skjul "Få et tilbud"-knappen, når formularen er synlig
+(() => {
+  const fab = $('fab'), t = $('tilbud');
+  if (!('IntersectionObserver' in window)) return;
+  new IntersectionObserver(es => fab.classList.toggle('hide', es[0].isIntersecting), { threshold: 0 }).observe(t);
+})();
+
 $('minNote').textContent = kr(CONFIG.minMonthly); $('minPayNote').textContent = kr(CONFIG.minPayrollMonthly);
 syncTasks(); render();
 </script>
 
 <!-- Cookie-samtykke og Meta Pixel (indlæses kun efter accept) -->
-<div id="cookieBanner" role="dialog" aria-label="Cookie-samtykke">
-  <div class="cb-text"><strong>Vi bruger cookies.</strong> Vi bruger Meta Pixel (Meta Platforms) til at måle og forbedre vores annoncer. Det sker kun, hvis du accepterer. Læs mere i vores <a href="/#privatlivspolitik">privatlivspolitik</a>.</div>
-  <div class="cb-btns">
-    <button type="button" class="cb-reject" onclick="scConsent(false)">Kun nødvendige</button>
-    <button type="button" class="cb-accept" onclick="scConsent(true)">Acceptér</button>
+<div id="cookieBanner" role="dialog" aria-modal="true" aria-labelledby="cbTitle">
+  <div class="cb-card">
+    <div class="cb-text">
+      <strong id="cbTitle">Vi bruger cookies</strong>
+      Vi bruger Meta Pixel (Meta Platforms) til at måle og forbedre vores annoncer. Det sker kun, hvis du accepterer. Siden fungerer fuldt ud uden. Læs mere i vores <a href="/#privatlivspolitik">privatlivspolitik</a>.
+    </div>
+    <div class="cb-btns">
+      <button type="button" class="cb-reject" onclick="scConsent(false)">Kun nødvendige</button>
+      <button type="button" class="cb-accept" onclick="scConsent(true)">Acceptér alle</button>
+    </div>
   </div>
 </div>
 <script>
