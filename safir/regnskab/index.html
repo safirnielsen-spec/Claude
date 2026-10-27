@@ -622,6 +622,8 @@ footer a:hover{color:rgba(245,240,230,.82)}
     <a href="mailto:kontakt@safirconsulting.dk">kontakt@safirconsulting.dk</a>
     &nbsp;&middot;&nbsp;
     <a href="tel:+4530729393">+45 30 72 93 93</a>
+    &nbsp;&middot;&nbsp;
+    <a href="#" onclick="scReopenConsent();return false;">Cookie-indstillinger</a>
   </p>
   <p>&copy; 2026 Safir Consulting &nbsp;&middot;&nbsp; Gersonsvej 37, 2900 Hellerup &nbsp;&middot;&nbsp; CVR 43260243</p>
 </footer>
@@ -957,7 +959,11 @@ syncTasks(); render();
   };
   var c=get();
   if(c==='accepted') loadPixel();
-  else if(!c) setTimeout(function(){ document.getElementById('cookieBanner').classList.add('visible'); }, 800);
+  else if(!c) document.getElementById('cookieBanner').classList.add('visible');
+  window.scReopenConsent=function(){
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    document.getElementById('cookieBanner').classList.add('visible');
+  };
 })();
 </script>
 </body>
