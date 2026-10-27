@@ -164,6 +164,21 @@ footer a{text-decoration:none;transition:color .15s}
 footer a:hover{color:rgba(245,240,230,.82)}
 
 
+/* COOKIE-SAMTYKKE */
+#cookieBanner{position:fixed;left:0;right:0;bottom:0;z-index:500;display:none;flex-wrap:wrap;align-items:center;gap:14px 24px;padding:16px 28px;background:rgba(250,248,243,.98);backdrop-filter:blur(12px);border-top:1px solid var(--border2);box-shadow:0 -4px 24px rgba(35,30,22,.08)}
+#cookieBanner.visible{display:flex}
+.cb-text{flex:1;min-width:260px;font-size:12.5px;color:var(--muted);line-height:1.55}
+.cb-text strong{color:var(--text)}
+.cb-text a{color:var(--bottle-green);text-decoration:underline;text-underline-offset:3px}
+.cb-btns{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap}
+.cb-btns button{padding:11px 20px;border-radius:var(--r);cursor:pointer;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase}
+.cb-accept{background:var(--bottle-green);border:1px solid var(--bottle-green);color:var(--cream)}
+.cb-accept:hover{background:var(--bottle-green-d)}
+.cb-reject{background:transparent;border:1px solid var(--border2);color:var(--muted)}
+.cb-reject:hover{border-color:var(--bottle-green);color:var(--bottle-green)}
+@media (max-width:620px){#cookieBanner{padding:14px 16px;flex-direction:column;align-items:flex-start}.cb-btns{width:100%;justify-content:flex-end}}
+@media print{#cookieBanner{display:none!important}}
+
 /* PARTNERE & YDELSER */
 .hero-btn{display:inline-block;margin-top:26px;padding:13px 26px;border:1px solid rgba(245,240,230,.4);border-radius:var(--r);font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;color:var(--cream);transition:background .2s}
 .hero-btn:hover{background:rgba(245,240,230,.12)}
@@ -908,6 +923,42 @@ $('submitLead').addEventListener('click', () => {
 
 $('minNote').textContent = kr(CONFIG.minMonthly); $('minPayNote').textContent = kr(CONFIG.minPayrollMonthly);
 syncTasks(); render();
+</script>
+
+<!-- Cookie-samtykke og Meta Pixel (indlæses kun efter accept) -->
+<div id="cookieBanner" role="dialog" aria-label="Cookie-samtykke">
+  <div class="cb-text"><strong>Vi bruger cookies.</strong> Vi bruger Meta Pixel (Meta Platforms) til at måle og forbedre vores annoncer. Det sker kun, hvis du accepterer. Læs mere i vores <a href="/#privatlivspolitik">privatlivspolitik</a>.</div>
+  <div class="cb-btns">
+    <button type="button" class="cb-reject" onclick="scConsent(false)">Kun nødvendige</button>
+    <button type="button" class="cb-accept" onclick="scConsent(true)">Acceptér</button>
+  </div>
+</div>
+<script>
+(function(){
+  var KEY='sc_cookie_consent', PIXEL_ID='1621339628872933';
+  function loadPixel(){
+    if(window.fbq) return;
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', PIXEL_ID);
+    fbq('track', 'PageView');
+  }
+  function get(){ try{ return localStorage.getItem(KEY); }catch(e){ return null; } }
+  window.scConsent=function(ok){
+    try{ localStorage.setItem(KEY, ok ? 'accepted' : 'rejected'); }catch(e){}
+    document.getElementById('cookieBanner').classList.remove('visible');
+    if(ok) loadPixel();
+  };
+  var c=get();
+  if(c==='accepted') loadPixel();
+  else if(!c) setTimeout(function(){ document.getElementById('cookieBanner').classList.add('visible'); }, 800);
+})();
 </script>
 </body>
 </html>
