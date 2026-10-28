@@ -352,7 +352,7 @@ footer a:hover{color:rgba(245,240,230,.82)}
           <input class="finput" type="text" id="tNote" placeholder="Fx virksomhedsform, program og antal bilag"></div>
       </div>
       <label class="chk"><input type="checkbox" id="tPriv"><span>Jeg accepterer, at Safir Consulting må kontakte mig om denne henvendelse. <a href="/#privatlivspolitik">Privatlivspolitik</a> <span class="opt">(påkrævet)</span></span></label>
-      <label class="chk"><input type="checkbox" id="tMkt"><span>Jeg accepterer marketingcookies (Meta Pixel), så Safir Consulting kan måle sine annoncer. <span class="opt">(valgfrit, ikke et krav for at sende)</span></span></label>
+      <label class="chk"><input type="checkbox" id="tMkt"><span>Jeg accepterer marketingcookies (Meta Pixel og Google Ads), så Safir Consulting kan måle sine annoncer. <span class="opt">(valgfrit, ikke et krav for at sende)</span></span></label>
       <button class="of-btn" type="button" id="tSubmit">Få et uforpligtende tilbud</button>
       <div class="fmsg" id="tMsg" role="status"></div>
       <div class="of-note">Eller ring på <a href="tel:+4530729393" style="text-decoration:underline">+45 30 72 93 93</a></div>
@@ -684,7 +684,7 @@ footer a:hover{color:rgba(245,240,230,.82)}
       </div>
       <div class="privacy-check">
         <input type="checkbox" id="privMkt">
-        <label for="privMkt">Jeg accepterer marketingcookies (Meta Pixel). <span style="opacity:.6">Valgfrit, ikke et krav for at sende.</span></label>
+        <label for="privMkt">Jeg accepterer marketingcookies (Meta Pixel og Google Ads). <span style="opacity:.6">Valgfrit, ikke et krav for at sende.</span></label>
       </div>
       <button class="btn-submit" type="button" id="submitLead">Send besked</button>
       <div class="fmsg" id="formMsg" role="status"></div>
@@ -972,6 +972,14 @@ $('copyBtn').addEventListener('click', async () => {
   catch { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('Opsummering kopieret'); }
 });
 
+// Lead-konvertering: kører kun efter lykket afsendelse, og kun hvis pixel/tag er indlæst (efter samtykke)
+function trackLead() {
+  if (window.fbq) fbq('track', 'Lead');
+  if (typeof gtag === 'function') {
+    gtag('event', 'conversion', { 'send_to': 'AW-18533746178/evbfCN3xrKcdEIKMyoVF', 'value': 1.0, 'currency': 'DKK' });
+  }
+}
+
 // ── Forespørgsel: samme Formspree-formular som på forsiden ──
 const FORMSPREE_URL = 'https://formspree.io/f/meedvdnb';
 $('openLead').addEventListener('click', () => {
@@ -999,7 +1007,7 @@ $('submitLead').addEventListener('click', () => {
 
   btn.disabled = true; btn.textContent = 'Sender…';
   fetch(FORMSPREE_URL, { method: 'POST', headers: { 'Accept': 'application/json' }, body: data })
-    .then(res => { if (!res.ok) throw new Error(); if (window.fbq) fbq('track', 'Lead'); show('ok', 'Tak, ' + navn + '! Vi vender tilbage inden for én hverdag.'); btn.textContent = 'Sendt'; })
+    .then(res => { if (!res.ok) throw new Error(); trackLead(); show('ok', 'Tak, ' + navn + '! Vi vender tilbage inden for én hverdag.'); btn.textContent = 'Sendt'; })
     .catch(() => { show('err', 'Noget gik galt. Prøv igen eller skriv til kontakt@safirconsulting.dk.'); btn.disabled = false; btn.textContent = 'Send besked'; });
 });
 
@@ -1023,7 +1031,7 @@ $('tSubmit').addEventListener('click', () => {
 
   btn.disabled = true; btn.textContent = 'Sender…';
   fetch(FORMSPREE_URL, { method: 'POST', headers: { 'Accept': 'application/json' }, body: data })
-    .then(res => { if (!res.ok) throw new Error(); if (window.fbq) fbq('track', 'Lead'); show('ok', 'Tak, ' + navn + '! Vi vender tilbage inden for én hverdag.'); btn.textContent = 'Sendt'; })
+    .then(res => { if (!res.ok) throw new Error(); trackLead(); show('ok', 'Tak, ' + navn + '! Vi vender tilbage inden for én hverdag.'); btn.textContent = 'Sendt'; })
     .catch(() => { show('err', 'Noget gik galt. Prøv igen eller skriv til kontakt@safirconsulting.dk.'); btn.disabled = false; btn.textContent = 'Få et uforpligtende tilbud'; });
 });
 // Skjul "Få et tilbud"-knappen, når formularen er synlig
@@ -1037,12 +1045,12 @@ $('minNote').textContent = kr(CONFIG.minMonthly); $('minPayNote').textContent = 
 syncTasks(); render();
 </script>
 
-<!-- Cookie-samtykke og Meta Pixel (indlæses kun efter accept) -->
+<!-- Cookie-samtykke, Meta Pixel og Google-tag (indlæses kun efter accept) -->
 <div id="cookieBanner" role="dialog" aria-modal="true" aria-labelledby="cbTitle">
   <div class="cb-card">
     <div class="cb-text">
       <strong id="cbTitle">Vi bruger cookies</strong>
-      Vi bruger Meta Pixel (Meta Platforms) til at måle og forbedre vores annoncer. Det sker kun, hvis du accepterer. Siden fungerer fuldt ud uden. Læs mere i vores <a href="/#privatlivspolitik">privatlivspolitik</a>.
+      Vi bruger Meta Pixel (Meta Platforms) og Google-tag (Google Ads) til at måle og forbedre vores annoncer. Det sker kun, hvis du accepterer. Siden fungerer fuldt ud uden. Læs mere i vores <a href="/#privatlivspolitik">privatlivspolitik</a>.
     </div>
     <div class="cb-btns">
       <button type="button" class="cb-reject" onclick="scConsent(false)">Kun nødvendige</button>
@@ -1052,7 +1060,7 @@ syncTasks(); render();
 </div>
 <script>
 (function(){
-  var KEY='sc_cookie_consent', PIXEL_ID='1621339628872933';
+  var KEY='sc_cookie_consent', PIXEL_ID='1621339628872933', GOOGLE_ID='AW-18533746178';
   function loadPixel(){
     if(window.fbq) return;
     !function(f,b,e,v,n,t,s)
@@ -1066,14 +1074,25 @@ syncTasks(); render();
     fbq('init', PIXEL_ID);
     fbq('track', 'PageView');
   }
+  function loadGoogle(){
+    if(window.gtag) return;
+    var g=document.createElement('script'); g.async=true;
+    g.src='https://www.googletagmanager.com/gtag/js?id='+GOOGLE_ID;
+    document.head.appendChild(g);
+    window.dataLayer=window.dataLayer||[];
+    window.gtag=function(){dataLayer.push(arguments);};
+    gtag('js', new Date());
+    gtag('config', GOOGLE_ID);
+  }
+  function loadAll(){ loadPixel(); loadGoogle(); }
   function get(){ try{ return localStorage.getItem(KEY); }catch(e){ return null; } }
   window.scConsent=function(ok){
     try{ localStorage.setItem(KEY, ok ? 'accepted' : 'rejected'); }catch(e){}
     document.getElementById('cookieBanner').classList.remove('visible');
-    if(ok) loadPixel();
+    if(ok) loadAll();
   };
   var c=get();
-  if(c==='accepted') loadPixel();
+  if(c==='accepted') loadAll();
   else if(!c) document.getElementById('cookieBanner').classList.add('visible');
   window.scReopenConsent=function(){
     try{ localStorage.removeItem(KEY); }catch(e){}
