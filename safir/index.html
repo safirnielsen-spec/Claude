@@ -1330,7 +1330,7 @@ body{max-width:100vw;overflow-x:hidden}
 <!-- ══ COOKIE BANNER ══ -->
 <div id="cookieBanner" role="dialog" aria-label="Cookie-samtykke" data-i18n-aria="cookie.aria">
   <div class="cb-text" data-i18n-html="cookie.text">
-    <strong>Vi bruger cookies.</strong> Vi anvender nødvendige cookies til at sikre hjemmesidens funktion.
+    <strong>Vi bruger cookies.</strong> Vi anvender nødvendige cookies til at sikre hjemmesidens funktion. Hvis du accepterer, bruger vi også Google-tag (Google Ads) til at måle vores annoncer.
     Læs mere i vores <a href="#" onclick="openPrivacy();return false;">privatlivspolitik</a>.
   </div>
   <div class="cb-btns">
@@ -1355,7 +1355,7 @@ body{max-width:100vw;overflow-x:hidden}
       <h3 data-i18n="privacy.h3">3. Formål og retsgrundlag</h3>
       <p data-i18n="privacy.p3">Behandling sker på baggrund af dit samtykke (GDPR art. 6.1.a) og/eller legitim interesse (GDPR art. 6.1.f).</p>
       <h3 data-i18n="privacy.h4">4. Cookies</h3>
-      <p data-i18n="privacy.p4">Vi anvender kun teknisk nødvendige cookies (localStorage). Ingen sporings- eller marketingcookies uden samtykke. På regnskabssiden bruger vi Meta Pixel (Meta Platforms) og Google-tag (Google Ads) til at måle annoncer, men kun hvis du accepterer det i cookie-banneret.</p>
+      <p data-i18n="privacy.p4">Vi anvender kun teknisk nødvendige cookies (localStorage). Ingen sporings- eller marketingcookies uden samtykke. Hvis du accepterer det i cookie-banneret, bruger vi Google-tag (Google Ads) til at måle annoncer, og på regnskabssiden desuden Meta Pixel (Meta Platforms).</p>
       <h3 data-i18n="privacy.h5">5. Dine rettigheder</h3>
       <ul><li data-i18n="privacy.l3">Indsigtsret, berigtigelse, sletning, dataportabilitet, indsigelse</li></ul>
       <p data-i18n-html="privacy.p5">Kontakt: <a href="mailto:kontakt@safirconsulting.dk">kontakt@safirconsulting.dk</a></p>
@@ -1522,6 +1522,7 @@ function submitLead() {
   fetch(FORMSPREE_URL, {method: 'POST', headers: {'Accept': 'application/json'}, body: data})
     .then(function(res) {
       if (!res.ok) throw new Error();
+      if (typeof gtag === 'function') gtag('event', 'conversion', {'send_to': 'AW-18533746178/evbfCN3xrKcdEIKMyoVF', 'value': 1.0, 'currency': 'DKK'});
       msg.style.cssText = 'display:block;background:rgba(34,197,94,.07);color:#15803d;border:1px solid rgba(34,197,94,.22);padding:11px 14px;border-radius:3px;font-size:13px;text-align:center;margin-top:12px';
       msg.textContent = window.CP_T('thanks') + ' ' + navn + '! ' + window.CP_T('willReply');
       btn.textContent = window.CP_T('sent');
@@ -1537,14 +1538,28 @@ function submitLead() {
 // ═══════════════════════════════════════
 //  COOKIE CONSENT
 // ═══════════════════════════════════════
+var GOOGLE_ID = 'AW-18533746178';
+function loadGoogleTag() {
+  if (window.gtag) return;
+  var g = document.createElement('script'); g.async = true;
+  g.src = 'https://www.googletagmanager.com/gtag/js?id=' + GOOGLE_ID;
+  document.head.appendChild(g);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ dataLayer.push(arguments); };
+  gtag('js', new Date());
+  gtag('config', GOOGLE_ID);
+}
 (function() {
   var KEY = 'sc_cookie_consent';
   var banner = document.getElementById('cookieBanner');
-  if (!localStorage.getItem(KEY)) setTimeout(function(){ banner.classList.add('visible'); }, 1000);
+  var c = null; try { c = localStorage.getItem(KEY); } catch (e) {}
+  if (c === 'accepted') loadGoogleTag();
+  else if (!c) setTimeout(function(){ banner.classList.add('visible'); }, 1000);
 })();
 
 function cookieChoice(accepted) {
   localStorage.setItem('sc_cookie_consent', accepted ? 'accepted' : 'rejected');
+  if (accepted) loadGoogleTag();
   var b = document.getElementById('cookieBanner');
   b.classList.remove('visible');
   setTimeout(function(){ b.style.display = 'none'; }, 450);
@@ -1708,7 +1723,7 @@ if (!reduceMotion) {
     'privacy.title':'Privacy Policy','privacy.close':'Close',
     'privacy.h1':'1. Data controller','privacy.h2':'2. What information do we collect?','privacy.l1':'Name, email address, phone number','privacy.l2':'Any message submitted via the contact form',
     'privacy.h3':'3. Purpose and legal basis','privacy.p3':'Processing takes place on the basis of your consent (GDPR art. 6.1.a) and/or legitimate interest (GDPR art. 6.1.f).',
-    'privacy.h4':'4. Cookies','privacy.p4':'We only use technically necessary cookies (localStorage). No tracking or marketing cookies without consent. On the accounting page we use Meta Pixel (Meta Platforms) and Google tag (Google Ads) to measure ads, but only if you accept it in the cookie banner.',
+    'privacy.h4':'4. Cookies','privacy.p4':'We only use technically necessary cookies (localStorage). No tracking or marketing cookies without consent. If you accept it in the cookie banner, we use Google tag (Google Ads) to measure ads, and on the accounting page also Meta Pixel (Meta Platforms).',
     'privacy.h5':'5. Your rights','privacy.l3':'Right of access, rectification, erasure, data portability, objection',
     'privacy.h6':'6. Complaints to the Danish Data Protection Agency',
     'privacy.h7':'7. Last updated','privacy.p7':'Last updated June 2026.',
@@ -1724,7 +1739,7 @@ if (!reduceMotion) {
     'approach.title':'Advisory for those who own<br><em>and invest in real estate</em>',
     'statement2.text':'Discretion, precision and <span class="hl">long-term relationships.</span><br>That\'s the foundation beneath every partnership we enter.',
     'pb2.title':'Ready to take<br><em>the next step?</em>',
-    'cookie.text':'<strong>We use cookies.</strong> We use necessary cookies to ensure the website functions properly.\n    Read more in our <a href="#" onclick="openPrivacy();return false;">privacy policy</a>.',
+    'cookie.text':'<strong>We use cookies.</strong> We use necessary cookies to ensure the website functions properly. If you accept, we also use Google tag (Google Ads) to measure our ads.\n    Read more in our <a href="#" onclick="openPrivacy();return false;">privacy policy</a>.',
     'privacy.p1':'<strong>Safir Consulting</strong><br>CVR: 43260243<br>Address: Gersonsvej 37, 2900 Hellerup, Denmark<br>Email: <a href="mailto:kontakt@safirconsulting.dk">kontakt@safirconsulting.dk</a><br>Phone: <a href="tel:+4530729393">+45 30 72 93 93</a>',
     'privacy.p2':'We use Google Fonts, which may technically transmit your IP address to Google. See <a href="https://policies.google.com/privacy" target="_blank">Google\'s privacy policy</a>.',
     'privacy.p5':'Contact: <a href="mailto:kontakt@safirconsulting.dk">kontakt@safirconsulting.dk</a>',
